@@ -27,10 +27,10 @@
 
   "block.brewing.name": "Brewing Cutting Board",
   "block.brewing.wooden.name": "Wooden Brewing Cutting Board",
-  "block.brewing.stone.name": "Wooden Brewing Cutting Board",
-  "block.brewing.iron.name": "Stone Brewing Cutting Board",
-  "block.brewing.gold.name": "Iron Brewing Cutting Board",
-  "block.brewing.diamond.name": "Gold Brewing Cutting Board",
+  "block.brewing.stone.name": "Stone Brewing Cutting Board",
+  "block.brewing.iron.name": "Iron Brewing Cutting Board",
+  "block.brewing.gold.name": "Gold Brewing Cutting Board",
+  "block.brewing.diamond.name": "Diamond Brewing Cutting Board",
   "block.brewing.emerald.name": "Emerald Brewing Cutting Board",
   "block.brewing.redstone.name": "Redstone Brewing Cutting Board",
   "block.brewing.netherite.name": "Netherite Brewing Cutting Board",
@@ -44,7 +44,7 @@
   "item.manaita_bow.name": "Cutting Board Bow",
   "item.helmet.name": "Cutting Board Helmet",
   "item.chestplate.name": "Cutting Board Chestplate",
-  "item.leggings.name": "Cutting Board Boots",
+  "item.leggings.name": "Cutting Board Leggings",
   "item.boots.name": "Cutting Board Boots",
 
   "item.source.name": "Source of Cutting Board",

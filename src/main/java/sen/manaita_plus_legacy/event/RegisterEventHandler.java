@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
+import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -74,14 +74,11 @@ public class RegisterEventHandler {
         event.register(ManaitaPlusLegacyKeyBoardCore.MESSAGE_ARMOR_KEY);
     }
 
+    @SuppressWarnings("deprecation")
     private static void acceptTypePropertyFunction(Item... items) {
         ResourceLocation location = new ResourceLocation(ManaitaPlusLegacy.MODID, ManaitaPlusLegacyNBTData.Type);
-        ClampedItemPropertyFunction typePropertyFunction = (stack, level, entity, seed) -> {
-            if (stack.getTag() != null) {
-                return stack.hasTag() ? stack.getTag().getInt(ManaitaPlusLegacyNBTData.ItemType) : 0;
-            }
-            return 0;
-        };
+        ItemPropertyFunction typePropertyFunction = (stack, level, entity, seed) ->
+                stack.hasTag() ? stack.getTag().getInt(ManaitaPlusLegacyNBTData.ItemType) : 0.0F;
         for (Item item : items) {
             ItemProperties.register(item, location, typePropertyFunction);
         }

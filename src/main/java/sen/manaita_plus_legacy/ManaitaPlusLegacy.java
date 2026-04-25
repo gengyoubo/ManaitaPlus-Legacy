@@ -2,11 +2,14 @@ package sen.manaita_plus_legacy;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -18,9 +21,11 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 import sen.manaita_plus_legacy.core.*;
 import sen.manaita_plus_legacy.network.Networking;
+import sen.manaita_plus_legacy.util.ManaitaPlusLegacyNBTData;
 
 @Mod(ManaitaPlusLegacy.MODID)
 public class ManaitaPlusLegacy {
@@ -35,6 +40,24 @@ public class ManaitaPlusLegacy {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TAB_TYPES = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
+    public static final RegistryObject<CreativeModeTab> MANAITA_PLUS_TAB = CREATIVE_MODE_TAB_TYPES.register("manaita_plus_tab", () -> CreativeModeTab.builder()
+            .withTabsBefore(CreativeModeTabs.COMBAT)
+            .icon(() -> ManaitaPlusLegacyBlockCore.CraftingBlockItem.get().getDefaultInstance())
+            .title(Component.translatable("itemGroup.ManaitaPlusTab"))
+            .displayItems((parameters, output) -> {
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyBlockCore.CraftingBlockItem.get(), output, 8);
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyBlockCore.FurnaceBlockItem.get(), output, 8);
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyBlockCore.BrewingBlockItem.get(), output, 8);
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyBlockCore.HookBlockItem.get(), output, 7);
+
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyItemCore.ManaitaCraftingPortable.get(), output, 8);
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyItemCore.ManaitaFurnacePortable.get(), output, 8);
+                acceptManaitaPlusLegacyType(ManaitaPlusLegacyItemCore.ManaitaBrewingPortable.get(), output, 8);
+
+                output.accept(ManaitaPlusLegacyItemCore.ManaitaSwordGod.get());
+                output.accept(ManaitaPlusLegacyItemCore.ManaitaBow.get());
+                output.accept(ManaitaPlusLegacyItemCore.ManaitaSource.get());
+            }).build());
 
 // --注释掉检查 START (2026/4/24 23:35):
 //    public static final RegistryObject<CreativeModeTab> MANAITA_PLUS_TAB = CREATIVE_MODE_TAB_TYPES.register("manaita_plus_tab", () -> CreativeModeTab.builder()
@@ -105,5 +128,12 @@ public class ManaitaPlusLegacy {
         event.enqueueWork(Networking::registerMessage);
     }
 
+    private static void acceptManaitaPlusLegacyType(Item item, CreativeModeTab.Output output, int maxType) {
+        for (int type = 0; type <= maxType; type++) {
+            ItemStack stack = new ItemStack(item);
+            stack.getOrCreateTag().putInt(ManaitaPlusLegacyNBTData.ItemType, type);
+            output.accept(stack);
+        }
+    }
 
 }

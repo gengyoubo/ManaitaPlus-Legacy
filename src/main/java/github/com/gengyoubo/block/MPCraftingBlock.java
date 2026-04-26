@@ -1,0 +1,93 @@
+package github.com.gengyoubo.block;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.block.data.MPBlockData;
+import github.com.gengyoubo.block.entity.MPCraftingBlockEntity;
+import github.com.gengyoubo.menu.MPCraftingMenu;
+
+import java.util.List;
+
+import static github.com.gengyoubo.block.MPBrewingStandBlock.getItemStacks;
+
+@SuppressWarnings("deprecation")
+public class MPCraftingBlock extends BaseEntityBlock {
+
+    private static final Component CONTAINER_TITLE = Component.translatable("container.crafting_manaita");
+
+
+    public MPCraftingBlock() {
+        super(BlockBehaviour.Properties.of().noOcclusion());
+        this.registerDefaultState(this.stateDefinition.any().setValue(MPBlockData.HOOK, 8).setValue(MPBlockData.FACING, Direction.NORTH).setValue(MPBlockData.WALL,Direction.DOWN).setValue(MPBlockData.TYPES,0));
+    }
+
+
+    @Override
+    public @NotNull VoxelShape getShape(BlockState p_60555_, @NotNull BlockGetter p_60556_, @NotNull BlockPos p_60557_, @NotNull CollisionContext p_60558_) {
+        Direction wall = p_60555_.getValue(MPBlockData.WALL);
+        Direction facing = p_60555_.getValue(MPBlockData.FACING);
+        boolean hasHook = p_60555_.getValue(MPBlockData.HOOK) != 8;
+        return MPBlockData.getWallMountedShape(wall, facing, hasHook);
+    }
+
+    @Override
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
+        return getItemStacks(p_287732_);
+    }
+
+
+    public @NotNull InteractionResult use(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull InteractionHand p_52237_, @NotNull BlockHitResult p_52238_) {
+        if (p_52234_.isClientSide) {
+            return InteractionResult.SUCCESS;
+        } else {
+            p_52236_.openMenu(p_52233_.getMenuProvider(p_52234_, p_52235_));
+//            p_52236_.awardStat(((ResourceLocation) ManaitaPlusStarCore.INTERACT_WITH_CRAFTING_MANAITA_TABLE.get()));
+            return InteractionResult.CONSUME;
+        }
+
+    }
+//
+    public MenuProvider getMenuProvider(@NotNull BlockState p_52240_, @NotNull Level p_52241_, @NotNull BlockPos p_52242_) {
+        return new SimpleMenuProvider((p_52229_, p_52230_, p_52231_) -> new MPCraftingMenu(p_52229_, p_52230_, ContainerLevelAccess.create(p_52241_, p_52242_)), CONTAINER_TITLE);
+    }
+
+    public BlockState getStateForPlacement(BlockPlaceContext p_48689_) {
+        return this.defaultBlockState().setValue(MPBlockData.WALL,p_48689_.getClickedFace().getOpposite()).setValue(MPBlockData.FACING, p_48689_.getHorizontalDirection().getOpposite());
+    }
+
+
+    public @NotNull BlockState rotate(BlockState p_48722_, Rotation p_48723_) {
+        return p_48722_.setValue(MPBlockData.FACING, p_48723_.rotate(p_48722_.getValue(MPBlockData.FACING)));
+    }
+
+    public @NotNull BlockState mirror(BlockState p_48719_, Mirror p_48720_) {
+        return p_48719_.rotate(p_48720_.getRotation(p_48719_.getValue(MPBlockData.FACING)));
+    }
+
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> p_48725_) {
+        p_48725_.add(MPBlockData.FACING, MPBlockData.TYPES, MPBlockData.WALL, MPBlockData.HOOK);
+    }
+
+    public BlockEntity newBlockEntity(@NotNull BlockPos p_153277_, @NotNull BlockState p_153278_) {
+        return new MPCraftingBlockEntity(p_153277_, p_153278_);
+    }
+}
+

@@ -1,0 +1,338 @@
+package github.com.gengyoubo.recipe;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import github.com.gengyoubo.core.MPRecipeSerializerCore;
+import github.com.gengyoubo.util.MPNBTData;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MPNBTCraftingRecipe implements CraftingRecipe {
+    private final ResourceLocation id;
+    private final String group;
+    private final CraftingBookCategory category;
+    private final int width;
+    private final int height;
+    private final IngredientSpec[] ingredients;
+    private final ItemStack result;
+    private final boolean showNotification;
+
+    public MPNBTCraftingRecipe(ResourceLocation id, String group, CraftingBookCategory category, int width, int height, IngredientSpec[] ingredients, ItemStack result, boolean showNotification) {
+        this.id = id;
+        this.group = group;
+        this.category = category;
+        this.width = width;
+        this.height = height;
+        this.ingredients = ingredients;
+        this.result = result;
+        this.showNotification = showNotification;
+    }
+
+    @Override
+    public @NotNull ResourceLocation getId() {
+        return id;
+    }
+
+    @Override
+    public @NotNull RecipeSerializer<?> getSerializer() {
+        return MPRecipeSerializerCore.NBTCraftingRecipe.get();
+    }
+
+    @Override
+    public @NotNull String getGroup() {
+        return group;
+    }
+
+    @Override
+    public @NotNull CraftingBookCategory category() {
+        return category;
+    }
+
+    @Override
+    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
+        return result.copy();
+    }
+
+    public boolean showNotification() {
+        return showNotification;
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int gridWidth, int gridHeight) {
+        return gridWidth >= width && gridHeight >= height;
+    }
+
+    @Override
+    public boolean matches(CraftingContainer container, @NotNull Level level) {
+        for (int x = 0; x <= container.getWidth() - width; ++x) {
+            for (int y = 0; y <= container.getHeight() - height; ++y) {
+                if (matches(container, x, y, true) || matches(container, x, y, false)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean matches(CraftingContainer container, int offsetX, int offsetY, boolean mirrored) {
+        for (int x = 0; x < container.getWidth(); ++x) {
+            for (int y = 0; y < container.getHeight(); ++y) {
+                int patternX = x - offsetX;
+                int patternY = y - offsetY;
+                IngredientSpec expected = IngredientSpec.EMPTY;
+                if (patternX >= 0 && patternY >= 0 && patternX < width && patternY < height) {
+                    if (mirrored) {
+                        expected = ingredients[width - patternX - 1 + patternY * width];
+                    } else {
+                        expected = ingredients[patternX + patternY * width];
+                    }
+                }
+
+                if (!expected.test(container.getItem(x + y * container.getWidth()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public @NotNull ItemStack assemble(@NotNull CraftingContainer container, @NotNull RegistryAccess registryAccess) {
+        return result.copy();
+    }
+
+    public static class Serializer implements RecipeSerializer<MPNBTCraftingRecipe> {
+        @Override
+        public @NotNull MPNBTCraftingRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
+            String group = GsonHelper.getAsString(json, "group", "");
+            CraftingBookCategory category = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(json, "category", null), CraftingBookCategory.MISC);
+            String[] pattern = shrink(patternFromJson(GsonHelper.getAsJsonArray(json, "pattern")));
+            if (pattern.length == 0) {
+                throw new JsonSyntaxException("Invalid pattern: empty pattern not allowed");
+            }
+            int width = pattern[0].length();
+            int height = pattern.length;
+            Map<Character, IngredientSpec> key = keyFromJson(GsonHelper.getAsJsonObject(json, "key"));
+            IngredientSpec[] ingredients = dissolvePattern(pattern, key, width, height);
+            ItemStack result = resultFromJson(GsonHelper.getAsJsonObject(json, "result"));
+            boolean showNotification = GsonHelper.getAsBoolean(json, "show_notification", true);
+            return new MPNBTCraftingRecipe(id, group, category, width, height, ingredients, result, showNotification);
+        }
+
+        @Override
+        public MPNBTCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
+            int width = buf.readVarInt();
+            int height = buf.readVarInt();
+            String group = buf.readUtf();
+            CraftingBookCategory category = buf.readEnum(CraftingBookCategory.class);
+            IngredientSpec[] ingredients = new IngredientSpec[width * height];
+            for (int i = 0; i < ingredients.length; i++) {
+                ingredients[i] = IngredientSpec.fromNetwork(buf);
+            }
+            ItemStack result = buf.readItem();
+            boolean showNotification = buf.readBoolean();
+            return new MPNBTCraftingRecipe(id, group, category, width, height, ingredients, result, showNotification);
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf buf, MPNBTCraftingRecipe recipe) {
+            buf.writeVarInt(recipe.width);
+            buf.writeVarInt(recipe.height);
+            buf.writeUtf(recipe.group);
+            buf.writeEnum(recipe.category);
+            for (IngredientSpec ingredient : recipe.ingredients) {
+                ingredient.toNetwork(buf);
+            }
+            buf.writeItem(recipe.result);
+            buf.writeBoolean(recipe.showNotification);
+        }
+
+        private static ItemStack resultFromJson(JsonObject json) {
+            ItemStack stack = new ItemStack(net.minecraft.world.item.crafting.ShapedRecipe.itemFromJson(json), GsonHelper.getAsInt(json, "count", 1));
+            if (json.has("nbt")) {
+                JsonObject nbt = GsonHelper.getAsJsonObject(json, "nbt");
+                int type = readType(nbt);
+                if (type >= 0) {
+                    stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
+                }
+            }
+            return stack;
+        }
+
+        private static int readType(JsonObject json) {
+            if (json.has(MPNBTData.ItemType)) {
+                return GsonHelper.getAsInt(json, MPNBTData.ItemType);
+            }
+            if (json.has("ManaitaPlusLegacyType")) {
+                return GsonHelper.getAsInt(json, "ManaitaPlusLegacyType");
+            }
+            if (json.has("ManaitaType")) {
+                return GsonHelper.getAsInt(json, "ManaitaType");
+            }
+            return -1;
+        }
+
+        private static IngredientSpec[] dissolvePattern(String[] pattern, Map<Character, IngredientSpec> key, int width, int height) {
+            IngredientSpec[] ingredients = new IngredientSpec[width * height];
+            Arrays.fill(ingredients, IngredientSpec.EMPTY);
+            Map<Character, IngredientSpec> remaining = new HashMap<>(key);
+            remaining.remove(' ');
+
+            for (int y = 0; y < pattern.length; ++y) {
+                for (int x = 0; x < pattern[y].length(); ++x) {
+                    char symbol = pattern[y].charAt(x);
+                    IngredientSpec ingredient = key.get(symbol);
+                    if (ingredient == null) {
+                        throw new JsonSyntaxException("Pattern references symbol '" + symbol + "' but it's not defined in the key");
+                    }
+                    remaining.remove(symbol);
+                    ingredients[x + width * y] = ingredient;
+                }
+            }
+
+            if (!remaining.isEmpty()) {
+                throw new JsonSyntaxException("Key defines symbols that aren't used in pattern: " + remaining.keySet());
+            }
+            return ingredients;
+        }
+
+        private static Map<Character, IngredientSpec> keyFromJson(JsonObject json) {
+            Map<Character, IngredientSpec> map = new HashMap<>();
+            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
+                if (entry.getKey().length() != 1) {
+                    throw new JsonSyntaxException("Invalid key entry: '" + entry.getKey() + "' is an invalid symbol");
+                }
+                char symbol = entry.getKey().charAt(0);
+                if (symbol == ' ') {
+                    throw new JsonSyntaxException("Invalid key entry: ' ' is a reserved symbol.");
+                }
+                map.put(symbol, IngredientSpec.fromJson(GsonHelper.convertToJsonObject(entry.getValue(), "key")));
+            }
+            map.put(' ', IngredientSpec.EMPTY);
+            return map;
+        }
+
+        private static String[] patternFromJson(JsonArray json) {
+            String[] pattern = new String[json.size()];
+            if (pattern.length == 0) {
+                throw new JsonSyntaxException("Invalid pattern: empty pattern not allowed");
+            }
+            if (pattern.length > 3) {
+                throw new JsonSyntaxException("Invalid pattern: too many rows, 3 is maximum");
+            }
+
+            for (int i = 0; i < pattern.length; ++i) {
+                String row = GsonHelper.convertToString(json.get(i), "pattern[" + i + "]");
+                if (row.length() > 3) {
+                    throw new JsonSyntaxException("Invalid pattern: too many columns, 3 is maximum");
+                }
+                if (i > 0 && pattern[0].length() != row.length()) {
+                    throw new JsonSyntaxException("Invalid pattern: each row must be the same width");
+                }
+                pattern[i] = row;
+            }
+            return pattern;
+        }
+
+        private static String[] shrink(String... pattern) {
+            int firstColumn = Integer.MAX_VALUE;
+            int lastColumn = 0;
+            int leadingEmptyRows = 0;
+            int trailingEmptyRows = 0;
+
+            for (int row = 0; row < pattern.length; ++row) {
+                String line = pattern[row];
+                firstColumn = Math.min(firstColumn, firstNonSpace(line));
+                int last = lastNonSpace(line);
+                lastColumn = Math.max(lastColumn, last);
+                if (last < 0) {
+                    if (leadingEmptyRows == row) {
+                        ++leadingEmptyRows;
+                    }
+                    ++trailingEmptyRows;
+                } else {
+                    trailingEmptyRows = 0;
+                }
+            }
+
+            if (pattern.length == trailingEmptyRows) {
+                return new String[0];
+            }
+
+            String[] shrunk = new String[pattern.length - trailingEmptyRows - leadingEmptyRows];
+            for (int i = 0; i < shrunk.length; ++i) {
+                shrunk[i] = pattern[i + leadingEmptyRows].substring(firstColumn, lastColumn + 1);
+            }
+            return shrunk;
+        }
+
+        private static int firstNonSpace(String line) {
+            int i = 0;
+            while (i < line.length() && line.charAt(i) == ' ') {
+                i++;
+            }
+            return i;
+        }
+
+        private static int lastNonSpace(String line) {
+            int i = line.length() - 1;
+            while (i >= 0 && line.charAt(i) == ' ') {
+                --i;
+            }
+            return i;
+        }
+    }
+
+    private record IngredientSpec(Ingredient ingredient, int requiredType) {
+        private static final IngredientSpec EMPTY = new IngredientSpec(Ingredient.EMPTY, Integer.MIN_VALUE);
+
+        private boolean test(ItemStack stack) {
+            if (this == EMPTY) {
+                return stack.isEmpty();
+            }
+            if (!ingredient.test(stack)) {
+                return false;
+            }
+            if (requiredType == Integer.MIN_VALUE) {
+                return true;
+            }
+            return stack.hasTag() && stack.getTag().getInt(MPNBTData.ItemType) == requiredType;
+        }
+
+        private void toNetwork(FriendlyByteBuf buf) {
+            ingredient.toNetwork(buf);
+            buf.writeInt(requiredType);
+        }
+
+        private static IngredientSpec fromNetwork(FriendlyByteBuf buf) {
+            return new IngredientSpec(Ingredient.fromNetwork(buf), buf.readInt());
+        }
+
+        private static IngredientSpec fromJson(JsonObject json) {
+            Ingredient ingredient = Ingredient.fromJson(json);
+            int requiredType = Integer.MIN_VALUE;
+            if (json.has("type")) {
+                requiredType = GsonHelper.getAsInt(json, "type");
+            }
+            return new IngredientSpec(ingredient, requiredType);
+        }
+    }
+}

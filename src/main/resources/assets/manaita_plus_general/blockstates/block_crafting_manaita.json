@@ -1,0 +1,73 @@
+{
+    "multipart":  [
+                      {
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting_manaita_model"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "1"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_wooden"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "2"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_stone"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "3"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_iron"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "4"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_gold"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "5"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_diamond"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "6"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_emerald"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "7"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_redstone"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "types":  "8"
+                                   },
+                          "apply":  {
+                                        "model":  "manaita_plus_general:block/crafting/model/crafting_manaita_netherite"
+                                    }
+                      }
+                  ]
+}

@@ -68,13 +68,7 @@ public class MPJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(MPBlockCore.CraftingBlockItem.get()), RecipeTypes.CRAFTING, MPSourceCopyRecipeCategory.TYPE);
-        registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaCraftingPortable.get()), RecipeTypes.CRAFTING, MPSourceCopyRecipeCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaSource.get()), MPSourceCopyRecipeCategory.TYPE);
-        registration.addRecipeCatalyst(new ItemStack(MPBlockCore.FurnaceBlockItem.get()), RecipeTypes.SMELTING);
-        registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaFurnacePortable.get()), RecipeTypes.SMELTING);
-        registration.addRecipeCatalyst(new ItemStack(MPBlockCore.BrewingBlockItem.get()), RecipeTypes.BREWING);
-        registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaBrewingPortable.get()), RecipeTypes.BREWING);
     }
 
     @Override

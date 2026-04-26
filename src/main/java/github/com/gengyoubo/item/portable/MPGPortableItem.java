@@ -1,5 +1,8 @@
 package github.com.gengyoubo.item.portable;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -10,9 +13,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.util.MPNBTData;
+
+import java.util.List;
 
 public abstract class MPGPortableItem extends Item {
     private final String translationPrefix;
@@ -28,6 +35,12 @@ public abstract class MPGPortableItem extends Item {
     }
 
     @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        tooltip.add(Component.literal("ItemType: " + stack.getOrCreateTag().getInt(MPNBTData.ItemType)));
+        super.appendHoverText(stack, level, tooltip, flag);
+    }
+
+    @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack itemInHand = player.getItemInHand(hand);
         if (player instanceof ServerPlayer serverPlayer) {
@@ -39,7 +52,12 @@ public abstract class MPGPortableItem extends Item {
     protected abstract void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level);
 
     protected final void openPortableScreen(ServerPlayer serverPlayer, ItemStack itemInHand, Level level, String titleKey, PortableMenuFactory menuFactory) {
-        serverPlayer.openMenu(new MenuProvider() {
+        serverPlayer.openMenu(new ExtendedScreenHandlerFactory() {
+            @Override
+            public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
+                buf.writeBlockPos(BlockPos.ZERO);
+            }
+
             @Override
             public @NotNull Component getDisplayName() {
                 return Component.translatable(titleKey);
@@ -57,4 +75,3 @@ public abstract class MPGPortableItem extends Item {
         AbstractContainerMenu create(int containerId, Inventory inventory, Player player, ItemStack itemInHand, Level level);
     }
 }
-

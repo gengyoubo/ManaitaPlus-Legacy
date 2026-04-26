@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.block.entity.MPGBrewingLogicHelper;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.menu.MPBrewingStandMenu;
@@ -88,19 +89,11 @@ public class MPBrewingPortable extends MPGPortableItem {
 
         private static boolean isBrewable(NonNullList<ItemStack> items) {
             ItemStack ingredient = items.get(3);
-            return !ingredient.isEmpty() && net.minecraftforge.common.brewing.BrewingRecipeRegistry.canBrew(items, ingredient, SLOTS_FOR_SIDES);
+            return !ingredient.isEmpty();
         }
 
         private void doBrew(Level level, NonNullList<ItemStack> items) {
-            if (net.minecraftforge.event.ForgeEventFactory.onPotionAttemptBrew(items)) return;
-            ItemStack ingredient = items.get(3);
-
-            net.minecraftforge.common.brewing.BrewingRecipeRegistry.brewPotions(items, ingredient, SLOTS_FOR_SIDES);
-            for (int slot : SLOTS_FOR_SIDES) {
-                ItemStack itemStack = items.get(slot);
-                if (ingredient != ItemStack.EMPTY) itemStack.setCount(itemStack.getCount() * 64);
-            }
-            MPBrewingLogicHelper.finishBrew(level, player.getX(), player.getY(), player.getZ(), items, 3);
+            MPGBrewingLogicHelper.finishBrew(level, player.getX(), player.getY(), player.getZ(), items, 3);
         }
 
         public void load(@NotNull CompoundTag tag) {
@@ -146,7 +139,7 @@ public class MPBrewingPortable extends MPGPortableItem {
         }
 
         public boolean canPlaceItem(int index, @NotNull ItemStack stack) {
-            return MPBrewingLogicHelper.canPlaceItem(index, stack, this.getItem(index));
+            return MPGBrewingLogicHelper.canPlaceItem(index, stack, this.getItem(index));
         }
 
         public void clearContent() {
@@ -158,4 +151,3 @@ public class MPBrewingPortable extends MPGPortableItem {
         }
     }
 }
-

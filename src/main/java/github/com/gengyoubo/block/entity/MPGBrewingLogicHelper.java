@@ -1,7 +1,6 @@
 package github.com.gengyoubo.block.entity;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;

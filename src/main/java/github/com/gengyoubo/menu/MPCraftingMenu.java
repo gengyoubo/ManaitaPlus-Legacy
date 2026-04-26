@@ -30,7 +30,8 @@ public class MPCraftingMenu extends RecipeBookMenu<CraftingContainer> {
 
     @SuppressWarnings("unused")
     public MPCraftingMenu(int p_39353_, Inventory p_39354_, FriendlyByteBuf extraData) {
-        this(p_39353_, p_39354_, ContainerLevelAccess.NULL);
+        this(p_39353_, p_39354_, ContainerLevelAccess.create(p_39354_.player.level(), extraData.readBlockPos()));
+        stillValid = true;
     }
 
     public MPCraftingMenu(int p_39353_, Inventory p_39354_, Level level) {

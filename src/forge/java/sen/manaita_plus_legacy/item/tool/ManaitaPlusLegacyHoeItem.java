@@ -1,0 +1,27 @@
+package sen.manaita_plus_legacy.item.tool;
+
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import org.jetbrains.annotations.NotNull;
+import sen.manaita_plus_legacy.item.tool.base.ManaitaPlusLegacyTaggedToolItem;
+import sen.manaita_plus_legacy.item.tool.base.ManaitaPlusLegacyToolActionHelper;
+
+public class ManaitaPlusLegacyHoeItem extends ManaitaPlusLegacyTaggedToolItem {
+    public ManaitaPlusLegacyHoeItem() {
+        super(BlockTags.MINEABLE_WITH_HOE);
+    }
+
+    @Override
+    public @NotNull InteractionResult useOn(UseOnContext context) {
+        int range = getRange(context.getItemInHand()) >> 1;
+        boolean changed = ManaitaPlusLegacyToolActionHelper.applyInRange(context, range, (pos, state) -> ManaitaPlusLegacyToolActionHelper.applyHoeTillAction(context, pos, state));
+        return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
+    }
+
+    @Override
+    public boolean canPerformAction(ItemStack stack, net.minecraftforge.common.ToolAction toolAction) {
+        return net.minecraftforge.common.ToolActions.DEFAULT_HOE_ACTIONS.contains(toolAction);
+    }
+}

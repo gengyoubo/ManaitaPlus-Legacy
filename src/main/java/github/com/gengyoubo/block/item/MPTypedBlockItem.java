@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -19,10 +20,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.block.MPHookBlock;
 import github.com.gengyoubo.block.data.MPBlockData;
 import github.com.gengyoubo.util.MPNBTData;
 import github.com.gengyoubo.util.MPTypeHelper;
+
+import java.util.List;
 
 public abstract class MPTypedBlockItem extends BlockItem {
     private final String translationPrefix;
@@ -38,6 +42,12 @@ public abstract class MPTypedBlockItem extends BlockItem {
     public @NotNull Component getName(ItemStack stack) {
         return Component.translatable(
                 translationPrefix + MPTypeHelper.getTypes(stack.getOrCreateTag().getInt(MPNBTData.ItemType)) + "name");
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        tooltip.add(Component.literal("ItemType: " + stack.getOrCreateTag().getInt(MPNBTData.ItemType)));
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     @Override

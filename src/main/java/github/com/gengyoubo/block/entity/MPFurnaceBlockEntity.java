@@ -1,8 +1,10 @@
 package github.com.gengyoubo.block.entity;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +29,7 @@ import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.menu.MPFurnaceMenu;
 
-public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
+public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity implements ExtendedScreenHandlerFactory {
     private static final int[] SLOTS_FOR_UP = new int[]{0};
     private static final int[] SLOTS_FOR_DOWN = new int[]{2, 1};
     private static final int[] SLOTS_FOR_SIDES = new int[]{1};
@@ -45,6 +47,11 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
 
     protected @NotNull AbstractContainerMenu createMenu(int p_59293_, @NotNull Inventory p_59294_) {
         return new MPFurnaceMenu(p_59293_, p_59294_, this, this.dataAccess);
+    }
+
+    @Override
+    public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
+        buf.writeBlockPos(this.worldPosition);
     }
 
     @Override

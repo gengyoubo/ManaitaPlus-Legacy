@@ -1,9 +1,7 @@
 package github.com.gengyoubo.item.tool;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,30 +16,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.item.tool.base.MPToolActionHelper;
 import github.com.gengyoubo.item.tool.base.MPToolBase;
-import github.com.gengyoubo.util.ManaitaPlusLegacyEntityData;
+import github.com.gengyoubo.util.MPEntityData;
 import github.com.gengyoubo.util.MPText;
 
 import java.util.List;
 
 public class MPPaxelItem extends MPToolBase {
-    public static final TagKey<Block> MINEABLE = BlockTags.create(new ResourceLocation("mineable"));
+    public static final net.minecraft.tags.TagKey<Block> MINEABLE = BlockTags.MINEABLE_WITH_PICKAXE;
 
     public MPPaxelItem() {
         super(MINEABLE);
     }
     @Override
-    public boolean isCorrectToolForDrops(@NotNull ItemStack stack, @NotNull BlockState state) {
-        return true;
-    }
-
-    @Override
-    public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
-        ManaitaPlusLegacyEntityData.death.add(entity);
-        entity.hurt(entity.damageSources().playerAttack(player), 10000);
-        if (entity instanceof LivingEntity living) {
-            living.setHealth(0F);
-        }
-        return super.onLeftClickEntity(stack, player, entity);
+    public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
+        MPEntityData.death.add(target);
+        target.hurt(target.damageSources().mobAttack(attacker), 10000);
+        target.setHealth(0F);
+        return super.hurtEnemy(stack, target, attacker);
     }
 
     @Override

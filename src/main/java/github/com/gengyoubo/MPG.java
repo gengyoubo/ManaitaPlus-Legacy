@@ -1,6 +1,7 @@
 package github.com.gengyoubo;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,9 +17,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import github.com.gengyoubo.core.*;
+import github.com.gengyoubo.network.MPNetworking;
 import github.com.gengyoubo.util.MPNBTData;
 
 public class MPG implements ModInitializer {
@@ -47,7 +50,10 @@ public class MPG implements ModInitializer {
         MPBlockEntityCore.init();
         MPMenuCore.init();
         MPAttributeCore.init();
+        MPRecipeSerializerCore.init();
         MPSynchedDataCore.init();
+        registerResourceConditions();
+        MPNetworking.initServer();
 
         BLOCKS.registerAll();
         ITEMS.registerAll();
@@ -70,6 +76,7 @@ public class MPG implements ModInitializer {
                 acceptMPGType(MPItemCore.ManaitaFurnacePortable.get(), entries, 8);
                 acceptMPGType(MPItemCore.ManaitaBrewingPortable.get(), entries, 8);
 
+                entries.accept(MPItemCore.ManaitaSword.get());
                 entries.accept(MPItemCore.ManaitaSwordGod.get());
                 entries.accept(MPItemCore.ManaitaBow.get());
                 entries.accept(MPItemCore.ManaitaAxe.get());
@@ -80,6 +87,11 @@ public class MPG implements ModInitializer {
                 entries.accept(MPItemCore.ManaitaShovel.get());
                 entries.accept(MPItemCore.ManaitaSource.get());
             }).build());
+    }
+
+    private static void registerResourceConditions() {
+        ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), json ->
+                GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value);
     }
 
     private static void acceptMPGType(Item item, CreativeModeTab.Output entries, int maxType) {

@@ -10,15 +10,19 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.block.MPHookBlock;
 import github.com.gengyoubo.block.data.MPBlockData;
 import github.com.gengyoubo.util.MPNBTData;
+
+import java.util.List;
 
 import static github.com.gengyoubo.core.MPBlockCore.HookBlock;
 
@@ -30,6 +34,12 @@ public class MPHookBlockItem extends BlockItem {
     @Override
     public @NotNull Component getName(ItemStack p_41458_) {
         return Component.translatable("tile.fixed_hook." + p_41458_.getOrCreateTag().getInt(MPNBTData.ItemType) + ".name");
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        tooltip.add(Component.literal("ItemType: " + stack.getOrCreateTag().getInt(MPNBTData.ItemType)));
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     public @NotNull InteractionResult place(BlockPlaceContext p_40577_) {

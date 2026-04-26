@@ -1,20 +1,12 @@
 package github.com.gengyoubo.item;
 
-import com.google.common.collect.Multimap;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -25,7 +17,6 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -48,8 +39,8 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-        if (entity instanceof Player player) {
+    public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
+        if (attacker instanceof Player player) {
             int sweep = getSweep(stack);
             for (int i1 = 0; i1 < sweep; i1++) {
                 Vec3 vec3 = player.getLookAngle();
@@ -77,11 +68,7 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
                 player.level().playSound(null, player.getX() + d0 + vec3.x * i1, player.getY(0.5D) + vec3.y * i1, player.getZ() + d1 + vec3.z * i1, SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
             }
         }
-        return false;
-    }
-    @Override
-    public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-        return super.getDefaultAttributeModifiers(slot);
+        return super.hurtEnemy(stack, target, attacker);
     }
 
     @Override
@@ -95,12 +82,6 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
         return Component.literal(MPText.manaita_infinity.formatting(Component.translatable("item.manaita_sword.name").getString()));
-    }
-
-    @Override
-    public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
-        entity.hurt(entity.damageSources().playerAttack(player), 10000);
-        return super.onLeftClickEntity(stack, player, entity);
     }
 
     public static int getSweep(ItemStack itemStack) {
@@ -126,8 +107,7 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
         player.displayClientMessage(Component.literal(MPText.manaita_mode.formatting(String.format("[%s] %s: %d", Component.translatable("item.manaita_sword.name").getString(), Component.translatable("mode.manaita_sword").getString(), getSweep(itemStack)))), true);
     }
 
-    @Override
-    public void onDestroyed(ItemEntity itemEntity, DamageSource damageSource) {
+    public void onDestroyed(ItemEntity itemEntity) {
     }
 
     public static final class ItemManaitaSwordTier implements Tier {
@@ -161,10 +141,6 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
             return Ingredient.of(Items.NETHERITE_INGOT);
         }
 
-        @Override
-        public @NotNull TagKey<Block> getTag() {
-            return BlockTags.create(new ResourceLocation("forge", "needs_manaita_tool"));
-        }
     }
 }
 

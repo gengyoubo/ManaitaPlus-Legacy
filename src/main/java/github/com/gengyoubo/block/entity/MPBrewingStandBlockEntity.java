@@ -1,9 +1,11 @@
 package github.com.gengyoubo.block.entity;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -26,7 +28,7 @@ import github.com.gengyoubo.core.MPBlockEntityCore;
 
 import java.util.Arrays;
 
-public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ExtendedScreenHandlerFactory {
     private static final int[] SLOTS_FOR_UP = new int[]{3};
     private static final int[] SLOTS_FOR_DOWN = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
@@ -193,6 +195,11 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
 
     protected @NotNull AbstractContainerMenu createMenu(int p_58990_, @NotNull Inventory p_58991_) {
         return new MPBrewingStandMenu(p_58990_, p_58991_, this, this.dataAccess);
+    }
+
+    @Override
+    public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer player, FriendlyByteBuf buf) {
+        buf.writeBlockPos(this.worldPosition);
     }
 
 }

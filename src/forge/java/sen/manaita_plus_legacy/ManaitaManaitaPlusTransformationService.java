@@ -21,7 +21,7 @@ public class ManaitaManaitaPlusTransformationService implements ITransformationS
         LaunchPluginHandler handler = Helper.getFieldValue(Launcher.INSTANCE, "launchPlugins");
         Map<String, ILaunchPluginService> plugins = Helper.getFieldValue(handler, "plugins");
         Map<String, ILaunchPluginService> newMap = new ConcurrentHashMap<>();
-        newMap.put("MPG", new ManaitaPlusLegacyLaunchPluginService());
+        newMap.put("ManaitaPlusLegacy", new ManaitaPlusLegacyLaunchPluginService());
         if (plugins != null)
             for (String name : plugins.keySet())
                 newMap.put(name, plugins.get(name));

@@ -1,10 +1,13 @@
 package github.com.gengyoubo.block;
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -66,7 +69,22 @@ public class MPCraftingBlock extends BaseEntityBlock {
     }
 //
     public MenuProvider getMenuProvider(@NotNull BlockState p_52240_, @NotNull Level p_52241_, @NotNull BlockPos p_52242_) {
-        return new SimpleMenuProvider((p_52229_, p_52230_, p_52231_) -> new MPCraftingMenu(p_52229_, p_52230_, ContainerLevelAccess.create(p_52241_, p_52242_)), CONTAINER_TITLE);
+        return new ExtendedScreenHandlerFactory() {
+            @Override
+            public @NotNull Component getDisplayName() {
+                return CONTAINER_TITLE;
+            }
+
+            @Override
+            public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer player, FriendlyByteBuf buf) {
+                buf.writeBlockPos(p_52242_);
+            }
+
+            @Override
+            public @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull net.minecraft.world.entity.player.Inventory inventory, @NotNull Player player) {
+                return new MPCraftingMenu(containerId, inventory, ContainerLevelAccess.create(p_52241_, p_52242_));
+            }
+        };
     }
 
     public BlockState getStateForPlacement(BlockPlaceContext p_48689_) {

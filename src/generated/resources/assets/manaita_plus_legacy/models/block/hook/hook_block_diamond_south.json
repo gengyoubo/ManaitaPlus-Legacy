@@ -71,6 +71,6 @@
     }
   ],
   "textures": {
-    "all": "manaita_plus_legacy:block/hook/fixed_hook_diamond"
+    "all": "manaita_plus_general:block/hook/fixed_hook_diamond"
   }
 }

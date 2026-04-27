@@ -1,9 +1,9 @@
-# ManaitaPlus Legacy
+# ManaitaPlusGeneral
 
 Manaita Plus is based on a mod called Manaita that once existed on the Minecraft Unofficial Japan Users Forum. the forum itself has been permanently closed due to hacking. However, please remember to respect them. For reference, I've attached an archive of the links where Manaita was once distributed.
 https://web.archive.org/web/20160629164812/http://forum.minecraftuser.jp:80/viewtopic.php?f=13&amp;t=19445
 
-A faithful port of the popular ManaitaPlus mod from Minecraft 1.7.10 to modern Minecraft versions with Forge support.
+A faithful port of the popular ManaitaPlus mod from Minecraft 1.7.10 to modern Minecraft versions with Forge/NeoForge/Fabric support.
 
 ## 👥 Credits
 
@@ -15,9 +15,11 @@ A faithful port of the popular ManaitaPlus mod from Minecraft 1.7.10 to modern M
 
 ### Maintainer
 **RealSenPhent** - Developer of this port
-- GitHub: [RealSenPhent](https://github.com/RealSenPhent)
-- Repository: [ManaitaPlus-Legacy](https://github.com/RealSenPhent/ManaitaPlus-Legacy)
-- 
+- GitHub: [RealSenPhent](https://github.com/RealSenPhent)<br>
+- Repository: [ManaitaPlus-Legacy](https://github.com/RealSenPhent/ManaitaPlus-Legacy)<br>
+**gengyoubo** - Developer of this port
+- GitHub: [gengyoubo](https://github.com/gengyoubo)<br>
+- Repository:[ManaitaPlusGeneral](https://github.com/gengyoubo/ManaitaPlusGeneral)<br>
 
 ## 📄 License
 
@@ -37,4 +39,4 @@ Special thanks to:
 
 ## 🐛 Bug Reports & Feature Requests
 
-Please report any issues or suggestions on the [GitHub Issues](https://github.com/RealSenPhent/ManaitaPlus-Legacy/issues) page.
+Please report any issues or suggestions on the [GitHub Issues](https://github.com/gengyoubo/ManaitaPlusGeneral/issues) page.

@@ -1,3 +1,6 @@
 /.idea
 /.gradle
 /build
+/run
+/src/forge
+/src/test

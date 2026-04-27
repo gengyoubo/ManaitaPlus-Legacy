@@ -22,7 +22,7 @@ import github.com.gengyoubo.block.data.MPBlockData;
 import github.com.gengyoubo.block.entity.MPFurnaceBlockEntity;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 import static github.com.gengyoubo.block.MPBrewingStandBlock.getItemStacks;
@@ -81,4 +81,5 @@ public class MPFurnaceBlock extends AbstractFurnaceBlock {
         return p_153273_.isClientSide ? null : createTickerHelper(p_153275_, MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), MPFurnaceBlockEntity::serverTick);
     }
 }
+
 

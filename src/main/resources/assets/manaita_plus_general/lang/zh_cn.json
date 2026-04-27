@@ -6,7 +6,8 @@
   "jei.manaita_plus_general.source_copying.crafting_result": "砧板最终结果 x%s",
   "jei.manaita_plus_general.source.info.1": "将砧板之尘与任意普通物品一起放入合成栏。",
   "jei.manaita_plus_general.source.info.2": "砧板之尘会将输入物品数量乘以 %s 倍。",
-
+  "jei.manaita_plus_general.station.crafting": "砧板工作台",
+  "jei.manaita_plus_general.station.furnace": "砧板熔炉",
   "container.crafting_manaita": "砧板工作台",
   "container.furnace_manaita": "砧板熔炉",
   "container.brewing_manaita": "砧板酿造台",
@@ -45,14 +46,14 @@
   "entity.manaita_plus_general.manaita_lightning_bolt": "砧板闪电",
   "entity.manaita_plus_general.manaita_arrow": "砧板箭",
 
-  "item.manaita_plus_general.manaita_sword_god": "砧板之刃[神]",
+  "item.manaita_sword_god.name": "砧板之刃[神]",
 
-  "item.manaita_plus_general.manaita_sword": "砧板剑",
-  "item.manaita_plus_general.manaita_bow": "砧板弓",
-  "item.manaita_plus_general.helmet": "砧板头盔",
-  "item.manaita_plus_general.chestplate": "砧板胸甲",
-  "item.manaita_plus_general.leggings": "砧板裤",
-  "item.manaita_plus_general.boots": "砧板靴",
+  "item.manaita_sword.name": "砧板剑",
+  "item.manaita_bow.name": "砧板弓",
+  "item.helmet.name": "砧板头盔",
+  "item.chestplate.name": "砧板胸甲",
+  "item.leggings.name": "砧板裤",
+  "item.boots.name": "砧板靴",
 
   "item.source.name": "砧板之尘",
 

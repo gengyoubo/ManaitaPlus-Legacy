@@ -9,10 +9,8 @@ import github.com.gengyoubo.util.MPNBTData;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -138,7 +136,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
         }
 
         @Override
-        public MPNBTCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
+        public @NotNull MPNBTCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
             int width = buf.readVarInt();
             int height = buf.readVarInt();
             String group = buf.readUtf();

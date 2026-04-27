@@ -5,6 +5,7 @@ import github.com.gengyoubo.blockentity.RenderMPCraftingBlockEntity;
 import github.com.gengyoubo.blockentity.RenderMPFurnaceBlockEntity;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.core.MPMenuCore;
+import github.com.gengyoubo.entity.RenderMPGArrow;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
@@ -14,12 +15,14 @@ import github.com.gengyoubo.network.server.MPChangeEntityDataPacket;
 import github.com.gengyoubo.network.server.MPDestroyBlockPacket;
 import github.com.gengyoubo.util.MPNBTData;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -47,10 +50,15 @@ public class MPGClient implements ClientModInitializer {
         BlockEntityRenderers.register(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY.get(), RenderMPCraftingBlockEntity::new);
         BlockEntityRenderers.register(MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), RenderMPFurnaceBlockEntity::new);
         BlockEntityRenderers.register(MPBlockEntityCore.BREWING_BLOCK_ENTITY.get(), RenderMPBrewingBlockEntity::new);
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK, (client, handler, buf, responseSender) ->
-                client.execute(() -> MPClientPacketHandlers.handleDestroyBlock(new MPDestroyBlockPacket(buf))));
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA, (client, handler, buf, responseSender) ->
-                client.execute(() -> MPClientPacketHandlers.handleChangeEntityData(new MPChangeEntityDataPacket(buf))));
+        registerEntityRenderers();
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK, (client, handler, buf, responseSender) -> {
+            MPDestroyBlockPacket packet = new MPDestroyBlockPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleDestroyBlock(packet));
+        });
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA, (client, handler, buf, responseSender) -> {
+            MPChangeEntityDataPacket packet = new MPChangeEntityDataPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleChangeEntityData(packet));
+        });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> registerTypePredicates());
     }
 
@@ -62,7 +70,7 @@ public class MPGClient implements ClientModInitializer {
         for (String itemPath : TYPE_ITEMS) {
             ResourceLocation id = new ResourceLocation(MPG.MODID, itemPath);
             Item item = BuiltInRegistries.ITEM.get(id);
-            if (item == null || item == net.minecraft.world.item.Items.AIR) {
+            if (item == net.minecraft.world.item.Items.AIR) {
                 MPG.LOGGER.warn("Skipped predicate registration for missing item {}", id);
                 continue;
             }
@@ -73,8 +81,19 @@ public class MPGClient implements ClientModInitializer {
         predicatesRegistered = true;
     }
 
+    @SuppressWarnings("unchecked")
+    private static void registerEntityRenderers() {
+        ResourceLocation arrowId = new ResourceLocation(MPG.MODID, "manaita_arrow");
+        if (!BuiltInRegistries.ENTITY_TYPE.containsKey(arrowId)) {
+            MPG.LOGGER.warn("Skipped renderer registration for missing entity {}", arrowId);
+            return;
+        }
+        EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(arrowId);
+        EntityRendererRegistry.register((EntityType<? extends github.com.gengyoubo.entity.MPGEntityArrow>) entityType, RenderMPGArrow::new);
+    }
+
     private static float readTypeValue(ItemStack stack, net.minecraft.client.multiplayer.ClientLevel level, net.minecraft.world.entity.LivingEntity entity, int seed) {
-        if (!stack.hasTag()) {
+        if (!stack.hasTag() || stack.getTag() == null) {
             return 0.0F;
         }
         return normalizeTypeValue(stack.getTag().getInt(MPNBTData.ItemType));

@@ -19,7 +19,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.block.MPBrewingStandBlock;
@@ -119,8 +119,8 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
 
     private static boolean isBrewable(NonNullList<ItemStack> p_155295_) {
         ItemStack itemstack = p_155295_.get(3);
-        return !itemstack.isEmpty() && (p_155295_.get(0).isEmpty() || p_155295_.get(1).isEmpty() || p_155295_.get(2).isEmpty()
-                || !p_155295_.get(0).isEmpty() || !p_155295_.get(1).isEmpty() || !p_155295_.get(2).isEmpty());
+        return !itemstack.isEmpty()
+                && (!p_155295_.get(0).isEmpty() || !p_155295_.get(1).isEmpty() || !p_155295_.get(2).isEmpty());
     }
 
     private static void doBrew(Level p_155291_, BlockPos p_155292_, NonNullList<ItemStack> p_155293_) {
@@ -203,4 +203,5 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
     }
 
 }
+
 

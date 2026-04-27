@@ -230,7 +230,7 @@ public class MPCraftingRecipe implements CraftingRecipe {
         }
 
         @Override
-        public MPCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
+        public @NotNull MPCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
             return new MPCraftingRecipe(id, buf.readEnum(CraftingBookCategory.class));
         }
 

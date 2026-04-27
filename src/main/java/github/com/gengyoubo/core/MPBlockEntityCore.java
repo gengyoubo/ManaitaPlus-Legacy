@@ -16,7 +16,6 @@ public class MPBlockEntityCore {
     public static final RegistryObject<BlockEntityType<MPCraftingBlockEntity>> CRAFTING_BLOCK_ENTITY =
             cast(BLOCK_ENTITY_TYPES.register("crafting_entity", () -> buildType(BlockEntityType.Builder.of(MPCraftingBlockEntity::new, MPBlockCore.CraftingBlock.get()))));
 
-    @SuppressWarnings("DataFlowIssue")
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> buildType(BlockEntityType.Builder<T> builder) {
         return builder.build(null);
     }

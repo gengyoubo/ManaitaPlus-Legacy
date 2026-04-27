@@ -18,9 +18,9 @@ import static github.com.gengyoubo.MPG.ITEMS;
 
 public class MPItemCore {
     public static final RegistryObject<Item> ManaitaSword = ITEMS.register("manaita_sword", MPSwordItem::new);
-    public static final RegistryObject<Item> ManaitaSwordGod = ITEMS.register("manaita_sword_god", () -> new Item(new Item.Properties().fireResistant()));
+    public static final RegistryObject<Item> ManaitaSwordGod = ITEMS.register("manaita_sword_god", MPGodSwordItem::new);
 
-    public static final RegistryObject<Item> ManaitaBow = ITEMS.register("manaita_bow", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> ManaitaBow = ITEMS.register("manaita_bow", MPBowItem::new);
 
     public static final RegistryObject<Item> ManaitaAxe = ITEMS.register("manaita_axe", MPAxeItem::new);
     public static final RegistryObject<Item> ManaitaHoe = ITEMS.register("manaita_hoe", MPHoeItem::new);

@@ -15,7 +15,7 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public final class MPGFurnaceLogicHelper {
@@ -70,3 +70,4 @@ public final class MPGFurnaceLogicHelper {
         ExperienceOrb.award(level, pos, totalXp * 64);
     }
 }
+

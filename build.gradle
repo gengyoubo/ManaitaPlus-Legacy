@@ -37,9 +37,6 @@ sourceSets {
 			exclude '**/util/ManaitaPlusClassLoaderFactory.java'
 			exclude '**/*Renderer.java'
 			exclude '**/gui/**'
-			exclude '**/core/MPEntityCore.java'
-			exclude '**/item/MPBowItem.java'
-			exclude '**/item/MPGodSwordItem.java'
 		}
 		resources {
 			srcDirs = ['src/main/resources', 'src/generated/resources']

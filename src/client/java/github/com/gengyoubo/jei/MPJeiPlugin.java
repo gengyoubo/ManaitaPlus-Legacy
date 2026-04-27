@@ -6,15 +6,10 @@ import github.com.gengyoubo.block.item.MPBrewingBlockItem;
 import github.com.gengyoubo.block.item.MPCraftingBlockItem;
 import github.com.gengyoubo.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.block.item.MPHookBlockItem;
-import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.core.MPItemCore;
-import github.com.gengyoubo.core.MPMenuCore;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
-import github.com.gengyoubo.menu.MPBrewingStandMenu;
-import github.com.gengyoubo.menu.MPCraftingMenu;
-import github.com.gengyoubo.menu.MPFurnaceMenu;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -22,7 +17,6 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -69,13 +63,6 @@ public class MPJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaSource.get()), MPSourceCopyRecipeCategory.TYPE);
-    }
-
-    @Override
-    public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addRecipeTransferHandler(MPCraftingMenu.class, MPMenuCore.CraftingManaita.get(), RecipeTypes.CRAFTING, 1, 9, 10, 36);
-        registration.addRecipeTransferHandler(MPFurnaceMenu.class, MPMenuCore.FurnaceManaita.get(), RecipeTypes.SMELTING, 0, 1, 3, 36);
-        registration.addRecipeTransferHandler(MPBrewingStandMenu.class, MPMenuCore.BrewingStandManaita.get(), RecipeTypes.BREWING, 1, 3, 5, 36);
     }
 
     private static List<MPSourceCopyJeiRecipe> createSourceCopyRecipes() {

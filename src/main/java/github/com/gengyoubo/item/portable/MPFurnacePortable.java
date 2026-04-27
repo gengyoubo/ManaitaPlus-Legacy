@@ -28,7 +28,7 @@ import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.menu.MPFurnaceMenu;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class MPFurnacePortable extends MPGPortableItem {
     public MPFurnacePortable() {
@@ -203,6 +203,7 @@ public class MPFurnacePortable extends MPGPortableItem {
         }
     }
 }
+
 
 
 

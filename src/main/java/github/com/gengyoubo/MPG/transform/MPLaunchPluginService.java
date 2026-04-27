@@ -31,12 +31,16 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String EVENT_UTIL_OWNER = "sen/manaita_plus_general/util/EventUtil";
     private static final String I18N_OWNER = "net/minecraft/client/resources/language/I18n";
     private static final String CHAT_FORMATTING_OWNER = "net/minecraft/ChatFormatting";
+    private static final String STYLE_OWNER = "net/minecraft/network/chat/Style";
+    private static final String COMMON_COMPONENTS_OWNER = "net/minecraft/network/chat/CommonComponents";
     private static final String CLIENT_LEVEL_OWNER = "net/minecraft/client/multiplayer/ClientLevel";
+    private static final String STYLED_CONTENT_CONSUMER_OWNER = "net/minecraft/network/chat/FormattedText$StyledContentConsumer";
     private static final String RESOURCE_RELOAD_LISTENER_OWNER = "net/minecraft/server/packs/resources/ResourceManagerReloadListener";
     private static final String RESOURCE_LOCATION_OWNER = "net/minecraft/resources/ResourceLocation";
     private static final String RESOURCE_KEY_OWNER = "net/minecraft/resources/ResourceKey";
     private static final String HOLDER_OWNER = "net/minecraft/core/Holder";
     private static final String NON_NULL_LIST_OWNER = "net/minecraft/core/NonNullList";
+    private static final String DEFAULTED_REGISTRY_OWNER = "net/minecraft/core/DefaultedRegistry";
     private static final String REGISTRY_OWNER = "net/minecraft/core/Registry";
     private static final String HOLDER_REFERENCE_OWNER = "net/minecraft/core/Holder$Reference";
     private static final String BLOCK_ITEM_OWNER = "net/minecraft/world/item/BlockItem";
@@ -47,14 +51,18 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String TIERS_OWNER = "net/minecraft/world/item/Tiers";
     private static final String ITEMS_OWNER = "net/minecraft/world/item/Items";
     private static final String BLOCKS_OWNER = "net/minecraft/world/level/block/Blocks";
+    private static final String BLOCK_OWNER = "net/minecraft/world/level/block/Block";
+    private static final String BLOCK_STATE_BASE_OWNER = "net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase";
     private static final String FLOWER_BLOCK_OWNER = "net/minecraft/world/level/block/FlowerBlock";
     private static final String SHULKER_BOX_BLOCK_OWNER = "net/minecraft/world/level/block/ShulkerBoxBlock";
     private static final String FLUIDS_OWNER = "net/minecraft/world/level/material/Fluids";
     private static final String FLUID_OWNER = "net/minecraft/world/level/material/Fluid";
     private static final String FLUID_STATE_OWNER = "net/minecraft/world/level/material/FluidState";
+    private static final String ABSTRACT_CONTAINER_MENU_OWNER = "net/minecraft/world/inventory/AbstractContainerMenu";
     private static final String MENU_TYPE_OWNER = "net/minecraft/world/inventory/MenuType";
     private static final String REGISTRIES_OWNER = "net/minecraft/core/registries/Registries";
     private static final String BUILT_IN_REGISTRIES_OWNER = "net/minecraft/core/registries/BuiltInRegistries";
+    private static final String LEVEL_STORAGE_ACCESS_OWNER = "net/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess";
     private static final String ITEM_TAGS_OWNER = "net/minecraft/tags/ItemTags";
     private static final String BLOCK_ENTITY_TYPE_OWNER = "net/minecraft/world/level/block/entity/BlockEntityType";
     private static final String RECIPE_MANAGER_OWNER = "net/minecraft/world/item/crafting/RecipeManager";
@@ -64,6 +72,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String RECIPE_TYPE_OWNER = "net/minecraft/world/item/crafting/RecipeType";
     private static final String INGREDIENT_OWNER = "net/minecraft/world/item/crafting/Ingredient";
     private static final String MINECRAFT_OWNER = "net/minecraft/client/Minecraft";
+    private static final String CONNECTION_OWNER = "net/minecraft/network/Connection";
     private static final String COMPOUND_TAG_OWNER = "net/minecraft/nbt/CompoundTag";
     private static final String LIST_TAG_OWNER = "net/minecraft/nbt/ListTag";
     private static final String ENCHANTED_BOOK_ITEM_OWNER = "net/minecraft/world/item/EnchantedBookItem";
@@ -74,11 +83,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String POTIONS_OWNER = "net/minecraft/world/item/alchemy/Potions";
     private static final String POTION_UTILS_OWNER = "net/minecraft/world/item/alchemy/PotionUtils";
     private static final String TOOLTIP_FLAG_OWNER = "net/minecraft/world/item/TooltipFlag";
+    private static final String TOOLTIP_FLAG_DEFAULT_OWNER = "net/minecraft/world/item/TooltipFlag$Default";
     private static final String SUSPICIOUS_STEW_ITEM_OWNER = "net/minecraft/world/item/SuspiciousStewItem";
     private static final String COMPONENT_OWNER = "net/minecraft/network/chat/Component";
     private static final String MUTABLE_COMPONENT_OWNER = "net/minecraft/network/chat/MutableComponent";
     private static final String FONT_OWNER = "net/minecraft/client/gui/Font";
+    private static final String STRING_SPLITTER_OWNER = "net/minecraft/client/StringSplitter";
+    private static final String EDIT_BOX_OWNER = "net/minecraft/client/gui/components/EditBox";
+    private static final String TAG_KEY_OWNER = "net/minecraft/tags/TagKey";
     private static final String GUI_GRAPHICS_OWNER = "net/minecraft/client/gui/GuiGraphics";
+    private static final String CRASH_REPORT_OWNER = "net/minecraft/CrashReport";
+    private static final String CRASH_REPORT_CATEGORY_OWNER = "net/minecraft/CrashReportCategory";
     private static final String ENTITY_OWNER = "net/minecraft/world/entity/Entity";
     private static final String LIVING_ENTITY_OWNER = "net/minecraft/world/entity/LivingEntity";
     private static final String ENTITY_DESC = "(Lnet/minecraft/world/entity/Entity;)Z";
@@ -110,18 +125,25 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         }
         patched |= switch (classNode.name) {
             case "net/minecraft/client/Minecraft" -> processMinecraftClass(classNode);
+            case "net/minecraft/client/resources/language/LanguageManager" -> processLanguageManagerClass(classNode);
             case CLIENT_LEVEL_OWNER -> processClientLevelClass(classNode);
             case "net/minecraft/client/multiplayer/ClientPacketListener" -> processClientPacketListenerClass(classNode);
+            case CONNECTION_OWNER -> processConnectionClass(classNode);
             case "net/minecraft/resources/ResourceKey" -> processResourceKeyClass(classNode);
             case RESOURCE_LOCATION_OWNER -> processResourceLocationClass(classNode);
             case HOLDER_OWNER -> processHolderClass(classNode);
             case NON_NULL_LIST_OWNER -> processNonNullListClass(classNode);
+            case DEFAULTED_REGISTRY_OWNER -> processDefaultedRegistryClass(classNode);
             case REGISTRY_OWNER -> processRegistryClass(classNode);
+            case LEVEL_STORAGE_ACCESS_OWNER -> processLevelStorageAccessClass(classNode);
             case HOLDER_REFERENCE_OWNER -> processHolderReferenceClass(classNode);
             case BLOCK_ITEM_OWNER -> processBlockItemClass(classNode);
             case ARMOR_MATERIALS_OWNER -> processArmorMaterialsClass(classNode);
             case INGREDIENT_OWNER -> processIngredientClass(classNode);
             case "net/minecraft/world/item/ItemStack" -> processItemStackClass(classNode);
+            case ABSTRACT_CONTAINER_MENU_OWNER -> processAbstractContainerMenuClass(classNode);
+            case BLOCK_OWNER -> processBlockClass(classNode);
+            case BLOCK_STATE_BASE_OWNER -> processBlockStateBaseClass(classNode);
             case COMPOUND_TAG_OWNER -> processCompoundTagClass(classNode);
             case LIST_TAG_OWNER -> processListTagClass(classNode);
             case ENCHANTED_BOOK_ITEM_OWNER -> processEnchantedBookItemClass(classNode);
@@ -133,6 +155,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case RECIPE_INTERFACE_OWNER -> processRecipeInterfaceClass(classNode);
             case RECIPE_MANAGER_OWNER -> processRecipeManagerClass(classNode);
             case TOOLTIP_FLAG_OWNER -> processTooltipFlagClass(classNode);
+            case TOOLTIP_FLAG_DEFAULT_OWNER -> processTooltipFlagDefaultClass(classNode);
             case SUSPICIOUS_STEW_ITEM_OWNER -> processSuspiciousStewItemClass(classNode);
             case "net/minecraft/world/entity/player/Player" -> processPlayerClass(classNode);
             case FLOWER_BLOCK_OWNER -> processFlowerBlockClass(classNode);
@@ -140,10 +163,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case FLUID_STATE_OWNER -> processFluidStateClass(classNode);
             case I18N_OWNER -> processI18nClass(classNode);
             case CHAT_FORMATTING_OWNER -> processChatFormattingClass(classNode);
+            case STYLE_OWNER -> processStyleClass(classNode);
             case COMPONENT_OWNER -> processComponentClass(classNode);
+            case STYLED_CONTENT_CONSUMER_OWNER -> processStyledContentConsumerInterface(classNode);
             case MUTABLE_COMPONENT_OWNER -> processMutableComponentClass(classNode);
             case FONT_OWNER -> processFontClass(classNode);
+            case STRING_SPLITTER_OWNER -> processStringSplitterClass(classNode);
+            case EDIT_BOX_OWNER -> processEditBoxClass(classNode);
+            case TAG_KEY_OWNER -> processTagKeyClass(classNode);
             case GUI_GRAPHICS_OWNER -> processGuiGraphicsClass(classNode);
+            case CRASH_REPORT_OWNER -> processCrashReportClass(classNode);
+            case CRASH_REPORT_CATEGORY_OWNER -> processCrashReportCategoryClass(classNode);
             case RESOURCE_RELOAD_LISTENER_OWNER -> processResourceReloadListenerInterface(classNode);
             case JEI_STARTER_OWNER -> processJeiStarterClass(classNode);
             case JEI_VANILLA_PLUGIN_OWNER -> processJeiVanillaPluginClass(classNode);
@@ -194,6 +224,38 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/Minecraft", "getTextureManager", "()Lnet/minecraft/client/renderer/texture/TextureManager;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91102_",
+                "()Lnet/minecraft/client/resources/language/LanguageManager;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/Minecraft", "getLanguageManager", "()Lnet/minecraft/client/resources/language/LanguageManager;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91403_",
+                "()Lnet/minecraft/client/multiplayer/ClientPacketListener;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getConnection", "()Lnet/minecraft/client/multiplayer/ClientPacketListener;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91296_",
+                "()F",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getFrameTime", "()F", false),
+                new InsnNode(Opcodes.FRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91092_",
+                "()Lnet/minecraft/client/server/IntegratedServer;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getSingleplayerServer", "()Lnet/minecraft/client/server/IntegratedServer;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
         for (MethodNode method : classNode.methods) {
             if (method.name.equals("m_91152_") && method.desc.equals("(Lnet/minecraft/client/gui/screens/Screen;)V")) {
                 method.instructions.insert(buildMinecraftScreenGuard());
@@ -224,14 +286,46 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         return patched;
     }
 
-    private static boolean processClientPacketListenerClass(ClassNode classNode) {
+    private static boolean processLanguageManagerClass(ClassNode classNode) {
         return ensureInstanceBridge(
+                classNode,
+                "m_264236_",
+                "()Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/resources/language/LanguageManager", "getSelected", "()Ljava/lang/String;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processClientPacketListenerClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_247016_",
                 "()Lnet/minecraft/world/flag/FeatureFlagSet;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/multiplayer/ClientPacketListener", "enabledFeatures", "()Lnet/minecraft/world/flag/FeatureFlagSet;", false),
                 new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_104910_",
+                "()Lnet/minecraft/network/Connection;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/multiplayer/ClientPacketListener", "getConnection", "()Lnet/minecraft/network/Connection;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processConnectionClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_129531_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CONNECTION_OWNER, "isMemoryConnection", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
         );
     }
 
@@ -286,6 +380,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, RESOURCE_LOCATION_OWNER, "getNamespace", "()Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_135815_",
+                "()Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, RESOURCE_LOCATION_OWNER, "getPath", "()Ljava/lang/String;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
         patched |= ensureStaticBridge(
                 classNode,
                 "m_135828_",
@@ -297,8 +399,20 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         return patched;
     }
 
-    private static boolean processHolderClass(ClassNode classNode) {
+    private static boolean processStyleClass(ClassNode classNode) {
         return ensureInstanceBridge(
+                classNode,
+                "m_131179_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STYLE_OWNER, "isEmpty", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+    }
+
+    private static boolean processHolderClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_203334_",
                 "()Ljava/lang/Object;",
@@ -306,6 +420,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEINTERFACE, HOLDER_OWNER, "value", "()Ljava/lang/Object;", true),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_203616_",
+                "()Ljava/util/stream/Stream;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, HOLDER_OWNER, "tags", "()Ljava/util/stream/Stream;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
     }
 
     private static boolean processNonNullListClass(ClassNode classNode) {
@@ -342,7 +465,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processHolderReferenceClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_205785_",
                 "()Lnet/minecraft/resources/ResourceKey;",
@@ -350,6 +474,16 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, HOLDER_REFERENCE_OWNER, "key", "()Lnet/minecraft/resources/ResourceKey;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_203656_",
+                "(Lnet/minecraft/tags/TagKey;)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, HOLDER_REFERENCE_OWNER, "is", "(Lnet/minecraft/tags/TagKey;)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        return patched;
     }
 
     private static boolean processItemStackClass(ClassNode classNode) {
@@ -454,6 +588,41 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "isEnchanted", "()Z", false),
                 new InsnNode(Opcodes.IRETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_204131_",
+                "()Ljava/util/stream/Stream;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getTags", "()Ljava/util/stream/Stream;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_204117_",
+                "(Lnet/minecraft/tags/TagKey;)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "is", "(Lnet/minecraft/tags/TagKey;)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_41786_",
+                "()Lnet/minecraft/network/chat/Component;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getDisplayName", "()Lnet/minecraft/network/chat/Component;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_41651_",
+                "(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getTooltipLines", "(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
         return patched;
     }
 
@@ -464,6 +633,40 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Lnet/minecraft/world/level/block/Block;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_ITEM_OWNER, "getBlock", "()Lnet/minecraft/world/level/block/Block;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processAbstractContainerMenuClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_6772_",
+                "()Lnet/minecraft/world/inventory/MenuType;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_CONTAINER_MENU_OWNER, "getType", "()Lnet/minecraft/world/inventory/MenuType;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processDefaultedRegistryClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_7854_",
+                "(Ljava/lang/Object;)Ljava/util/Optional;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, DEFAULTED_REGISTRY_OWNER, "getResourceKey", "(Ljava/lang/Object;)Ljava/util/Optional;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processLevelStorageAccessClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_78277_",
+                "()Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, LEVEL_STORAGE_ACCESS_OWNER, "getLevelId", "()Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
     }
@@ -755,6 +958,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
     }
 
+    private static boolean processTooltipFlagDefaultClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_257777_",
+                "()Lnet/minecraft/world/item/TooltipFlag$Default;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, TOOLTIP_FLAG_DEFAULT_OWNER, "asCreative", "()Lnet/minecraft/world/item/TooltipFlag$Default;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
     private static boolean processSuspiciousStewItemClass(ClassNode classNode) {
         return ensureStaticBridge(
                 classNode,
@@ -794,6 +1008,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new VarInsnNode(Opcodes.ALOAD, 1),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FLUID_OWNER, "isSame", "(Lnet/minecraft/world/level/material/Fluid;)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_205067_",
+                "(Lnet/minecraft/tags/TagKey;)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FLUID_OWNER, "is", "(Lnet/minecraft/tags/TagKey;)Z", false),
                 new InsnNode(Opcodes.IRETURN)
         );
         return patched;
@@ -841,6 +1064,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "(Ljava/lang/String;)Lnet/minecraft/ChatFormatting;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKESTATIC, CHAT_FORMATTING_OWNER, "getByName", "(Ljava/lang/String;)Lnet/minecraft/ChatFormatting;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_126649_",
+                "(Ljava/lang/String;)Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, CHAT_FORMATTING_OWNER, "stripFormatting", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
         patched |= ensureInstanceBridge(
@@ -911,7 +1142,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processMutableComponentClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_130940_",
                 "(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;",
@@ -920,10 +1152,70 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "withStyle", "(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6270_",
+                "(Lnet/minecraft/network/chat/Style;)Lnet/minecraft/network/chat/MutableComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "withStyle", "(Lnet/minecraft/network/chat/Style;)Lnet/minecraft/network/chat/MutableComponent;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7383_",
+                "()Lnet/minecraft/network/chat/Style;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "getStyle", "()Lnet/minecraft/network/chat/Style;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7220_",
+                "(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "append", "(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processBlockClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_204297_",
+                "()Lnet/minecraft/core/Holder$Reference;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_OWNER, "builtInRegistryHolder", "()Lnet/minecraft/core/Holder$Reference;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_49966_",
+                "()Lnet/minecraft/world/level/block/state/BlockState;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_OWNER, "defaultBlockState", "()Lnet/minecraft/world/level/block/state/BlockState;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processBlockStateBaseClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_204343_",
+                "()Ljava/util/stream/Stream;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_STATE_BASE_OWNER, "getTags", "()Ljava/util/stream/Stream;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
     }
 
     private static boolean processFontClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_92895_",
                 "(Ljava/lang/String;)I",
@@ -932,10 +1224,198 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FONT_OWNER, "width", "(Ljava/lang/String;)I", false),
                 new InsnNode(Opcodes.IRETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_92865_",
+                "()Lnet/minecraft/client/StringSplitter;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FONT_OWNER, "getSplitter", "()Lnet/minecraft/client/StringSplitter;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processStringSplitterClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_92414_",
+                "(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/network/chat/Style;)Ljava/util/List;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ALOAD, 3),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STRING_SPLITTER_OWNER, "splitLines", "(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/network/chat/Style;)Ljava/util/List;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processEditBoxClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94199_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setMaxLength", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94182_",
+                "(Z)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setBordered", "(Z)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94202_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setTextColor", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94155_",
+                "()Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "getValue", "()Ljava/lang/String;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94144_",
+                "(Ljava/lang/String;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setValue", "(Ljava/lang/String;)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_93696_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "isFocused", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94213_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "isVisible", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_93692_",
+                "(Z)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setFocused", "(Z)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94151_",
+                "(Ljava/util/function/Consumer;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setResponder", "(Ljava/util/function/Consumer;)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94187_",
+                "(Z)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setEditable", "(Z)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94191_",
+                "(Z)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setCanLoseFocus", "(Z)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_94205_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "setTextColorUneditable", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_142518_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "canConsumeInput", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_87963_",
+                "(Lnet/minecraft/client/gui/GuiGraphics;IIF)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.FLOAD, 4),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "renderWidget", "(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processTagKeyClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "f_203868_",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, TAG_KEY_OWNER, "location", "()Lnet/minecraft/resources/ResourceLocation;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
     }
 
     private static boolean processGuiGraphicsClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_280203_",
+                "(Lnet/minecraft/world/item/ItemStack;II)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "renderItem", "(Lnet/minecraft/world/item/ItemStack;II)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_280370_",
+                "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "renderItemDecorations", "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_280614_",
                 "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
@@ -949,6 +1429,72 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "drawString", "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", false),
                 new InsnNode(Opcodes.IRETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_280168_",
+                "()Lcom/mojang/blaze3d/vertex/PoseStack;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "pose", "()Lcom/mojang/blaze3d/vertex/PoseStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processCrashReportClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_127514_",
+                "(Ljava/lang/String;)Lnet/minecraft/CrashReportCategory;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CRASH_REPORT_OWNER, "addCategory", "(Ljava/lang/String;)Lnet/minecraft/CrashReportCategory;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_127516_",
+                "(Ljava/lang/String;I)Lnet/minecraft/CrashReportCategory;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CRASH_REPORT_OWNER, "addCategory", "(Ljava/lang/String;I)Lnet/minecraft/CrashReportCategory;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_127521_",
+                "(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/CrashReport;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, CRASH_REPORT_OWNER, "forThrowable", "(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/CrashReport;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processCrashReportCategoryClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_128165_",
+                "(Ljava/lang/String;Lnet/minecraft/CrashReportDetail;)Lnet/minecraft/CrashReportCategory;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CRASH_REPORT_CATEGORY_OWNER, "setDetail", "(Ljava/lang/String;Lnet/minecraft/CrashReportDetail;)Lnet/minecraft/CrashReportCategory;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_128168_",
+                "(Ljava/lang/StringBuilder;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CRASH_REPORT_CATEGORY_OWNER, "getDetails", "(Ljava/lang/StringBuilder;)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        return patched;
     }
 
     private static boolean processResourceReloadListenerInterface(ClassNode classNode) {
@@ -990,6 +1536,55 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                     method.instructions.add(new InsnNode(Opcodes.RETURN));
                     method.maxStack = 2;
                     method.maxLocals = 2;
+                    patched = true;
+                }
+                break;
+            }
+        }
+
+        return patched;
+    }
+
+    private static boolean processStyledContentConsumerInterface(ClassNode classNode) {
+        boolean patched = false;
+
+        boolean hasLegacyMethod = false;
+        for (MethodNode method : classNode.methods) {
+            if (method.name.equals("m_7164_") && method.desc.equals("(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;")) {
+                hasLegacyMethod = true;
+                break;
+            }
+        }
+        if (!hasLegacyMethod) {
+            MethodNode legacy = new MethodNode(
+                    Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT,
+                    "m_7164_",
+                    "(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;",
+                    null,
+                    null
+            );
+            classNode.methods.add(legacy);
+            patched = true;
+        }
+
+        for (MethodNode method : classNode.methods) {
+            if (method.name.equals("accept") && method.desc.equals("(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;")) {
+                if ((method.access & Opcodes.ACC_ABSTRACT) != 0) {
+                    method.access &= ~Opcodes.ACC_ABSTRACT;
+                    method.instructions = new InsnList();
+                    method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                    method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+                    method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 2));
+                    method.instructions.add(new MethodInsnNode(
+                            Opcodes.INVOKEINTERFACE,
+                            STYLED_CONTENT_CONSUMER_OWNER,
+                            "m_7164_",
+                            "(Lnet/minecraft/network/chat/Style;Ljava/lang/String;)Ljava/util/Optional;",
+                            true
+                    ));
+                    method.instructions.add(new InsnNode(Opcodes.ARETURN));
+                    method.maxStack = 3;
+                    method.maxLocals = 3;
                     patched = true;
                 }
                 break;
@@ -1194,6 +1789,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (fieldInsn.owner.equals("net/minecraft/client/player/LocalPlayer")) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_108617_" -> "connection";
+                case "f_36096_" -> "containerMenu";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_96541_" -> "minecraft";
+                case "f_96543_" -> "width";
+                case "f_96544_" -> "height";
+                case "f_96547_" -> "font";
                 default -> null;
             });
         }
@@ -1323,6 +1929,89 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             });
         }
 
+        if (fieldInsn.owner.equals(COMMON_COMPONENTS_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_237098_" -> "EMPTY";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/client/gui/components/Button")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_252438_" -> "DEFAULT_NARRATION";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("com/mojang/blaze3d/vertex/DefaultVertexFormat")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_85817_" -> "POSITION_TEX";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(MINECRAFT_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_91062_" -> "font";
+                case "f_91066_" -> "options";
+                case "f_91067_" -> "mouseHandler";
+                case "f_91073_" -> "level";
+                case "f_91074_" -> "player";
+                case "f_91080_" -> "screen";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_96541_" -> "minecraft";
+                case "f_96543_" -> "width";
+                case "f_96544_" -> "height";
+                case "f_96547_" -> "font";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.startsWith("net/minecraft/client/gui/screens/")) {
+            String newName = switch (fieldInsn.name) {
+                case "f_96541_" -> "minecraft";
+                case "f_96543_" -> "width";
+                case "f_96544_" -> "height";
+                case "f_96547_" -> "font";
+                default -> null;
+            };
+            if (newName != null) {
+                fieldInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (fieldInsn.owner.startsWith("mezz/jei/")) {
+            String newName = switch (fieldInsn.name) {
+                case "f_96541_" -> "minecraft";
+                case "f_96543_" -> "width";
+                case "f_96544_" -> "height";
+                case "f_96547_" -> "font";
+                case "f_93618_" -> "width";
+                case "f_93619_" -> "height";
+                case "f_93623_" -> "active";
+                case "f_93624_" -> "visible";
+                default -> null;
+            };
+            if (newName != null) {
+                fieldInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (fieldInsn.owner.equals(TOOLTIP_FLAG_DEFAULT_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_256730_" -> "ADVANCED";
+                case "f_256752_" -> "NORMAL";
+                default -> null;
+            });
+        }
+
         if (fieldInsn.owner.equals("net/minecraft/world/item/crafting/SmithingTransformRecipe")) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_265949_" -> "template";
@@ -1350,6 +2039,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             });
         }
 
+        if (fieldInsn.owner.equals(FLUID_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_257020_" -> "builtInRegistryHolder";
+                default -> null;
+            });
+        }
+
         if (fieldInsn.owner.equals(MINECRAFT_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_91062_" -> "font";
@@ -1370,6 +2066,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
         if (fieldInsn.owner.equals(BUILT_IN_REGISTRIES_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_257020_" -> "FLUID";
                 case "f_257033_" -> "ITEM";
                 case "f_256896_" -> "INSTRUMENT";
                 default -> null;
@@ -1652,6 +2349,34 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(CRASH_REPORT_OWNER)
+                && methodInsn.name.equals("m_127514_")
+                && methodInsn.desc.equals("(Ljava/lang/String;)Lnet/minecraft/CrashReportCategory;")) {
+            methodInsn.name = "addCategory";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(CRASH_REPORT_OWNER)
+                && methodInsn.name.equals("m_127516_")
+                && methodInsn.desc.equals("(Ljava/lang/String;I)Lnet/minecraft/CrashReportCategory;")) {
+            methodInsn.name = "addCategory";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(CRASH_REPORT_OWNER)
+                && methodInsn.name.equals("m_127521_")
+                && methodInsn.desc.equals("(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/CrashReport;")) {
+            methodInsn.name = "forThrowable";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_85837_")
+                && methodInsn.desc.equals("(DDD)V")) {
+            methodInsn.name = "translate";
+            return true;
+        }
+
         if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
                 && methodInsn.name.equals("m_9598_")
                 && methodInsn.desc.equals("()Lnet/minecraft/core/RegistryAccess;")) {
@@ -1825,6 +2550,19 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            if (methodInsn.name.equals("m_7222_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/client/gui/components/events/GuiEventListener;")) {
+                methodInsn.name = "getFocused";
+                return true;
+            }
+            if (methodInsn.name.equals("m_7522_")
+                    && methodInsn.desc.equals("(Lnet/minecraft/client/gui/components/events/GuiEventListener;)V")) {
+                methodInsn.name = "setFocused";
+                return true;
+            }
+        }
+
         if (methodInsn.owner.equals(MUTABLE_COMPONENT_OWNER)
                 && methodInsn.name.equals("m_130940_")
                 && methodInsn.desc.equals("(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")) {
@@ -1846,11 +2584,224 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
+                && methodInsn.name.equals("m_280168_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/vertex/PoseStack;")) {
+            methodInsn.name = "pose";
+            return true;
+        }
+
         if (methodInsn.owner.equals(MINECRAFT_OWNER)
                 && methodInsn.name.equals("m_91258_")
                 && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/function/Function;")) {
             methodInsn.name = "getTextureAtlas";
             return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants")
+                && methodInsn.name.equals("m_84827_")
+                && methodInsn.desc.equals("(II)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
+            methodInsn.name = "getKey";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+                && methodInsn.name.equals("m_84868_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/InputConstants$Type;")) {
+            methodInsn.name = "getType";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Type")
+                && methodInsn.name.equals("m_84895_")
+                && methodInsn.desc.equals("(I)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
+            methodInsn.name = "getOrCreate";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/GameRenderer")
+                && methodInsn.name.equals("m_172817_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/ShaderInstance;")) {
+            methodInsn.name = "getPositionTexShader";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/Tesselator")) {
+            String newName = switch (methodInsn.name) {
+                case "m_85913_" -> "getInstance";
+                case "m_85915_" -> "getBuilder";
+                case "m_85914_" -> "end";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
+                && methodInsn.name.equals("m_166779_")
+                && methodInsn.desc.equals("(Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")) {
+            methodInsn.name = "begin";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
+                && methodInsn.name.equals("m_252986_")
+                && methodInsn.desc.equals("(Lorg/joml/Matrix4f;FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
+            methodInsn.name = "vertex";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_85850_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/vertex/PoseStack$Pose;")) {
+            methodInsn.name = "last";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_85836_")
+                && methodInsn.desc.equals("()V")) {
+            methodInsn.name = "pushPose";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_85849_")
+                && methodInsn.desc.equals("()V")) {
+            methodInsn.name = "popPose";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_252880_")
+                && methodInsn.desc.equals("(FFF)V")) {
+            methodInsn.name = "translate";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_85841_")
+                && methodInsn.desc.equals("(FFF)V")) {
+            methodInsn.name = "scale";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
+                && methodInsn.name.equals("m_252781_")
+                && methodInsn.desc.equals("(Lorg/joml/Quaternionf;)V")) {
+            methodInsn.name = "mulPose";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack$Pose")
+                && methodInsn.name.equals("m_252922_")
+                && methodInsn.desc.equals("()Lorg/joml/Matrix4f;")) {
+            methodInsn.name = "pose";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
+                && methodInsn.name.equals("m_7421_")
+                && methodInsn.desc.equals("(FF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
+            methodInsn.name = "uv";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
+                && methodInsn.name.equals("m_5752_")
+                && methodInsn.desc.equals("()V")) {
+            methodInsn.name = "endVertex";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/texture/TextureAtlasSprite")) {
+            String newName = switch (methodInsn.name) {
+                case "m_118409_" -> "getU0";
+                case "m_118410_" -> "getV0";
+                case "m_118411_" -> "getU1";
+                case "m_118412_" -> "getV1";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/resources/TextureAtlasHolder")
+                && methodInsn.name.equals("m_118901_")
+                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;")) {
+            methodInsn.name = "getSprite";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(MINECRAFT_OWNER)
+                && methodInsn.name.equals("m_91268_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/Window;")) {
+            methodInsn.name = "getWindow";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/Window")) {
+            String newName = switch (methodInsn.name) {
+                case "m_85445_" -> "getGuiScaledWidth";
+                case "m_85443_" -> "getScreenWidth";
+                case "m_85446_" -> "getGuiScaledHeight";
+                case "m_85444_" -> "getScreenHeight";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/MouseHandler")) {
+            String newName = switch (methodInsn.name) {
+                case "m_91589_" -> "xpos";
+                case "m_91594_" -> "ypos";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/player/LocalPlayer")
+                && methodInsn.name.equals("m_21220_")
+                && methodInsn.desc.equals("()Ljava/util/Collection;")) {
+            methodInsn.name = "getActiveEffects";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/recipebook/RecipeUpdateListener")
+                && methodInsn.name.equals("m_5564_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;")) {
+            methodInsn.name = "getRecipeBookComponent";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/recipebook/RecipeBookComponent")
+                && methodInsn.name.equals("m_100385_")
+                && methodInsn.desc.equals("()Z")) {
+            methodInsn.name = "isVisible";
+            return true;
+        }
+
+        if (methodInsn.owner.startsWith("mezz/jei/")) {
+            if (methodInsn.name.equals("m_252865_")
+                    && methodInsn.desc.equals("(I)V")) {
+                methodInsn.name = "setX";
+                return true;
+            }
+            if (methodInsn.name.equals("m_253211_")
+                    && methodInsn.desc.equals("(I)V")) {
+                methodInsn.name = "setY";
+                return true;
+            }
         }
 
         return false;

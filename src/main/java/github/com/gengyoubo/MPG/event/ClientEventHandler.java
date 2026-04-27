@@ -23,9 +23,9 @@ import java.util.List;
 
 public class ClientEventHandler {
     private static final Minecraft MC = Minecraft.getInstance();
-    private static boolean registered = true;
-    private static boolean autoLoadRequested = true;
-    private static boolean autoLoadCheckLogged = true;
+    private static boolean registered = false;
+    private static boolean autoLoadRequested = false;
+    private static boolean autoLoadCheckLogged = false;
 
     public static void register() {
         if (registered) {

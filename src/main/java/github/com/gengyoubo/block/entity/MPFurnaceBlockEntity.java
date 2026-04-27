@@ -113,7 +113,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity implements 
                 copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
                 p_267073_.set(2, copy);
             } else if (itemstack2.is(itemstack1.getItem())) {
-                itemstack2.grow(itemstack1.getCount() * 64);
+                itemstack2.grow(itemstack1.getCount() * MPGConfig.furnace_doubling_value);
             }
 
             itemstack.shrink(1);

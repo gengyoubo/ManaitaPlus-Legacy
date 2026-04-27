@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.block.entity.MPGFurnaceLogicHelper;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.core.MPBlockCore;
@@ -104,10 +105,10 @@ public class MPFurnacePortable extends MPGPortableItem {
                 ItemStack itemstack2 = p_267073_.get(2);
                 if (itemstack2.isEmpty()) {
                     ItemStack copy = itemstack1.copy();
-                    copy.setCount(copy.getCount() * 64);
+                    copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
                     p_267073_.set(2, copy);
                 } else if (itemstack2.is(itemstack1.getItem())) {
-                    itemstack2.grow(itemstack1.getCount() * 64);
+                    itemstack2.grow(itemstack1.getCount() * MPGConfig.furnace_doubling_value);
                 }
 
                 itemstack.shrink(1);

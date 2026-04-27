@@ -41,8 +41,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String HOLDER_REFERENCE_OWNER = "net/minecraft/core/Holder$Reference";
     private static final String BLOCK_ITEM_OWNER = "net/minecraft/world/item/BlockItem";
     private static final String BANNER_ITEM_OWNER = "net/minecraft/world/item/BannerItem";
+    private static final String ARMOR_MATERIALS_OWNER = "net/minecraft/world/item/ArmorMaterials";
     private static final String DYE_ITEM_OWNER = "net/minecraft/world/item/DyeItem";
     private static final String DYE_COLOR_OWNER = "net/minecraft/world/item/DyeColor";
+    private static final String TIERS_OWNER = "net/minecraft/world/item/Tiers";
     private static final String ITEMS_OWNER = "net/minecraft/world/item/Items";
     private static final String BLOCKS_OWNER = "net/minecraft/world/level/block/Blocks";
     private static final String FLOWER_BLOCK_OWNER = "net/minecraft/world/level/block/FlowerBlock";
@@ -58,6 +60,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String RECIPE_MANAGER_OWNER = "net/minecraft/world/item/crafting/RecipeManager";
     private static final String RECIPE_INTERFACE_OWNER = "net/minecraft/world/item/crafting/Recipe";
     private static final String RECIPE_OWNER = "net/minecraft/world/item/crafting/CraftingRecipe";
+    private static final String CRAFTING_RECIPE_PACKAGE_PREFIX = "net/minecraft/world/item/crafting/";
     private static final String RECIPE_TYPE_OWNER = "net/minecraft/world/item/crafting/RecipeType";
     private static final String INGREDIENT_OWNER = "net/minecraft/world/item/crafting/Ingredient";
     private static final String MINECRAFT_OWNER = "net/minecraft/client/Minecraft";
@@ -65,7 +68,9 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String LIST_TAG_OWNER = "net/minecraft/nbt/ListTag";
     private static final String ENCHANTED_BOOK_ITEM_OWNER = "net/minecraft/world/item/EnchantedBookItem";
     private static final String ENCHANTMENT_OWNER = "net/minecraft/world/item/enchantment/Enchantment";
+    private static final String ENCHANTMENT_HELPER_OWNER = "net/minecraft/world/item/enchantment/EnchantmentHelper";
     private static final String POTION_OWNER = "net/minecraft/world/item/alchemy/Potion";
+    private static final String POTION_BREWING_OWNER = "net/minecraft/world/item/alchemy/PotionBrewing";
     private static final String POTIONS_OWNER = "net/minecraft/world/item/alchemy/Potions";
     private static final String POTION_UTILS_OWNER = "net/minecraft/world/item/alchemy/PotionUtils";
     private static final String TOOLTIP_FLAG_OWNER = "net/minecraft/world/item/TooltipFlag";
@@ -114,13 +119,16 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case REGISTRY_OWNER -> processRegistryClass(classNode);
             case HOLDER_REFERENCE_OWNER -> processHolderReferenceClass(classNode);
             case BLOCK_ITEM_OWNER -> processBlockItemClass(classNode);
+            case ARMOR_MATERIALS_OWNER -> processArmorMaterialsClass(classNode);
             case INGREDIENT_OWNER -> processIngredientClass(classNode);
             case "net/minecraft/world/item/ItemStack" -> processItemStackClass(classNode);
             case COMPOUND_TAG_OWNER -> processCompoundTagClass(classNode);
             case LIST_TAG_OWNER -> processListTagClass(classNode);
             case ENCHANTED_BOOK_ITEM_OWNER -> processEnchantedBookItemClass(classNode);
             case ENCHANTMENT_OWNER -> processEnchantmentClass(classNode);
+            case ENCHANTMENT_HELPER_OWNER -> processEnchantmentHelperClass(classNode);
             case POTION_OWNER -> processPotionClass(classNode);
+            case POTION_BREWING_OWNER -> processPotionBrewingClass(classNode);
             case POTION_UTILS_OWNER -> processPotionUtilsClass(classNode);
             case RECIPE_INTERFACE_OWNER -> processRecipeInterfaceClass(classNode);
             case RECIPE_MANAGER_OWNER -> processRecipeManagerClass(classNode);
@@ -278,6 +286,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, RESOURCE_LOCATION_OWNER, "getNamespace", "()Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_135828_",
+                "(C)Z",
+                new VarInsnNode(Opcodes.ILOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, RESOURCE_LOCATION_OWNER, "validPathChar", "(C)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
         return patched;
     }
 
@@ -293,7 +309,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processNonNullListClass(ClassNode classNode) {
-        return ensureStaticBridge(
+        boolean patched = false;
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_122779_",
+                "()Lnet/minecraft/core/NonNullList;",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, NON_NULL_LIST_OWNER, "create", "()Lnet/minecraft/core/NonNullList;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
                 classNode,
                 "m_122783_",
                 "(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;",
@@ -302,6 +326,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKESTATIC, NON_NULL_LIST_OWNER, "of", "(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        return patched;
     }
 
     private static boolean processRegistryClass(ClassNode classNode) {
@@ -389,7 +414,24 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_41776_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getCount", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_41764_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "setCount", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_41721_",
                 "(I)V",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new VarInsnNode(Opcodes.ILOAD, 1),
@@ -404,6 +446,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "copy", "()Lnet/minecraft/world/item/ItemStack;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_41792_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "isEnchanted", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
         return patched;
     }
 
@@ -414,6 +464,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Lnet/minecraft/world/level/block/Block;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_ITEM_OWNER, "getBlock", "()Lnet/minecraft/world/level/block/Block;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processArmorMaterialsClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_6230_",
+                "()Lnet/minecraft/world/item/crafting/Ingredient;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ARMOR_MATERIALS_OWNER, "getRepairIngredient", "()Lnet/minecraft/world/item/crafting/Ingredient;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
     }
@@ -503,7 +564,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processEnchantmentClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_44704_",
                 "()Ljava/lang/String;",
@@ -511,6 +573,46 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENCHANTMENT_OWNER, "getDescriptionId", "()Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6586_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENCHANTMENT_OWNER, "getMaxLevel", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6081_",
+                "(Lnet/minecraft/world/item/ItemStack;)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ENCHANTMENT_OWNER, "canEnchant", "(Lnet/minecraft/world/item/ItemStack;)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processEnchantmentHelperClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_44831_",
+                "(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Map;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, ENCHANTMENT_HELPER_OWNER, "getEnchantments", "(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Map;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_44865_",
+                "(Ljava/util/Map;Lnet/minecraft/world/item/ItemStack;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, ENCHANTMENT_HELPER_OWNER, "setEnchantments", "(Ljava/util/Map;Lnet/minecraft/world/item/ItemStack;)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        return patched;
     }
 
     private static boolean processPotionClass(ClassNode classNode) {
@@ -523,6 +625,28 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, POTION_OWNER, "getName", "(Ljava/lang/String;)Ljava/lang/String;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+    }
+
+    private static boolean processPotionBrewingClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_43506_",
+                "(Lnet/minecraft/world/item/ItemStack;)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, POTION_BREWING_OWNER, "isIngredient", "(Lnet/minecraft/world/item/ItemStack;)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_43529_",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, POTION_BREWING_OWNER, "mix", "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
     }
 
     private static boolean processPotionUtilsClass(ClassNode classNode) {
@@ -589,7 +713,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processIngredientClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_43908_",
                 "()[Lnet/minecraft/world/item/ItemStack;",
@@ -597,6 +722,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, INGREDIENT_OWNER, "getItems", "()[Lnet/minecraft/world/item/ItemStack;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_204132_",
+                "(Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, INGREDIENT_OWNER, "of", "(Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
     }
 
     private static boolean processRecipeInterfaceClass(ClassNode classNode) {
@@ -761,6 +895,16 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new VarInsnNode(Opcodes.ALOAD, 1),
                 new MethodInsnNode(Opcodes.INVOKESTATIC, COMPONENT_OWNER, "translatable", "(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/network/chat/MutableComponent;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7451_",
+                "(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "visit", "(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;", true),
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
@@ -1156,6 +1300,47 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteGenericJeiField(FieldInsnNode fieldInsn) {
+        if (fieldInsn.owner.equals("net/minecraft/world/level/block/ComposterBlock")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_51914_" -> "COMPOSTABLES";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/world/item/alchemy/PotionBrewing")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_43494_" -> "POTION_MIXES";
+                case "f_43495_" -> "CONTAINER_MIXES";
+                case "f_43496_" -> "ALLOWED_CONTAINERS";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/network/chat/Style")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_131099_" -> "EMPTY";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/world/item/crafting/SmithingTransformRecipe")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_265949_" -> "template";
+                case "f_265888_" -> "base";
+                case "f_265907_" -> "addition";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/world/item/crafting/SmithingTrimRecipe")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_265958_" -> "template";
+                case "f_266040_" -> "base";
+                case "f_266053_" -> "addition";
+                default -> null;
+            });
+        }
+
         if (fieldInsn.owner.equals(FLUIDS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_76191_" -> "EMPTY";
@@ -1210,15 +1395,73 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (fieldInsn.owner.equals(ITEMS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_42412_" -> "ARROW";
+                case "f_42354_" -> "TURTLE_HELMET";
+                case "f_42383_" -> "IRON_SWORD";
+                case "f_42384_" -> "IRON_SHOVEL";
+                case "f_42385_" -> "IRON_PICKAXE";
+                case "f_42386_" -> "IRON_AXE";
+                case "f_42387_" -> "IRON_HOE";
+                case "f_42388_" -> "DIAMOND_SWORD";
+                case "f_42389_" -> "DIAMOND_SHOVEL";
+                case "f_42390_" -> "DIAMOND_PICKAXE";
+                case "f_42391_" -> "DIAMOND_AXE";
+                case "f_42392_" -> "DIAMOND_HOE";
+                case "f_42393_" -> "NETHERITE_SWORD";
+                case "f_42394_" -> "NETHERITE_SHOVEL";
+                case "f_42395_" -> "NETHERITE_HOE";
+                case "f_42396_" -> "NETHERITE_PICKAXE";
+                case "f_42397_" -> "NETHERITE_AXE";
+                case "f_42407_" -> "LEATHER_HELMET";
+                case "f_42408_" -> "LEATHER_CHESTPLATE";
+                case "f_42420_" -> "WOODEN_SWORD";
+                case "f_42421_" -> "WOODEN_SHOVEL";
+                case "f_42422_" -> "WOODEN_PICKAXE";
+                case "f_42423_" -> "WOODEN_AXE";
+                case "f_42424_" -> "WOODEN_HOE";
+                case "f_42425_" -> "STONE_SWORD";
+                case "f_42426_" -> "STONE_SHOVEL";
+                case "f_42427_" -> "STONE_PICKAXE";
+                case "f_42428_" -> "STONE_AXE";
+                case "f_42429_" -> "STONE_HOE";
+                case "f_42430_" -> "GOLDEN_SWORD";
+                case "f_42431_" -> "GOLDEN_SHOVEL";
+                case "f_42432_" -> "GOLDEN_PICKAXE";
+                case "f_42433_" -> "GOLDEN_AXE";
+                case "f_42434_" -> "GOLDEN_HOE";
+                case "f_42462_" -> "LEATHER_LEGGINGS";
+                case "f_42463_" -> "LEATHER_BOOTS";
+                case "f_42464_" -> "CHAINMAIL_HELMET";
+                case "f_42465_" -> "CHAINMAIL_CHESTPLATE";
+                case "f_42466_" -> "CHAINMAIL_LEGGINGS";
+                case "f_42467_" -> "CHAINMAIL_BOOTS";
+                case "f_42468_" -> "IRON_HELMET";
+                case "f_42469_" -> "IRON_CHESTPLATE";
+                case "f_42470_" -> "IRON_LEGGINGS";
+                case "f_42471_" -> "IRON_BOOTS";
+                case "f_42472_" -> "DIAMOND_HELMET";
+                case "f_42473_" -> "DIAMOND_CHESTPLATE";
+                case "f_42474_" -> "DIAMOND_LEGGINGS";
+                case "f_42475_" -> "DIAMOND_BOOTS";
+                case "f_42476_" -> "GOLDEN_HELMET";
+                case "f_42477_" -> "GOLDEN_CHESTPLATE";
+                case "f_42478_" -> "GOLDEN_LEGGINGS";
+                case "f_42479_" -> "GOLDEN_BOOTS";
+                case "f_42480_" -> "NETHERITE_CHESTPLATE";
+                case "f_42481_" -> "NETHERITE_BOOTS";
+                case "f_42482_" -> "NETHERITE_LEGGINGS";
+                case "f_42483_" -> "NETHERITE_HELMET";
                 case "f_42738_" -> "TIPPED_ARROW";
                 case "f_42739_" -> "LINGERING_POTION";
                 case "f_42740_" -> "SHIELD";
+                case "f_42714_" -> "PHANTOM_MEMBRANE";
+                case "f_42741_" -> "ELYTRA";
                 default -> null;
             });
         }
 
         if (fieldInsn.owner.equals(ITEM_TAGS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_13168_" -> "PLANKS";
                 case "f_13191_" -> "BANNERS";
                 default -> null;
             });
@@ -1242,6 +1485,29 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteGenericJeiMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.startsWith(CRAFTING_RECIPE_PACKAGE_PREFIX)) {
+            if (methodInsn.name.equals("m_5598_")
+                    && methodInsn.desc.equals("()Z")) {
+                methodInsn.name = "isSpecial";
+                return true;
+            }
+            if (methodInsn.name.equals("m_8043_")
+                    && methodInsn.desc.equals("(Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;")) {
+                methodInsn.name = "getResultItem";
+                return true;
+            }
+            if (methodInsn.name.equals("m_7527_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/core/NonNullList;")) {
+                methodInsn.name = "getIngredients";
+                return true;
+            }
+            if (methodInsn.name.equals("m_6423_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/resources/ResourceLocation;")) {
+                methodInsn.name = "getId";
+                return true;
+            }
+        }
+
         if (methodInsn.owner.equals("net/minecraft/world/item/ItemStack")) {
             String newName = switch (methodInsn.name) {
                 case "m_41613_" -> "getCount";
@@ -1318,6 +1584,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(TIERS_OWNER)
+                && methodInsn.name.equals("m_6282_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/item/crafting/Ingredient;")) {
+            methodInsn.name = "getRepairIngredient";
+            return true;
+        }
+
         if (methodInsn.owner.equals(SUSPICIOUS_STEW_ITEM_OWNER)
                 && methodInsn.name.equals("m_43258_")
                 && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V")) {
@@ -1335,7 +1608,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (methodInsn.owner.equals(INGREDIENT_OWNER)
                 && methodInsn.name.equals("m_43938_")
                 && methodInsn.desc.equals("(Ljava/util/stream/Stream;)Lnet/minecraft/world/item/crafting/Ingredient;")) {
-            methodInsn.name = "of";
+            methodInsn.name = "fromValues";
             return true;
         }
 

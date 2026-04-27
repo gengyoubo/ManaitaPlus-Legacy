@@ -3,6 +3,7 @@ package github.com.gengyoubo.MPG.transform;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
@@ -10,6 +11,7 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -24,24 +26,40 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
     private static final String JEI_STARTER_OWNER = "mezz/jei/library/startup/JeiStarter";
     private static final String JEI_VANILLA_PLUGIN_OWNER = "mezz/jei/library/plugins/vanilla/VanillaPlugin";
+    private static final String JEI_VANILLA_RECIPES_OWNER = "mezz/jei/library/plugins/vanilla/crafting/VanillaRecipes";
     private static final String JEI_ITEM_STACK_LIST_FACTORY_OWNER = "mezz/jei/library/plugins/vanilla/ingredients/ItemStackListFactory";
     private static final String EVENT_UTIL_OWNER = "sen/manaita_plus_general/util/EventUtil";
     private static final String I18N_OWNER = "net/minecraft/client/resources/language/I18n";
     private static final String CHAT_FORMATTING_OWNER = "net/minecraft/ChatFormatting";
+    private static final String CLIENT_LEVEL_OWNER = "net/minecraft/client/multiplayer/ClientLevel";
     private static final String RESOURCE_RELOAD_LISTENER_OWNER = "net/minecraft/server/packs/resources/ResourceManagerReloadListener";
     private static final String RESOURCE_LOCATION_OWNER = "net/minecraft/resources/ResourceLocation";
     private static final String RESOURCE_KEY_OWNER = "net/minecraft/resources/ResourceKey";
+    private static final String HOLDER_OWNER = "net/minecraft/core/Holder";
+    private static final String NON_NULL_LIST_OWNER = "net/minecraft/core/NonNullList";
     private static final String REGISTRY_OWNER = "net/minecraft/core/Registry";
     private static final String HOLDER_REFERENCE_OWNER = "net/minecraft/core/Holder$Reference";
+    private static final String BLOCK_ITEM_OWNER = "net/minecraft/world/item/BlockItem";
+    private static final String BANNER_ITEM_OWNER = "net/minecraft/world/item/BannerItem";
+    private static final String DYE_ITEM_OWNER = "net/minecraft/world/item/DyeItem";
+    private static final String DYE_COLOR_OWNER = "net/minecraft/world/item/DyeColor";
     private static final String ITEMS_OWNER = "net/minecraft/world/item/Items";
     private static final String BLOCKS_OWNER = "net/minecraft/world/level/block/Blocks";
+    private static final String FLOWER_BLOCK_OWNER = "net/minecraft/world/level/block/FlowerBlock";
+    private static final String SHULKER_BOX_BLOCK_OWNER = "net/minecraft/world/level/block/ShulkerBoxBlock";
     private static final String FLUIDS_OWNER = "net/minecraft/world/level/material/Fluids";
     private static final String FLUID_OWNER = "net/minecraft/world/level/material/Fluid";
     private static final String FLUID_STATE_OWNER = "net/minecraft/world/level/material/FluidState";
     private static final String MENU_TYPE_OWNER = "net/minecraft/world/inventory/MenuType";
     private static final String REGISTRIES_OWNER = "net/minecraft/core/registries/Registries";
     private static final String BUILT_IN_REGISTRIES_OWNER = "net/minecraft/core/registries/BuiltInRegistries";
+    private static final String ITEM_TAGS_OWNER = "net/minecraft/tags/ItemTags";
+    private static final String BLOCK_ENTITY_TYPE_OWNER = "net/minecraft/world/level/block/entity/BlockEntityType";
+    private static final String RECIPE_MANAGER_OWNER = "net/minecraft/world/item/crafting/RecipeManager";
+    private static final String RECIPE_INTERFACE_OWNER = "net/minecraft/world/item/crafting/Recipe";
     private static final String RECIPE_OWNER = "net/minecraft/world/item/crafting/CraftingRecipe";
+    private static final String RECIPE_TYPE_OWNER = "net/minecraft/world/item/crafting/RecipeType";
+    private static final String INGREDIENT_OWNER = "net/minecraft/world/item/crafting/Ingredient";
     private static final String MINECRAFT_OWNER = "net/minecraft/client/Minecraft";
     private static final String COMPOUND_TAG_OWNER = "net/minecraft/nbt/CompoundTag";
     private static final String LIST_TAG_OWNER = "net/minecraft/nbt/ListTag";
@@ -51,6 +69,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String POTIONS_OWNER = "net/minecraft/world/item/alchemy/Potions";
     private static final String POTION_UTILS_OWNER = "net/minecraft/world/item/alchemy/PotionUtils";
     private static final String TOOLTIP_FLAG_OWNER = "net/minecraft/world/item/TooltipFlag";
+    private static final String SUSPICIOUS_STEW_ITEM_OWNER = "net/minecraft/world/item/SuspiciousStewItem";
     private static final String COMPONENT_OWNER = "net/minecraft/network/chat/Component";
     private static final String MUTABLE_COMPONENT_OWNER = "net/minecraft/network/chat/MutableComponent";
     private static final String FONT_OWNER = "net/minecraft/client/gui/Font";
@@ -86,11 +105,16 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         }
         patched |= switch (classNode.name) {
             case "net/minecraft/client/Minecraft" -> processMinecraftClass(classNode);
+            case CLIENT_LEVEL_OWNER -> processClientLevelClass(classNode);
             case "net/minecraft/client/multiplayer/ClientPacketListener" -> processClientPacketListenerClass(classNode);
             case "net/minecraft/resources/ResourceKey" -> processResourceKeyClass(classNode);
             case RESOURCE_LOCATION_OWNER -> processResourceLocationClass(classNode);
+            case HOLDER_OWNER -> processHolderClass(classNode);
+            case NON_NULL_LIST_OWNER -> processNonNullListClass(classNode);
             case REGISTRY_OWNER -> processRegistryClass(classNode);
             case HOLDER_REFERENCE_OWNER -> processHolderReferenceClass(classNode);
+            case BLOCK_ITEM_OWNER -> processBlockItemClass(classNode);
+            case INGREDIENT_OWNER -> processIngredientClass(classNode);
             case "net/minecraft/world/item/ItemStack" -> processItemStackClass(classNode);
             case COMPOUND_TAG_OWNER -> processCompoundTagClass(classNode);
             case LIST_TAG_OWNER -> processListTagClass(classNode);
@@ -98,8 +122,12 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case ENCHANTMENT_OWNER -> processEnchantmentClass(classNode);
             case POTION_OWNER -> processPotionClass(classNode);
             case POTION_UTILS_OWNER -> processPotionUtilsClass(classNode);
+            case RECIPE_INTERFACE_OWNER -> processRecipeInterfaceClass(classNode);
+            case RECIPE_MANAGER_OWNER -> processRecipeManagerClass(classNode);
             case TOOLTIP_FLAG_OWNER -> processTooltipFlagClass(classNode);
+            case SUSPICIOUS_STEW_ITEM_OWNER -> processSuspiciousStewItemClass(classNode);
             case "net/minecraft/world/entity/player/Player" -> processPlayerClass(classNode);
+            case FLOWER_BLOCK_OWNER -> processFlowerBlockClass(classNode);
             case FLUID_OWNER -> processFluidClass(classNode);
             case FLUID_STATE_OWNER -> processFluidStateClass(classNode);
             case I18N_OWNER -> processI18nClass(classNode);
@@ -111,6 +139,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case RESOURCE_RELOAD_LISTENER_OWNER -> processResourceReloadListenerInterface(classNode);
             case JEI_STARTER_OWNER -> processJeiStarterClass(classNode);
             case JEI_VANILLA_PLUGIN_OWNER -> processJeiVanillaPluginClass(classNode);
+            case JEI_VANILLA_RECIPES_OWNER -> processJeiVanillaRecipesClass(classNode);
             case JEI_ITEM_STACK_LIST_FACTORY_OWNER -> processJeiItemStackListFactoryClass(classNode);
             case "net/minecraft/world/item/ItemCooldowns" -> processItemCooldownClass(classNode);
             case "net/minecraft/world/entity/Entity" -> processEntityClass(classNode);
@@ -132,6 +161,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                     patched |= rewriteJeiVanillaMethod(methodInsn);
                     patched |= rewriteJeiItemStackListFactoryMethod(methodInsn);
                     patched |= rewriteGenericJeiMethod(methodInsn);
+                } else if (node instanceof InvokeDynamicInsnNode invokeDynamicInsn) {
+                    patched |= rewriteGenericJeiInvokeDynamic(invokeDynamicInsn);
                 }
             }
         }
@@ -161,6 +192,27 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 patched = true;
             }
         }
+        return patched;
+    }
+
+    private static boolean processClientLevelClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7465_",
+                "()Lnet/minecraft/world/item/crafting/RecipeManager;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CLIENT_LEVEL_OWNER, "getRecipeManager", "()Lnet/minecraft/world/item/crafting/RecipeManager;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_9598_",
+                "()Lnet/minecraft/core/RegistryAccess;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, CLIENT_LEVEL_OWNER, "registryAccess", "()Lnet/minecraft/core/RegistryAccess;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
         return patched;
     }
 
@@ -227,6 +279,29 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
+    }
+
+    private static boolean processHolderClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_203334_",
+                "()Ljava/lang/Object;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, HOLDER_OWNER, "value", "()Ljava/lang/Object;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processNonNullListClass(ClassNode classNode) {
+        return ensureStaticBridge(
+                classNode,
+                "m_122783_",
+                "(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, NON_NULL_LIST_OWNER, "of", "(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
     }
 
     private static boolean processRegistryClass(ClassNode classNode) {
@@ -332,6 +407,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         return patched;
     }
 
+    private static boolean processBlockItemClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_40614_",
+                "()Lnet/minecraft/world/level/block/Block;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, BLOCK_ITEM_OWNER, "getBlock", "()Lnet/minecraft/world/level/block/Block;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
     private static boolean processCompoundTagClass(ClassNode classNode) {
         boolean patched = false;
         patched |= ensureInstanceBridge(
@@ -379,6 +465,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new VarInsnNode(Opcodes.ALOAD, 1),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, COMPOUND_TAG_OWNER, "getShort", "(Ljava/lang/String;)S", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_128451_",
+                "(Ljava/lang/String;)I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, COMPOUND_TAG_OWNER, "getInt", "(Ljava/lang/String;)I", false),
                 new InsnNode(Opcodes.IRETURN)
         );
         return patched;
@@ -460,6 +555,61 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         return patched;
     }
 
+    private static boolean processFlowerBlockClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_53521_",
+                "()Lnet/minecraft/world/effect/MobEffect;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FLOWER_BLOCK_OWNER, "getSuspiciousEffect", "()Lnet/minecraft/world/effect/MobEffect;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_53522_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FLOWER_BLOCK_OWNER, "getEffectDuration", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processRecipeManagerClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_44013_",
+                "(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/List;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, RECIPE_MANAGER_OWNER, "getAllRecipesFor", "(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/List;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processIngredientClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_43908_",
+                "()[Lnet/minecraft/world/item/ItemStack;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, INGREDIENT_OWNER, "getItems", "()[Lnet/minecraft/world/item/ItemStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processRecipeInterfaceClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_6423_",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, RECIPE_INTERFACE_OWNER, "getId", "()Lnet/minecraft/resources/ResourceLocation;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
     private static boolean processTooltipFlagClass(ClassNode classNode) {
         return ensureInstanceBridge(
                 classNode,
@@ -468,6 +618,19 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEINTERFACE, TOOLTIP_FLAG_OWNER, "isAdvanced", "()Z", true),
                 new InsnNode(Opcodes.IRETURN)
+        );
+    }
+
+    private static boolean processSuspiciousStewItemClass(ClassNode classNode) {
+        return ensureStaticBridge(
+                classNode,
+                "m_43258_",
+                "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, SUSPICIOUS_STEW_ITEM_OWNER, "saveMobEffect", "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V", false),
+                new InsnNode(Opcodes.RETURN)
         );
     }
 
@@ -723,6 +886,48 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         return patched;
     }
 
+    private static boolean processJeiVanillaRecipesClass(ClassNode classNode) {
+        boolean patched = false;
+        for (MethodNode method : classNode.methods) {
+            for (org.objectweb.asm.tree.AbstractInsnNode node = method.instructions.getFirst(); node != null; node = node.getNext()) {
+                if (node instanceof FieldInsnNode fieldInsn) {
+                    if (fieldInsn.owner.equals(MINECRAFT_OWNER)
+                            && fieldInsn.name.equals("f_91073_")
+                            && fieldInsn.desc.equals("Lnet/minecraft/client/multiplayer/ClientLevel;")) {
+                        fieldInsn.name = "level";
+                        patched = true;
+                    }
+                    if (fieldInsn.owner.equals(RECIPE_TYPE_OWNER)) {
+                        patched |= rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                            case "f_44107_" -> "CRAFTING";
+                            case "f_44108_" -> "SMELTING";
+                            case "f_44109_" -> "BLASTING";
+                            case "f_44110_" -> "SMOKING";
+                            case "f_44111_" -> "CAMPFIRE_COOKING";
+                            case "f_44112_" -> "STONECUTTING";
+                            case "f_44113_" -> "SMITHING";
+                            default -> null;
+                        });
+                    }
+                } else if (node instanceof MethodInsnNode methodInsn) {
+                    if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
+                            && methodInsn.name.equals("m_7465_")
+                            && methodInsn.desc.equals("()Lnet/minecraft/world/item/crafting/RecipeManager;")) {
+                        methodInsn.name = "getRecipeManager";
+                        patched = true;
+                    }
+                    if (methodInsn.owner.equals(RECIPE_MANAGER_OWNER)
+                            && methodInsn.name.equals("m_44013_")
+                            && methodInsn.desc.equals("(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/List;")) {
+                        methodInsn.name = "getAllRecipesFor";
+                        patched = true;
+                    }
+                }
+            }
+        }
+        return patched;
+    }
+
     private static boolean processJeiItemStackListFactoryClass(ClassNode classNode) {
         boolean patched = false;
         for (MethodNode method : classNode.methods) {
@@ -740,6 +945,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static boolean rewriteJeiVanillaField(FieldInsnNode fieldInsn) {
         if (fieldInsn.owner.equals(ITEMS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_42399_" -> "BOWL";
                 case "f_42738_" -> "POTION";
                 case "f_42589_" -> "SPLASH_POTION";
                 case "f_42736_" -> "TIPPED_ARROW";
@@ -756,6 +962,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
         if (fieldInsn.owner.equals(BLOCKS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_50072_" -> "BROWN_MUSHROOM";
+                case "f_50073_" -> "RED_MUSHROOM";
                 case "f_50091_" -> "CRAFTING_TABLE";
                 case "f_50679_" -> "STONECUTTER";
                 case "f_50094_" -> "FURNACE";
@@ -791,14 +999,39 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             });
         }
 
+        if (fieldInsn.owner.equals(ITEM_TAGS_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_13145_" -> "SMALL_FLOWERS";
+                default -> null;
+            });
+        }
+
         return false;
     }
 
     private static boolean rewriteJeiVanillaMethod(MethodInsnNode methodInsn) {
-        if (methodInsn.owner.equals(RECIPE_OWNER)
+        if ((methodInsn.owner.equals(RECIPE_INTERFACE_OWNER) || methodInsn.owner.equals(RECIPE_OWNER))
                 && methodInsn.name.equals("m_5598_")
                 && methodInsn.desc.equals("()Z")) {
             methodInsn.name = "isSpecial";
+            return true;
+        }
+        if ((methodInsn.owner.equals(RECIPE_INTERFACE_OWNER) || methodInsn.owner.equals(RECIPE_OWNER))
+                && methodInsn.name.equals("m_8043_")
+                && methodInsn.desc.equals("(Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;")) {
+            methodInsn.name = "getResultItem";
+            return true;
+        }
+        if ((methodInsn.owner.equals(RECIPE_INTERFACE_OWNER) || methodInsn.owner.equals(RECIPE_OWNER))
+                && methodInsn.name.equals("m_7527_")
+                && methodInsn.desc.equals("()Lnet/minecraft/core/NonNullList;")) {
+            methodInsn.name = "getIngredients";
+            return true;
+        }
+        if ((methodInsn.owner.equals(RECIPE_INTERFACE_OWNER) || methodInsn.owner.equals(RECIPE_OWNER))
+                && methodInsn.name.equals("m_6423_")
+                && methodInsn.desc.equals("()Lnet/minecraft/resources/ResourceLocation;")) {
+            methodInsn.name = "getId";
             return true;
         }
         return false;
@@ -952,6 +1185,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
         if (fieldInsn.owner.equals(BUILT_IN_REGISTRIES_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_257033_" -> "ITEM";
                 case "f_256896_" -> "INSTRUMENT";
                 default -> null;
             });
@@ -961,6 +1195,45 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_257010_" -> "INSTRUMENT";
                 case "f_256762_" -> "ENCHANTMENT";
+                case "f_256973_" -> "POTION";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(INGREDIENT_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_43901_" -> "EMPTY";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(ITEMS_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_42412_" -> "ARROW";
+                case "f_42738_" -> "TIPPED_ARROW";
+                case "f_42739_" -> "LINGERING_POTION";
+                case "f_42740_" -> "SHIELD";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(ITEM_TAGS_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_13191_" -> "BANNERS";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(BLOCKS_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_50456_" -> "SHULKER_BOX";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals(BLOCK_ENTITY_TYPE_OWNER)) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_58935_" -> "BANNER";
                 default -> null;
             });
         }
@@ -974,12 +1247,117 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_41613_" -> "getCount";
                 case "m_41764_" -> "setCount";
                 case "m_41777_" -> "copy";
+                case "m_41778_" -> "getDescriptionId";
                 default -> null;
             };
             if (newName != null) {
                 methodInsn.name = newName;
                 return true;
             }
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/world/level/block/Block")
+                && methodInsn.name.equals("m_5456_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/item/Item;")) {
+            methodInsn.name = "asItem";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/world/level/block/Block")
+                && methodInsn.name.equals("m_7705_")
+                && methodInsn.desc.equals("()Ljava/lang/String;")) {
+            methodInsn.name = "getDescriptionId";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(FLOWER_BLOCK_OWNER)) {
+            if (methodInsn.name.equals("m_5456_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/world/item/Item;")) {
+                methodInsn.name = "asItem";
+                return true;
+            }
+            if (methodInsn.name.equals("m_7705_")
+                    && methodInsn.desc.equals("()Ljava/lang/String;")) {
+                methodInsn.name = "getDescriptionId";
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals(BLOCK_ITEM_OWNER)
+                && methodInsn.name.equals("m_40614_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/level/block/Block;")) {
+            methodInsn.name = "getBlock";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(BLOCK_ITEM_OWNER)
+                && methodInsn.name.equals("m_186338_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/block/entity/BlockEntityType;Lnet/minecraft/nbt/CompoundTag;)V")) {
+            methodInsn.name = "setBlockEntityData";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(BANNER_ITEM_OWNER)
+                && methodInsn.name.equals("m_40545_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/item/DyeColor;")) {
+            methodInsn.name = "getColor";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(DYE_COLOR_OWNER)
+                && methodInsn.name.equals("m_41060_")
+                && methodInsn.desc.equals("()I")) {
+            methodInsn.name = "getId";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(DYE_ITEM_OWNER)
+                && methodInsn.name.equals("m_41082_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/item/DyeItem;")) {
+            methodInsn.name = "byColor";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(SUSPICIOUS_STEW_ITEM_OWNER)
+                && methodInsn.name.equals("m_43258_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V")) {
+            methodInsn.name = "saveMobEffect";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(INGREDIENT_OWNER)
+                && methodInsn.name.equals("m_43927_")
+                && methodInsn.desc.equals("([Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/crafting/Ingredient;")) {
+            methodInsn.name = "of";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(INGREDIENT_OWNER)
+                && methodInsn.name.equals("m_43938_")
+                && methodInsn.desc.equals("(Ljava/util/stream/Stream;)Lnet/minecraft/world/item/crafting/Ingredient;")) {
+            methodInsn.name = "of";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(INGREDIENT_OWNER)
+                && methodInsn.name.equals("m_43929_")
+                && methodInsn.desc.equals("([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;")) {
+            methodInsn.name = "of";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/core/DefaultedRegistry")
+                && methodInsn.name.equals("m_206058_")
+                && methodInsn.desc.equals("(Lnet/minecraft/tags/TagKey;)Ljava/lang/Iterable;")) {
+            methodInsn.name = "getTagOrEmpty";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/core/DefaultedRegistry")
+                && methodInsn.name.equals("m_203431_")
+                && methodInsn.desc.equals("(Lnet/minecraft/tags/TagKey;)Ljava/util/Optional;")) {
+            methodInsn.name = "getTag";
+            return true;
         }
 
         if (methodInsn.owner.equals(RESOURCE_LOCATION_OWNER)) {
@@ -1001,6 +1379,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
+                && methodInsn.name.equals("m_9598_")
+                && methodInsn.desc.equals("()Lnet/minecraft/core/RegistryAccess;")) {
+            methodInsn.name = "registryAccess";
+            return true;
+        }
+
         if (methodInsn.owner.equals(REGISTRY_OWNER)
                 && methodInsn.name.equals("m_203636_")
                 && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;")) {
@@ -1015,13 +1400,55 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(HOLDER_OWNER)
+                && methodInsn.name.equals("m_203334_")
+                && methodInsn.desc.equals("()Ljava/lang/Object;")) {
+            methodInsn.name = "value";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(HOLDER_OWNER)
+                && methodInsn.name.equals("m_203633_")
+                && methodInsn.desc.equals("()Z")) {
+            methodInsn.name = "isBound";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(NON_NULL_LIST_OWNER)
+                && methodInsn.name.equals("m_122783_")
+                && methodInsn.desc.equals("(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;")) {
+            methodInsn.name = "of";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(FLOWER_BLOCK_OWNER)) {
+            String newName = switch (methodInsn.name) {
+                case "m_53521_" -> "getSuspiciousEffect";
+                case "m_53522_" -> "getEffectDuration";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals(SHULKER_BOX_BLOCK_OWNER)
+                && methodInsn.name.equals("m_56190_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/level/block/Block;")) {
+            methodInsn.name = "getBlockByColor";
+            return true;
+        }
+
         if (methodInsn.owner.equals(COMPOUND_TAG_OWNER)) {
             String newName = switch (methodInsn.name) {
+                case "m_128405_" -> "putInt";
                 case "m_128425_" -> "contains";
                 case "m_128461_" -> "getString";
                 case "m_128445_" -> "getByte";
                 case "m_128437_" -> "getList";
                 case "m_128448_" -> "getShort";
+                case "m_128451_" -> "getInt";
                 default -> null;
             };
             if (newName != null) {
@@ -1034,6 +1461,20 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 && methodInsn.name.equals("m_128728_")
                 && methodInsn.desc.equals("(I)Lnet/minecraft/nbt/CompoundTag;")) {
             methodInsn.name = "getCompound";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/core/HolderSet$ListBacked")
+                && methodInsn.name.equals("m_203614_")
+                && methodInsn.desc.equals("()Ljava/util/stream/Stream;")) {
+            methodInsn.name = "stream";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(INGREDIENT_OWNER)
+                && methodInsn.name.equals("m_43908_")
+                && methodInsn.desc.equals("()[Lnet/minecraft/world/item/ItemStack;")) {
+            methodInsn.name = "getItems";
             return true;
         }
 
@@ -1140,6 +1581,86 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         }
 
         return false;
+    }
+
+    private static boolean rewriteGenericJeiInvokeDynamic(InvokeDynamicInsnNode invokeDynamicInsn) {
+        boolean patched = false;
+        Handle rewrittenBootstrap = rewriteGenericJeiHandle(invokeDynamicInsn.bsm);
+        if (rewrittenBootstrap != null) {
+            invokeDynamicInsn.bsm = rewrittenBootstrap;
+            patched = true;
+        }
+        for (int i = 0; i < invokeDynamicInsn.bsmArgs.length; i++) {
+            Object arg = invokeDynamicInsn.bsmArgs[i];
+            if (arg instanceof Handle handle) {
+                Handle rewrittenHandle = rewriteGenericJeiHandle(handle);
+                if (rewrittenHandle != null) {
+                    invokeDynamicInsn.bsmArgs[i] = rewrittenHandle;
+                    patched = true;
+                }
+            }
+        }
+        return patched;
+    }
+
+    private static Handle rewriteGenericJeiHandle(Handle handle) {
+        int opcode = handleTagToOpcode(handle.getTag());
+        if (opcode == -1) {
+            return null;
+        }
+
+        if (isFieldHandle(handle.getTag())) {
+            FieldInsnNode fieldInsn = new FieldInsnNode(opcode, handle.getOwner(), handle.getName(), handle.getDesc());
+            boolean patched = rewriteJeiVanillaField(fieldInsn)
+                    | rewriteJeiItemStackListFactoryField(fieldInsn)
+                    | rewriteGenericJeiField(fieldInsn);
+            if (!patched) {
+                return null;
+            }
+            return new Handle(handle.getTag(), fieldInsn.owner, fieldInsn.name, fieldInsn.desc, handle.isInterface());
+        }
+
+        if (isMethodHandle(handle.getTag())) {
+            MethodInsnNode methodInsn = new MethodInsnNode(opcode, handle.getOwner(), handle.getName(), handle.getDesc(), handle.isInterface());
+            boolean patched = rewriteJeiVanillaMethod(methodInsn)
+                    | rewriteJeiItemStackListFactoryMethod(methodInsn)
+                    | rewriteGenericJeiMethod(methodInsn);
+            if (!patched) {
+                return null;
+            }
+            return new Handle(handle.getTag(), methodInsn.owner, methodInsn.name, methodInsn.desc, methodInsn.itf);
+        }
+
+        return null;
+    }
+
+    private static boolean isFieldHandle(int tag) {
+        return tag == Opcodes.H_GETFIELD
+                || tag == Opcodes.H_GETSTATIC
+                || tag == Opcodes.H_PUTFIELD
+                || tag == Opcodes.H_PUTSTATIC;
+    }
+
+    private static boolean isMethodHandle(int tag) {
+        return tag == Opcodes.H_INVOKEVIRTUAL
+                || tag == Opcodes.H_INVOKESTATIC
+                || tag == Opcodes.H_INVOKESPECIAL
+                || tag == Opcodes.H_NEWINVOKESPECIAL
+                || tag == Opcodes.H_INVOKEINTERFACE;
+    }
+
+    private static int handleTagToOpcode(int tag) {
+        return switch (tag) {
+            case Opcodes.H_GETFIELD -> Opcodes.GETFIELD;
+            case Opcodes.H_GETSTATIC -> Opcodes.GETSTATIC;
+            case Opcodes.H_PUTFIELD -> Opcodes.PUTFIELD;
+            case Opcodes.H_PUTSTATIC -> Opcodes.PUTSTATIC;
+            case Opcodes.H_INVOKEVIRTUAL -> Opcodes.INVOKEVIRTUAL;
+            case Opcodes.H_INVOKESTATIC -> Opcodes.INVOKESTATIC;
+            case Opcodes.H_INVOKESPECIAL, Opcodes.H_NEWINVOKESPECIAL -> Opcodes.INVOKESPECIAL;
+            case Opcodes.H_INVOKEINTERFACE -> Opcodes.INVOKEINTERFACE;
+            default -> -1;
+        };
     }
 
     private static boolean rewriteFieldName(FieldInsnNode fieldInsn, String newName) {

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MixinPlugin implements IMixinConfigPlugin {
-    static {
+    private static void installLaunchPlugin() {
         LaunchPluginHandler handler = Helper.getFieldValue(Launcher.INSTANCE, "launchPlugins");
         Map<String, ILaunchPluginService> plugins = Helper.getFieldValue(handler, "plugins");
         Map<String, ILaunchPluginService> newMap = new ConcurrentHashMap<>();
@@ -28,7 +28,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-
+        installLaunchPlugin();
     }
 
     @Override

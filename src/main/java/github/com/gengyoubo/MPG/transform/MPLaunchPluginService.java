@@ -1417,6 +1417,49 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_280488_",
+                "(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ILOAD, 5),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "drawString", "(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_285944_",
+                "(Lnet/minecraft/client/renderer/RenderType;IIIII)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ILOAD, 5),
+                new VarInsnNode(Opcodes.ILOAD, 6),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "fill", "(Lnet/minecraft/client/renderer/RenderType;IIIII)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_285978_",
+                "(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ILOAD, 5),
+                new VarInsnNode(Opcodes.ILOAD, 6),
+                new VarInsnNode(Opcodes.ILOAD, 7),
+                new VarInsnNode(Opcodes.ILOAD, 8),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "fillGradient", "(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_280614_",
                 "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
                 new VarInsnNode(Opcodes.ALOAD, 0),
@@ -2377,6 +2420,27 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
+                && methodInsn.name.equals("m_285907_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
+            methodInsn.name = "gui";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
+                && methodInsn.name.equals("m_286086_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
+            methodInsn.name = "guiOverlay";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/gui/components/AbstractWidget")
+                && methodInsn.name.equals("m_6375_")
+                && methodInsn.desc.equals("(DDI)Z")) {
+            methodInsn.name = "mouseClicked";
+            return true;
+        }
+
         if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
                 && methodInsn.name.equals("m_9598_")
                 && methodInsn.desc.equals("()Lnet/minecraft/core/RegistryAccess;")) {
@@ -2800,6 +2864,35 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             if (methodInsn.name.equals("m_253211_")
                     && methodInsn.desc.equals("(I)V")) {
                 methodInsn.name = "setY";
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.startsWith("mezz/jei/")) {
+            String newName = switch (methodInsn.name) {
+                case "m_252754_" -> "getX";
+                case "m_252865_" -> "setX";
+                case "m_252907_" -> "getY";
+                case "m_253211_" -> "setY";
+                case "m_5711_" -> "getWidth";
+                case "m_93694_" -> "getHeight";
+                case "m_93696_" -> "isFocused";
+                case "m_93692_" -> "setFocused";
+                case "m_94120_" -> "tick";
+                case "m_94144_" -> "setValue";
+                case "m_94155_" -> "getValue";
+                case "m_94213_" -> "isVisible";
+                case "m_87963_" -> "renderWidget";
+                case "m_88315_" -> "render";
+                case "m_7972_" -> "isValidClickButton";
+                case "m_93680_" -> "clicked";
+                case "m_5953_" -> "isMouseOver";
+                case "m_7435_" -> "playDownSound";
+                case "m_5716_" -> "onClick";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
                 return true;
             }
         }

@@ -42,7 +42,7 @@ public class MPG implements ModInitializer {
     }
 
     public static void initFabric() {
-        MPGConfig.initDefaults();
+        MPGConfig.load();
 
         // Force-load all registry holder classes before registration.
         MPBlockCore.init();
@@ -85,6 +85,10 @@ public class MPG implements ModInitializer {
                 entries.accept(MPItemCore.ManaitaPickaxe.get());
                 entries.accept(MPItemCore.ManaitaShears.get());
                 entries.accept(MPItemCore.ManaitaShovel.get());
+                entries.accept(MPItemCore.ManaitaHelmet.get());
+                entries.accept(MPItemCore.ManaitaChestplate.get());
+                entries.accept(MPItemCore.ManaitaLeggings.get());
+                entries.accept(MPItemCore.ManaitaBoots.get());
                 entries.accept(MPItemCore.ManaitaSource.get());
             }).build());
     }

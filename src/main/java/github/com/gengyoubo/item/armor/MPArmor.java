@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.item.data.IMPKey;
@@ -29,6 +30,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class MPArmor extends ArmorItem {
+    private static final float DEFAULT_WALKING_SPEED = 0.1F;
+    private static final float DEFAULT_FLYING_SPEED = 0.05F;
+
     protected MPArmor(Type type) {
         super(new ManaitaArmorMaterial(), type, new Item.Properties().fireResistant());
     }
@@ -36,6 +40,42 @@ public class MPArmor extends ArmorItem {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(Component.translatable("info.armor").getString())));
+    }
+
+    public static void syncArmorState(Player player) {
+        ItemStack helmet = player.getInventory().armor.get(3);
+        ItemStack leggings = player.getInventory().armor.get(1);
+        ItemStack boots = player.getInventory().armor.get(0);
+
+        if (!(helmet.getItem() instanceof Helmet) && player.hasEffect(MobEffects.NIGHT_VISION)) {
+            player.removeEffect(MobEffects.NIGHT_VISION);
+        }
+
+        if (!(leggings.getItem() instanceof Leggings) && !player.hasEffect(MobEffects.INVISIBILITY)) {
+            player.setInvisible(false);
+        }
+
+        if (!(boots.getItem() instanceof Boots)) {
+            boolean abilityChanged = false;
+            if (!player.isCreative() && !player.isSpectator()) {
+                if (player.getAbilities().mayfly) {
+                    player.getAbilities().mayfly = false;
+                    abilityChanged = true;
+                }
+                if (player.getAbilities().flying) {
+                    player.getAbilities().flying = false;
+                    abilityChanged = true;
+                }
+            }
+
+            Objects.requireNonNull(player.getAttribute(Attributes.MOVEMENT_SPEED)).setBaseValue(DEFAULT_WALKING_SPEED);
+            player.getAbilities().setWalkingSpeed(DEFAULT_WALKING_SPEED);
+            player.getAbilities().setFlyingSpeed(DEFAULT_FLYING_SPEED);
+
+            if (abilityChanged && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.onUpdateAbilities();
+            }
+        }
     }
 
     static class ManaitaArmorMaterial implements ArmorMaterial {

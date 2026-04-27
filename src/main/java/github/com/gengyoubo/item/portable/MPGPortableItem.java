@@ -35,7 +35,6 @@ public abstract class MPGPortableItem extends Item {
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        tooltip.add(Component.literal("ItemType: " + stack.getOrCreateTag().getInt(MPNBTData.ItemType)));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 

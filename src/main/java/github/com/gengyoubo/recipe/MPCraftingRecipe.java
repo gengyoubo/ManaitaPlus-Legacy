@@ -81,19 +81,23 @@ public class MPCraftingRecipe implements CraftingRecipe {
         }
 
         boolean hasUpgradeableBlock = false;
+        boolean hasPortableBlock = false;
         boolean hasMaterial = false;
         boolean hasHook = false;
         for (ItemStack stack : container.getItems()) {
             Item item = stack.getItem();
             if (item instanceof MPHookBlockItem) {
                 hasHook = true;
-            } else if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem) {
+            } else if (item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem) {
                 hasUpgradeableBlock = true;
+                hasPortableBlock = true;
+            } else if (item instanceof MPCraftingBlockItem) {
+                hasPortableBlock = true;
             } else if (item == Items.OAK_PLANKS || item == Items.COBBLESTONE || item == Items.IRON_BLOCK || item == Items.REDSTONE_BLOCK || item == Items.GOLD_BLOCK || item == Items.DIAMOND_BLOCK || item == Items.EMERALD_BLOCK || item == Items.NETHERITE_BLOCK) {
                 hasMaterial = true;
             }
         }
-        return (hasUpgradeableBlock && hasMaterial) || (hasUpgradeableBlock && hasHook);
+        return (hasUpgradeableBlock && hasMaterial) || (hasPortableBlock && hasHook);
     }
 
     @Override
@@ -183,9 +187,6 @@ public class MPCraftingRecipe implements CraftingRecipe {
     }
 
     private static ItemStack createBlockResult(Item blockItem) {
-        if (blockItem instanceof MPCraftingBlockItem) {
-            return new ItemStack(MPBlockCore.CraftingBlockItem.get());
-        }
         if (blockItem instanceof MPFurnaceBlockItem) {
             return new ItemStack(MPBlockCore.FurnaceBlockItem.get());
         }

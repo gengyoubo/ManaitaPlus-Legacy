@@ -67,7 +67,7 @@ public class MPG implements ModInitializer {
             .icon(() -> MPBlockCore.CraftingBlockItem.get().getDefaultInstance())
             .title(Component.translatable("itemGroup.MPTab"))
             .displayItems((context, entries) -> {
-                acceptMPGType(MPBlockCore.CraftingBlockItem.get(), entries, 8);
+                entries.accept(MPBlockCore.CraftingBlockItem.get());
                 acceptMPGType(MPBlockCore.FurnaceBlockItem.get(), entries, 8);
                 acceptMPGType(MPBlockCore.BrewingBlockItem.get(), entries, 8);
                 acceptMPGType(MPBlockCore.HookBlockItem.get(), entries, 7);

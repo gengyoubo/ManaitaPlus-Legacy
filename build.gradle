@@ -82,6 +82,10 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
 }
 
+tasks.matching { it.name == 'sourcesJar' }.configureEach {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 java {
 	withSourcesJar()
 	sourceCompatibility = JavaVersion.VERSION_17
@@ -98,10 +102,13 @@ jar {
 // configure the maven publication
 publishing {
 	publications {
-		create("mavenJava", MavenPublication) {
+		register('mavenJava', MavenPublication) {
 			from components.java
 		}
 	}
 	repositories {
+		maven {
+			url "file://${project.projectDir}/mcmodsrepo"
+		}
 	}
 }

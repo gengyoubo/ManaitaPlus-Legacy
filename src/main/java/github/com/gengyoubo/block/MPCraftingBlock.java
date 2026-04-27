@@ -53,7 +53,15 @@ public class MPCraftingBlock extends BaseEntityBlock {
 
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
-        return getItemStacks(p_287732_);
+        List<ItemStack> list = com.google.common.collect.Lists.newArrayList();
+        list.add(new ItemStack(this));
+        int hook = p_287732_.getValue(MPBlockData.HOOK);
+        if (hook != 8) {
+            ItemStack itemStack = new ItemStack(github.com.gengyoubo.core.MPBlockCore.HookBlockItem.get());
+            itemStack.getOrCreateTag().putInt(github.com.gengyoubo.util.MPNBTData.ItemType, hook);
+            list.add(itemStack);
+        }
+        return list;
     }
 
 

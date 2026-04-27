@@ -46,7 +46,6 @@ public abstract class MPTypedBlockItem extends BlockItem {
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        tooltip.add(Component.literal("ItemType: " + stack.getOrCreateTag().getInt(MPNBTData.ItemType)));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 

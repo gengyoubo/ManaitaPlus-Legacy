@@ -6,7 +6,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -50,10 +49,22 @@ public abstract class MPGPortableItem extends Item {
     protected abstract void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level);
 
     protected final void openPortableScreen(ServerPlayer serverPlayer, ItemStack itemInHand, Level level, String titleKey, PortableMenuFactory menuFactory) {
-        serverPlayer.openMenu(new SimpleMenuProvider(
-                (containerId, inventory, player) -> menuFactory.create(containerId, inventory, player, itemInHand, level),
-                Component.translatable(titleKey)
-        ));
+        serverPlayer.openMenu(new ExtendedScreenHandlerFactory<BlockPos>() {
+            @Override
+            public BlockPos getScreenOpeningData(ServerPlayer player) {
+                return BlockPos.ZERO;
+            }
+
+            @Override
+            public @NotNull Component getDisplayName() {
+                return Component.translatable(titleKey);
+            }
+
+            @Override
+            public @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory, @NotNull Player player) {
+                return menuFactory.create(containerId, inventory, player, itemInHand, level);
+            }
+        });
     }
 
     @FunctionalInterface

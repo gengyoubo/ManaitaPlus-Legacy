@@ -173,7 +173,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case EDIT_BOX_OWNER -> processEditBoxClass(classNode);
             case TAG_KEY_OWNER -> processTagKeyClass(classNode);
             case GUI_GRAPHICS_OWNER -> processGuiGraphicsClass(classNode);
+            case "net/minecraft/client/gui/screens/Screen" -> processScreenClass(classNode);
             case CLIENT_TOOLTIP_COMPONENT_OWNER -> processClientTooltipComponentClass(classNode);
+            case "net/minecraft/client/renderer/Rect2i" -> processRect2iClass(classNode);
+            case "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" -> processAbstractContainerScreenClass(classNode);
             case CRASH_REPORT_OWNER -> processCrashReportClass(classNode);
             case CRASH_REPORT_CATEGORY_OWNER -> processCrashReportCategoryClass(classNode);
             case RESOURCE_RELOAD_LISTENER_OWNER -> processResourceReloadListenerInterface(classNode);
@@ -216,6 +219,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             newName = "init";
         } else if (method.name.equals("m_88315_") && method.desc.equals("(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")) {
             newName = "render";
+        } else if (method.name.equals("m_280273_") && method.desc.equals("(Lnet/minecraft/client/gui/GuiGraphics;)V")) {
+            newName = "renderBackground";
         } else if (method.name.equals("m_86600_") && method.desc.equals("()V")) {
             newName = "removed";
         } else if (method.name.equals("m_7379_") && method.desc.equals("()V")) {
@@ -447,6 +452,116 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new InsnNode(Opcodes.IRETURN)
         );
         return patched;
+    }
+
+    private static boolean processAbstractContainerScreenClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_6262_",
+                "()Lnet/minecraft/world/inventory/AbstractContainerMenu;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen",
+                        "getMenu",
+                        "()Lnet/minecraft/world/inventory/AbstractContainerMenu;",
+                        false
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processRect2iClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110085_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getX", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110086_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getY", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110087_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getWidth", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110088_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getHeight", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110090_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getWidth", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_110091_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "getHeight", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_173047_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "setX", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_173054_",
+                "(I)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "setY", "(I)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_173049_",
+                "(II)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/renderer/Rect2i", "setPosition", "(II)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processScreenClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_280273_",
+                "(Lnet/minecraft/client/gui/GuiGraphics;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/gui/screens/Screen", "renderBackground", "(Lnet/minecraft/client/gui/GuiGraphics;)V", false),
+                new InsnNode(Opcodes.RETURN)
+        );
     }
 
     private static boolean processStyleClass(ClassNode classNode) {
@@ -725,7 +840,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processAbstractContainerMenuClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_6772_",
                 "()Lnet/minecraft/world/inventory/MenuType;",
@@ -733,6 +849,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_CONTAINER_MENU_OWNER, "getType", "()Lnet/minecraft/world/inventory/MenuType;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_142621_",
+                "()Lnet/minecraft/world/item/ItemStack;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_CONTAINER_MENU_OWNER, "getCarried", "()Lnet/minecraft/world/item/ItemStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
     }
 
     private static boolean processDefaultedRegistryClass(ClassNode classNode) {
@@ -1221,6 +1346,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Lnet/minecraft/network/chat/MutableComponent;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "plainCopy", "()Lnet/minecraft/network/chat/MutableComponent;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7360_",
+                "()Ljava/util/List;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "getSiblings", "()Ljava/util/List;", true),
                 new InsnNode(Opcodes.ARETURN)
         );
         patched |= ensureInstanceBridge(
@@ -1927,8 +2060,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteJeiVanillaField(FieldInsnNode fieldInsn) {
-        if (fieldInsn.owner.equals(ITEMS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+        return switch (fieldInsn.owner) {
+            case ITEMS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_42399_" -> "BOWL";
                 case "f_42354_" -> "TURTLE_HELMET";
                 case "f_42383_" -> "IRON_SWORD";
@@ -2001,10 +2134,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_42741_" -> "ELYTRA";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(BLOCKS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case BLOCKS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_50072_" -> "BROWN_MUSHROOM";
                 case "f_50073_" -> "RED_MUSHROOM";
                 case "f_50091_" -> "CRAFTING_TABLE";
@@ -2020,10 +2150,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_50715_" -> "COMPOSTER";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(MENU_TYPE_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case MENU_TYPE_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_39968_" -> "CRAFTING";
                 case "f_39970_" -> "FURNACE";
                 case "f_39978_" -> "SMOKER";
@@ -2033,23 +2160,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_39977_" -> "SMITHING";
                 default -> null;
             });
-        }
+            case REGISTRIES_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_256808_".equals(fieldInsn.name) ? "FLUID" : null);
 
-        if (fieldInsn.owner.equals(REGISTRIES_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_256808_" -> "FLUID";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals(ITEM_TAGS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_13145_" -> "SMALL_FLOWERS";
-                default -> null;
-            });
-        }
-
-        return false;
+            case ITEM_TAGS_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_13145_".equals(fieldInsn.name) ? "SMALL_FLOWERS" : null);
+            default -> false;
+        };
     }
 
     private static boolean rewriteJeiVanillaMethod(MethodInsnNode methodInsn) {
@@ -2081,42 +2198,32 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteJeiItemStackListFactoryField(FieldInsnNode fieldInsn) {
-        if (fieldInsn.owner.equals(MINECRAFT_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+        return switch (fieldInsn.owner) {
+            case MINECRAFT_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_91074_" -> "player";
                 case "f_91066_" -> "options";
                 case "f_91073_" -> "level";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/client/player/LocalPlayer")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case "net/minecraft/client/player/LocalPlayer" -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_108617_" -> "connection";
                 case "f_36096_" -> "containerMenu";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case "net/minecraft/client/gui/screens/Screen" -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_96541_" -> "minecraft";
                 case "f_96543_" -> "width";
                 case "f_96544_" -> "height";
                 case "f_96547_" -> "font";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(REGISTRIES_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case REGISTRIES_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_256913_" -> "ITEM";
                 case "f_256747_" -> "BLOCK";
                 default -> null;
             });
-        }
-
-        return false;
+            default -> false;
+        };
     }
 
     private static boolean rewriteJeiItemStackListFactoryMethod(MethodInsnNode methodInsn) {
@@ -2211,98 +2318,112 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteGenericJeiField(FieldInsnNode fieldInsn) {
-        if (fieldInsn.owner.equals("net/minecraft/world/level/block/ComposterBlock")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_51914_" -> "COMPOSTABLES";
-                default -> null;
-            });
-        }
+        switch (fieldInsn.owner) {
+            case "net/minecraft/world/level/block/ComposterBlock" -> {
+                if ("f_51914_".equals(fieldInsn.name)) {
+                    return rewriteFieldName(fieldInsn, "COMPOSTABLES");
+                }
+                rewriteFieldName(fieldInsn, null);
+                return false;
+            }
+            case "net/minecraft/world/item/alchemy/PotionBrewing" -> {
+                return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                    case "f_43494_" -> "POTION_MIXES";
+                    case "f_43495_" -> "CONTAINER_MIXES";
+                    case "f_43496_" -> "ALLOWED_CONTAINERS";
+                    default -> null;
+                });
+            }
+            case "net/minecraft/network/chat/Style" -> {
+                String newName = null;
+                if ("f_131099_".equals(fieldInsn.name)) {
+                    newName = "EMPTY";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals("net/minecraft/world/item/alchemy/PotionBrewing")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_43494_" -> "POTION_MIXES";
-                case "f_43495_" -> "CONTAINER_MIXES";
-                case "f_43496_" -> "ALLOWED_CONTAINERS";
-                default -> null;
-            });
-        }
+            case COMMON_COMPONENTS_OWNER -> {
+                String newName = null;
+                if ("f_237098_".equals(fieldInsn.name)) {
+                    newName = "EMPTY";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals("net/minecraft/network/chat/Style")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_131099_" -> "EMPTY";
-                default -> null;
-            });
-        }
+            case "net/minecraft/client/gui/components/Button" -> {
+                String newName = null;
+                if ("f_252438_".equals(fieldInsn.name)) {
+                    newName = "DEFAULT_NARRATION";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals(COMMON_COMPONENTS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_237098_" -> "EMPTY";
-                default -> null;
-            });
-        }
+            case "net/minecraft/client/gui/screens/inventory/tooltip/DefaultTooltipPositioner" -> {
+                String newName = null;
+                if ("f_262752_".equals(fieldInsn.name)) {
+                    newName = "INSTANCE";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals("net/minecraft/client/gui/components/Button")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_252438_" -> "DEFAULT_NARRATION";
-                default -> null;
-            });
-        }
+            case "com/mojang/blaze3d/vertex/DefaultVertexFormat" -> {
+                String newName = null;
+                if ("f_85817_".equals(fieldInsn.name)) {
+                    newName = "POSITION_TEX";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
+            case "net/minecraft/client/Minecraft" -> {
+                return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                    case "f_91062_" -> "font";
+                    case "f_91066_" -> "options";
+                    case "f_91067_" -> "mouseHandler";
+                    case "f_91073_" -> "level";
+                    case "f_91074_" -> "player";
+                    case "f_91080_" -> "screen";
+                    default -> null;
+                });
+            }
+            case "net/minecraft/world/item/ItemStack" -> {
+                String newName = null;
+                if ("f_41583_".equals(fieldInsn.name)) {
+                    newName = "EMPTY";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/inventory/tooltip/DefaultTooltipPositioner")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_262752_" -> "INSTANCE";
-                default -> null;
-            });
-        }
+            case "net/minecraft/world/inventory/InventoryMenu" -> {
+                String newName = null;
+                if ("f_39692_".equals(fieldInsn.name)) {
+                    newName = "BLOCK_ATLAS";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals("com/mojang/blaze3d/vertex/DefaultVertexFormat")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_85817_" -> "POSITION_TEX";
-                default -> null;
-            });
-        }
+            case "net/minecraft/world/item/Items" -> {
+                String newName = null;
+                if ("f_42410_".equals(fieldInsn.name)) {
+                    newName = "STONE";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
 
-        if (fieldInsn.owner.equals(MINECRAFT_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_91062_" -> "font";
-                case "f_91066_" -> "options";
-                case "f_91067_" -> "mouseHandler";
-                case "f_91073_" -> "level";
-                case "f_91074_" -> "player";
-                case "f_91080_" -> "screen";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/world/item/ItemStack")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_41583_" -> "EMPTY";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/world/item/Items")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_42410_" -> "STONE";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/client/Options")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_92125_" -> "advancedItemTooltips";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_96541_" -> "minecraft";
-                case "f_96543_" -> "width";
-                case "f_96544_" -> "height";
-                case "f_96547_" -> "font";
-                default -> null;
-            });
+            case "net/minecraft/client/Options" -> {
+                String newName = null;
+                if ("f_92125_".equals(fieldInsn.name)) {
+                    newName = "advancedItemTooltips";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
+            case "net/minecraft/client/gui/screens/Screen" -> {
+                return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                    case "f_96541_" -> "minecraft";
+                    case "f_96543_" -> "width";
+                    case "f_96544_" -> "height";
+                    case "f_96547_" -> "font";
+                    default -> null;
+                });
+            }
         }
 
         if (fieldInsn.owner.startsWith("net/minecraft/client/gui/screens/")) {
@@ -2322,11 +2443,9 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (fieldInsn.owner.startsWith("mezz/jei/")) {
             String newName = switch (fieldInsn.name) {
                 case "f_96541_" -> "minecraft";
-                case "f_96543_" -> "width";
-                case "f_96544_" -> "height";
+                case "f_96543_", "f_93618_" -> "width";
+                case "f_96544_", "f_93619_" -> "height";
                 case "f_96547_" -> "font";
-                case "f_93618_" -> "width";
-                case "f_93619_" -> "height";
                 case "f_93623_" -> "active";
                 case "f_93624_" -> "visible";
                 default -> null;
@@ -2337,57 +2456,39 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
-        if (fieldInsn.owner.equals(TOOLTIP_FLAG_DEFAULT_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+        return switch (fieldInsn.owner) {
+            case TOOLTIP_FLAG_DEFAULT_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_256730_" -> "ADVANCED";
                 case "f_256752_" -> "NORMAL";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/world/item/crafting/SmithingTransformRecipe")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_265949_" -> "template";
-                case "f_265888_" -> "base";
-                case "f_265907_" -> "addition";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals("net/minecraft/world/item/crafting/SmithingTrimRecipe")) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_265958_" -> "template";
-                case "f_266040_" -> "base";
-                case "f_266053_" -> "addition";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals(FLUIDS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case "net/minecraft/world/item/crafting/SmithingTransformRecipe" ->
+                    rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                        case "f_265949_" -> "template";
+                        case "f_265888_" -> "base";
+                        case "f_265907_" -> "addition";
+                        default -> null;
+                    });
+            case "net/minecraft/world/item/crafting/SmithingTrimRecipe" ->
+                    rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                        case "f_265958_" -> "template";
+                        case "f_266040_" -> "base";
+                        case "f_266053_" -> "addition";
+                        default -> null;
+                    });
+            case FLUIDS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_76191_" -> "EMPTY";
                 case "f_76193_" -> "WATER";
                 case "f_76195_" -> "LAVA";
                 default -> null;
             });
-        }
+            case FLUID_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_257020_".equals(fieldInsn.name) ? "builtInRegistryHolder" : null);
 
-        if (fieldInsn.owner.equals(FLUID_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_257020_" -> "builtInRegistryHolder";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals(MINECRAFT_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_91062_" -> "font";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals(POTIONS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case "net/minecraft/client/Minecraft" ->
+                    rewriteFieldName(fieldInsn,
+                            "f_91062_".equals(fieldInsn.name) ? "font" : null);
+            case POTIONS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_43598_" -> "EMPTY";
                 case "f_43599_" -> "WATER";
                 case "f_43600_" -> "MUNDANE";
@@ -2395,35 +2496,21 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_43602_" -> "AWKWARD";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(BUILT_IN_REGISTRIES_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case BUILT_IN_REGISTRIES_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_257020_" -> "FLUID";
                 case "f_257033_" -> "ITEM";
                 case "f_256896_" -> "INSTRUMENT";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(REGISTRIES_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case REGISTRIES_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_257010_" -> "INSTRUMENT";
                 case "f_256762_" -> "ENCHANTMENT";
                 case "f_256973_" -> "POTION";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(INGREDIENT_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_43901_" -> "EMPTY";
-                default -> null;
-            });
-        }
-
-        if (fieldInsn.owner.equals(ITEMS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case INGREDIENT_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_43901_".equals(fieldInsn.name) ? "EMPTY" : null);
+            case "net/minecraft/world/item/Items" -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_42412_" -> "ARROW";
                 case "f_42354_" -> "TURTLE_HELMET";
                 case "f_42383_" -> "IRON_SWORD";
@@ -2487,34 +2574,95 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_42741_" -> "ELYTRA";
                 default -> null;
             });
-        }
-
-        if (fieldInsn.owner.equals(ITEM_TAGS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+            case ITEM_TAGS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_13168_" -> "PLANKS";
                 case "f_13191_" -> "BANNERS";
                 default -> null;
             });
-        }
+            case BLOCKS_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_50456_".equals(fieldInsn.name) ? "SHULKER_BOX" : null);
 
-        if (fieldInsn.owner.equals(BLOCKS_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_50456_" -> "SHULKER_BOX";
-                default -> null;
-            });
-        }
+            case BLOCK_ENTITY_TYPE_OWNER ->
+                    rewriteFieldName(fieldInsn, "f_58935_".equals(fieldInsn.name) ? "BANNER" : null);
+            default -> false;
+        };
 
-        if (fieldInsn.owner.equals(BLOCK_ENTITY_TYPE_OWNER)) {
-            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_58935_" -> "BANNER";
-                default -> null;
-            });
-        }
-
-        return false;
     }
 
     private static boolean rewriteGenericJeiMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.startsWith(CRAFTING_RECIPE_PACKAGE_PREFIX)) {
+            return rewriteCraftingRecipePackageMethod(methodInsn);
+        }
+
+        if (methodInsn.owner.startsWith("mezz/jei/")) {
+            return rewriteMezzJeiMethod(methodInsn);
+        }
+
+        return switch (methodInsn.owner) {
+            case "net/minecraft/world/item/ItemStack" -> rewriteItemItemStackMethod(methodInsn);
+            case "net/minecraft/world/level/block/Block" -> rewriteBlockBlockMethod(methodInsn);
+            case FLOWER_BLOCK_OWNER -> rewriteFlowerBlockMethod(methodInsn);
+            case BLOCK_ITEM_OWNER -> rewriteBlockItemMethod(methodInsn);
+            case BANNER_ITEM_OWNER -> rewriteBannerItemMethod(methodInsn);
+            case DYE_COLOR_OWNER -> rewriteDyeColorMethod(methodInsn);
+            case DYE_ITEM_OWNER -> rewriteDyeItemMethod(methodInsn);
+            case TIERS_OWNER -> rewriteTiersMethod(methodInsn);
+            case SUSPICIOUS_STEW_ITEM_OWNER -> rewriteSuspiciousStewItemMethod(methodInsn);
+            case INGREDIENT_OWNER -> rewriteIngredientMethod(methodInsn);
+            case "net/minecraft/core/DefaultedRegistry" -> rewriteCoreDefaultedRegistryMethod(methodInsn);
+            case RESOURCE_LOCATION_OWNER -> rewriteResourceLocationMethod(methodInsn);
+            case RESOURCE_KEY_OWNER -> rewriteResourceKeyMethod(methodInsn);
+            case CRASH_REPORT_OWNER -> rewriteCrashReportMethod(methodInsn);
+            case "com/mojang/blaze3d/vertex/PoseStack" -> rewriteVertexPoseStackMethod(methodInsn);
+            case "net/minecraft/client/renderer/RenderType" -> rewriteRendererRenderTypeMethod(methodInsn);
+            case "net/minecraft/client/gui/components/AbstractWidget" -> rewriteComponentsAbstractWidgetMethod(methodInsn);
+            case CLIENT_LEVEL_OWNER -> rewriteClientLevelMethod(methodInsn);
+            case REGISTRY_OWNER -> rewriteRegistryMethod(methodInsn);
+            case HOLDER_REFERENCE_OWNER -> rewriteHolderReferenceMethod(methodInsn);
+            case HOLDER_OWNER -> rewriteHolderMethod(methodInsn);
+            case NON_NULL_LIST_OWNER -> rewriteNonNullListMethod(methodInsn);
+            case SHULKER_BOX_BLOCK_OWNER -> rewriteShulkerBoxBlockMethod(methodInsn);
+            case COMPOUND_TAG_OWNER -> rewriteCompoundTagMethod(methodInsn);
+            case LIST_TAG_OWNER -> rewriteListTagMethod(methodInsn);
+            case "net/minecraft/core/HolderSet$ListBacked" -> rewriteHolderSetListBackedMethod(methodInsn);
+            case ENCHANTED_BOOK_ITEM_OWNER -> rewriteEnchantedBookItemMethod(methodInsn);
+            case ENCHANTMENT_OWNER -> rewriteEnchantmentMethod(methodInsn);
+            case POTION_OWNER -> rewritePotionMethod(methodInsn);
+            case POTION_UTILS_OWNER -> rewritePotionUtilsMethod(methodInsn);
+            case TOOLTIP_FLAG_OWNER -> rewriteTooltipFlagMethod(methodInsn);
+            case FLUID_OWNER -> rewriteFluidMethod(methodInsn);
+            case FLUID_STATE_OWNER -> rewriteFluidStateMethod(methodInsn);
+            case COMPONENT_OWNER -> rewriteComponentMethod(methodInsn);
+            case "net/minecraft/client/gui/screens/Screen" -> rewriteScreensScreenMethod(methodInsn);
+            case MUTABLE_COMPONENT_OWNER -> rewriteMutableComponentMethod(methodInsn);
+            case FONT_OWNER -> rewriteFontMethod(methodInsn);
+            case CLIENT_TOOLTIP_COMPONENT_OWNER -> rewriteClientTooltipComponentMethod(methodInsn);
+            case GUI_GRAPHICS_OWNER -> rewriteGuiGraphicsMethod(methodInsn);
+            case "net/minecraft/client/Minecraft" -> rewriteMinecraftMethod(methodInsn);
+            case "com/mojang/blaze3d/platform/InputConstants" -> rewritePlatformInputConstantsMethod(methodInsn);
+            case "com/mojang/blaze3d/platform/InputConstants$Key" -> rewriteInputConstantsKeyMethod(methodInsn);
+            case "com/mojang/blaze3d/platform/InputConstants$Type" -> rewriteInputConstantsTypeMethod(methodInsn);
+            case "net/minecraft/SharedConstants" -> rewriteMinecraftSharedConstantsMethod(methodInsn);
+            case "net/minecraft/client/renderer/GameRenderer" -> rewriteRendererGameRendererMethod(methodInsn);
+            case "com/mojang/blaze3d/vertex/Tesselator" -> rewriteVertexTesselatorMethod(methodInsn);
+            case "com/mojang/blaze3d/vertex/BufferBuilder" -> rewriteVertexBufferBuilderMethod(methodInsn);
+            case "com/mojang/blaze3d/vertex/PoseStack$Pose" -> rewritePoseStackPoseMethod(methodInsn);
+            case "com/mojang/blaze3d/vertex/VertexConsumer" -> rewriteVertexVertexConsumerMethod(methodInsn);
+            case "net/minecraft/client/renderer/texture/TextureAtlasSprite" -> rewriteTextureTextureAtlasSpriteMethod(methodInsn);
+            case "net/minecraft/client/resources/TextureAtlasHolder" -> rewriteResourcesTextureAtlasHolderMethod(methodInsn);
+            case "com/mojang/blaze3d/platform/Window" -> rewritePlatformWindowMethod(methodInsn);
+            case "net/minecraft/client/MouseHandler" -> rewriteClientMouseHandlerMethod(methodInsn);
+            case "net/minecraft/client/player/LocalPlayer" -> rewritePlayerLocalPlayerMethod(methodInsn);
+            case "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" -> rewriteInventoryAbstractContainerScreenMethod(methodInsn);
+            case ABSTRACT_CONTAINER_MENU_OWNER -> rewriteAbstractContainerMenuMethod(methodInsn);
+            case "net/minecraft/client/renderer/Rect2i" -> rewriteRendererRect2iMethod(methodInsn);
+            case "net/minecraft/client/gui/screens/recipebook/RecipeUpdateListener" -> rewriteRecipebookRecipeUpdateListenerMethod(methodInsn);
+            case "net/minecraft/client/gui/screens/recipebook/RecipeBookComponent" -> rewriteRecipebookRecipeBookComponentMethod(methodInsn);
+            default -> false;
+        };
+    }
+
+    private static boolean rewriteCraftingRecipePackageMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.startsWith(CRAFTING_RECIPE_PACKAGE_PREFIX)) {
             if (methodInsn.name.equals("m_5598_")
                     && methodInsn.desc.equals("()Z")) {
@@ -2538,6 +2686,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewriteItemItemStackMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/world/item/ItemStack")) {
             String newName = switch (methodInsn.name) {
                 case "m_41613_" -> "getCount";
@@ -2552,6 +2704,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewriteBlockBlockMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/world/level/block/Block")
                 && methodInsn.name.equals("m_5456_")
                 && methodInsn.desc.equals("()Lnet/minecraft/world/item/Item;")) {
@@ -2566,6 +2722,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteFlowerBlockMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(FLOWER_BLOCK_OWNER)) {
             if (methodInsn.name.equals("m_5456_")
                     && methodInsn.desc.equals("()Lnet/minecraft/world/item/Item;")) {
@@ -2579,6 +2739,22 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        if (methodInsn.owner.equals(FLOWER_BLOCK_OWNER)) {
+            String newName = switch (methodInsn.name) {
+                case "m_53521_" -> "getSuspiciousEffect";
+                case "m_53522_" -> "getEffectDuration";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteBlockItemMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(BLOCK_ITEM_OWNER)
                 && methodInsn.name.equals("m_40614_")
                 && methodInsn.desc.equals("()Lnet/minecraft/world/level/block/Block;")) {
@@ -2593,6 +2769,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteBannerItemMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(BANNER_ITEM_OWNER)
                 && methodInsn.name.equals("m_40545_")
                 && methodInsn.desc.equals("()Lnet/minecraft/world/item/DyeColor;")) {
@@ -2600,6 +2780,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteDyeColorMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(DYE_COLOR_OWNER)
                 && methodInsn.name.equals("m_41060_")
                 && methodInsn.desc.equals("()I")) {
@@ -2607,6 +2791,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteDyeItemMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(DYE_ITEM_OWNER)
                 && methodInsn.name.equals("m_41082_")
                 && methodInsn.desc.equals("(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/item/DyeItem;")) {
@@ -2614,6 +2802,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteTiersMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(TIERS_OWNER)
                 && methodInsn.name.equals("m_6282_")
                 && methodInsn.desc.equals("()Lnet/minecraft/world/item/crafting/Ingredient;")) {
@@ -2621,6 +2813,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteSuspiciousStewItemMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(SUSPICIOUS_STEW_ITEM_OWNER)
                 && methodInsn.name.equals("m_43258_")
                 && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V")) {
@@ -2628,6 +2824,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteIngredientMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(INGREDIENT_OWNER)
                 && methodInsn.name.equals("m_43927_")
                 && methodInsn.desc.equals("([Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/crafting/Ingredient;")) {
@@ -2649,6 +2849,17 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(INGREDIENT_OWNER)
+                && methodInsn.name.equals("m_43908_")
+                && methodInsn.desc.equals("()[Lnet/minecraft/world/item/ItemStack;")) {
+            methodInsn.name = "getItems";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteCoreDefaultedRegistryMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/core/DefaultedRegistry")
                 && methodInsn.name.equals("m_206058_")
                 && methodInsn.desc.equals("(Lnet/minecraft/tags/TagKey;)Ljava/lang/Iterable;")) {
@@ -2663,6 +2874,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteResourceLocationMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(RESOURCE_LOCATION_OWNER)) {
             String newName = switch (methodInsn.name) {
                 case "m_135820_" -> "tryParse";
@@ -2675,6 +2890,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewriteResourceKeyMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(RESOURCE_KEY_OWNER)
                 && methodInsn.name.equals("m_135785_")
                 && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceKey;")) {
@@ -2682,6 +2901,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteCrashReportMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(CRASH_REPORT_OWNER)
                 && methodInsn.name.equals("m_127514_")
                 && methodInsn.desc.equals("(Ljava/lang/String;)Lnet/minecraft/CrashReportCategory;")) {
@@ -2703,350 +2926,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteVertexPoseStackMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack")
                 && methodInsn.name.equals("m_85837_")
                 && methodInsn.desc.equals("(DDD)V")) {
             methodInsn.name = "translate";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
-                && methodInsn.name.equals("m_285907_")
-                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
-            methodInsn.name = "gui";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
-                && methodInsn.name.equals("m_286086_")
-                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
-            methodInsn.name = "guiOverlay";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/client/gui/components/AbstractWidget")
-                && methodInsn.name.equals("m_6375_")
-                && methodInsn.desc.equals("(DDI)Z")) {
-            methodInsn.name = "mouseClicked";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
-                && methodInsn.name.equals("m_9598_")
-                && methodInsn.desc.equals("()Lnet/minecraft/core/RegistryAccess;")) {
-            methodInsn.name = "registryAccess";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(REGISTRY_OWNER)
-                && methodInsn.name.equals("m_203636_")
-                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;")) {
-            methodInsn.name = "getHolder";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(HOLDER_REFERENCE_OWNER)
-                && methodInsn.name.equals("m_205785_")
-                && methodInsn.desc.equals("()Lnet/minecraft/resources/ResourceKey;")) {
-            methodInsn.name = "key";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(HOLDER_OWNER)
-                && methodInsn.name.equals("m_203334_")
-                && methodInsn.desc.equals("()Ljava/lang/Object;")) {
-            methodInsn.name = "value";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(HOLDER_OWNER)
-                && methodInsn.name.equals("m_203633_")
-                && methodInsn.desc.equals("()Z")) {
-            methodInsn.name = "isBound";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(NON_NULL_LIST_OWNER)
-                && methodInsn.name.equals("m_122783_")
-                && methodInsn.desc.equals("(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;")) {
-            methodInsn.name = "of";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(FLOWER_BLOCK_OWNER)) {
-            String newName = switch (methodInsn.name) {
-                case "m_53521_" -> "getSuspiciousEffect";
-                case "m_53522_" -> "getEffectDuration";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals(SHULKER_BOX_BLOCK_OWNER)
-                && methodInsn.name.equals("m_56190_")
-                && methodInsn.desc.equals("(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/level/block/Block;")) {
-            methodInsn.name = "getBlockByColor";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(COMPOUND_TAG_OWNER)) {
-            String newName = switch (methodInsn.name) {
-                case "m_128405_" -> "putInt";
-                case "m_128425_" -> "contains";
-                case "m_128461_" -> "getString";
-                case "m_128445_" -> "getByte";
-                case "m_128437_" -> "getList";
-                case "m_128448_" -> "getShort";
-                case "m_128451_" -> "getInt";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals(LIST_TAG_OWNER)
-                && methodInsn.name.equals("m_128728_")
-                && methodInsn.desc.equals("(I)Lnet/minecraft/nbt/CompoundTag;")) {
-            methodInsn.name = "getCompound";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/core/HolderSet$ListBacked")
-                && methodInsn.name.equals("m_203614_")
-                && methodInsn.desc.equals("()Ljava/util/stream/Stream;")) {
-            methodInsn.name = "stream";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(INGREDIENT_OWNER)
-                && methodInsn.name.equals("m_43908_")
-                && methodInsn.desc.equals("()[Lnet/minecraft/world/item/ItemStack;")) {
-            methodInsn.name = "getItems";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(ENCHANTED_BOOK_ITEM_OWNER)
-                && methodInsn.name.equals("m_41163_")
-                && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/ListTag;")) {
-            methodInsn.name = "getEnchantments";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(ENCHANTMENT_OWNER)
-                && methodInsn.name.equals("m_44704_")
-                && methodInsn.desc.equals("()Ljava/lang/String;")) {
-            methodInsn.name = "getDescriptionId";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(POTION_OWNER)
-                && methodInsn.name.equals("m_43492_")
-                && methodInsn.desc.equals("(Ljava/lang/String;)Ljava/lang/String;")) {
-            methodInsn.name = "getName";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(POTION_UTILS_OWNER)) {
-            String newName = switch (methodInsn.name) {
-                case "m_43549_" -> "setPotion";
-                case "m_43579_" -> "getPotion";
-                case "m_43547_" -> "getMobEffects";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals(TOOLTIP_FLAG_OWNER)
-                && methodInsn.name.equals("m_7050_")
-                && methodInsn.desc.equals("()Z")) {
-            methodInsn.name = "isAdvanced";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(FLUID_OWNER)) {
-            String newName = switch (methodInsn.name) {
-                case "m_76145_" -> "defaultFluidState";
-                case "m_7444_" -> "isSource";
-                case "m_6212_" -> "isSame";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals(FLUID_STATE_OWNER)
-                && methodInsn.name.equals("m_76152_")
-                && methodInsn.desc.equals("()Lnet/minecraft/world/level/material/Fluid;")) {
-            methodInsn.name = "getType";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(COMPONENT_OWNER)) {
-            String newName = switch (methodInsn.name) {
-                case "m_237113_" -> "literal";
-                case "m_237115_" -> "translatable";
-                case "m_237110_" -> "translatable";
-                case "m_6879_" -> "plainCopy";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
-            if (methodInsn.name.equals("m_7222_")
-                    && methodInsn.desc.equals("()Lnet/minecraft/client/gui/components/events/GuiEventListener;")) {
-                methodInsn.name = "getFocused";
-                return true;
-            }
-            if (methodInsn.name.equals("m_7522_")
-                    && methodInsn.desc.equals("(Lnet/minecraft/client/gui/components/events/GuiEventListener;)V")) {
-                methodInsn.name = "setFocused";
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals(MUTABLE_COMPONENT_OWNER)
-                && methodInsn.name.equals("m_130940_")
-                && methodInsn.desc.equals("(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")) {
-            methodInsn.name = "withStyle";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(FONT_OWNER)
-                && methodInsn.name.equals("m_92895_")
-                && methodInsn.desc.equals("(Ljava/lang/String;)I")) {
-            methodInsn.name = "width";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(FONT_OWNER)
-                && methodInsn.name.equals("m_92852_")
-                && methodInsn.desc.equals("(Lnet/minecraft/network/chat/FormattedText;)I")) {
-            methodInsn.name = "width";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
-                && methodInsn.name.equals("m_169948_")
-                && methodInsn.desc.equals("(Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
-            methodInsn.name = "create";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
-                && methodInsn.name.equals("m_169950_")
-                && methodInsn.desc.equals("(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
-            methodInsn.name = "create";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(COMPONENT_OWNER)
-                && methodInsn.name.equals("m_7532_")
-                && methodInsn.desc.equals("()Lnet/minecraft/util/FormattedCharSequence;")) {
-            methodInsn.name = "getVisualOrderText";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
-                && methodInsn.name.equals("m_280614_")
-                && methodInsn.desc.equals("(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I")) {
-            methodInsn.name = "drawString";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
-                && methodInsn.name.equals("m_280168_")
-                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/vertex/PoseStack;")) {
-            methodInsn.name = "pose";
-            return true;
-        }
-
-        if (methodInsn.owner.equals(MINECRAFT_OWNER)
-                && methodInsn.name.equals("m_91258_")
-                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/function/Function;")) {
-            methodInsn.name = "getTextureAtlas";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants")
-                && methodInsn.name.equals("m_84827_")
-                && methodInsn.desc.equals("(II)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
-            methodInsn.name = "getKey";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
-                && methodInsn.name.equals("m_84868_")
-                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/InputConstants$Type;")) {
-            methodInsn.name = "getType";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
-                && methodInsn.name.equals("m_84873_")
-                && methodInsn.desc.equals("()I")) {
-            methodInsn.name = "getValue";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Type")
-                && methodInsn.name.equals("m_84895_")
-                && methodInsn.desc.equals("(I)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
-            methodInsn.name = "getOrCreate";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/SharedConstants")
-                && methodInsn.name.equals("m_136188_")
-                && methodInsn.desc.equals("(C)Z")) {
-            methodInsn.name = "isAllowedChatCharacter";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("net/minecraft/client/renderer/GameRenderer")
-                && methodInsn.name.equals("m_172817_")
-                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/ShaderInstance;")) {
-            methodInsn.name = "getPositionTexShader";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/Tesselator")) {
-            String newName = switch (methodInsn.name) {
-                case "m_85913_" -> "getInstance";
-                case "m_85915_" -> "getBuilder";
-                case "m_85914_" -> "end";
-                default -> null;
-            };
-            if (newName != null) {
-                methodInsn.name = newName;
-                return true;
-            }
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
-                && methodInsn.name.equals("m_166779_")
-                && methodInsn.desc.equals("(Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")) {
-            methodInsn.name = "begin";
-            return true;
-        }
-
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
-                && methodInsn.name.equals("m_252986_")
-                && methodInsn.desc.equals("(Lorg/joml/Matrix4f;FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
-            methodInsn.name = "vertex";
             return true;
         }
 
@@ -3092,33 +2979,121 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack$Pose")
-                && methodInsn.name.equals("m_252922_")
-                && methodInsn.desc.equals("()Lorg/joml/Matrix4f;")) {
-            methodInsn.name = "pose";
+        return false;
+    }
+
+    private static boolean rewriteRendererRenderTypeMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
+                && methodInsn.name.equals("m_285907_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
+            methodInsn.name = "gui";
             return true;
         }
 
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
-                && methodInsn.name.equals("m_7421_")
-                && methodInsn.desc.equals("(FF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
-            methodInsn.name = "uv";
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/RenderType")
+                && methodInsn.name.equals("m_286086_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/RenderType;")) {
+            methodInsn.name = "guiOverlay";
             return true;
         }
 
-        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
-                && methodInsn.name.equals("m_5752_")
-                && methodInsn.desc.equals("()V")) {
-            methodInsn.name = "endVertex";
+        return false;
+    }
+
+    private static boolean rewriteComponentsAbstractWidgetMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/gui/components/AbstractWidget")
+                && methodInsn.name.equals("m_6375_")
+                && methodInsn.desc.equals("(DDI)Z")) {
+            methodInsn.name = "mouseClicked";
             return true;
         }
 
-        if (methodInsn.owner.equals("net/minecraft/client/renderer/texture/TextureAtlasSprite")) {
+        return false;
+    }
+
+    private static boolean rewriteClientLevelMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(CLIENT_LEVEL_OWNER)
+                && methodInsn.name.equals("m_9598_")
+                && methodInsn.desc.equals("()Lnet/minecraft/core/RegistryAccess;")) {
+            methodInsn.name = "registryAccess";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteRegistryMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(REGISTRY_OWNER)
+                && methodInsn.name.equals("m_203636_")
+                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;")) {
+            methodInsn.name = "getHolder";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteHolderReferenceMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(HOLDER_REFERENCE_OWNER)
+                && methodInsn.name.equals("m_205785_")
+                && methodInsn.desc.equals("()Lnet/minecraft/resources/ResourceKey;")) {
+            methodInsn.name = "key";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteHolderMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(HOLDER_OWNER)
+                && methodInsn.name.equals("m_203334_")
+                && methodInsn.desc.equals("()Ljava/lang/Object;")) {
+            methodInsn.name = "value";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(HOLDER_OWNER)
+                && methodInsn.name.equals("m_203633_")
+                && methodInsn.desc.equals("()Z")) {
+            methodInsn.name = "isBound";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteNonNullListMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(NON_NULL_LIST_OWNER)
+                && methodInsn.name.equals("m_122783_")
+                && methodInsn.desc.equals("(Ljava/lang/Object;[Ljava/lang/Object;)Lnet/minecraft/core/NonNullList;")) {
+            methodInsn.name = "of";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteShulkerBoxBlockMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(SHULKER_BOX_BLOCK_OWNER)
+                && methodInsn.name.equals("m_56190_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/DyeColor;)Lnet/minecraft/world/level/block/Block;")) {
+            methodInsn.name = "getBlockByColor";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteCompoundTagMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(COMPOUND_TAG_OWNER)) {
             String newName = switch (methodInsn.name) {
-                case "m_118409_" -> "getU0";
-                case "m_118410_" -> "getU1";
-                case "m_118411_" -> "getV0";
-                case "m_118412_" -> "getV1";
+                case "m_128405_" -> "putInt";
+                case "m_128425_" -> "contains";
+                case "m_128461_" -> "getString";
+                case "m_128445_" -> "getByte";
+                case "m_128437_" -> "getList";
+                case "m_128448_" -> "getShort";
+                case "m_128451_" -> "getInt";
                 default -> null;
             };
             if (newName != null) {
@@ -3127,10 +3102,253 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
-        if (methodInsn.owner.equals("net/minecraft/client/resources/TextureAtlasHolder")
-                && methodInsn.name.equals("m_118901_")
-                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;")) {
-            methodInsn.name = "getSprite";
+        return false;
+    }
+
+    private static boolean rewriteListTagMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(LIST_TAG_OWNER)
+                && methodInsn.name.equals("m_128728_")
+                && methodInsn.desc.equals("(I)Lnet/minecraft/nbt/CompoundTag;")) {
+            methodInsn.name = "getCompound";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteHolderSetListBackedMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/core/HolderSet$ListBacked")
+                && methodInsn.name.equals("m_203614_")
+                && methodInsn.desc.equals("()Ljava/util/stream/Stream;")) {
+            methodInsn.name = "stream";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteEnchantedBookItemMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(ENCHANTED_BOOK_ITEM_OWNER)
+                && methodInsn.name.equals("m_41163_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/ListTag;")) {
+            methodInsn.name = "getEnchantments";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteEnchantmentMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(ENCHANTMENT_OWNER)
+                && methodInsn.name.equals("m_44704_")
+                && methodInsn.desc.equals("()Ljava/lang/String;")) {
+            methodInsn.name = "getDescriptionId";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewritePotionMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(POTION_OWNER)
+                && methodInsn.name.equals("m_43492_")
+                && methodInsn.desc.equals("(Ljava/lang/String;)Ljava/lang/String;")) {
+            methodInsn.name = "getName";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewritePotionUtilsMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(POTION_UTILS_OWNER)) {
+            String newName = switch (methodInsn.name) {
+                case "m_43549_" -> "setPotion";
+                case "m_43579_" -> "getPotion";
+                case "m_43547_" -> "getMobEffects";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteTooltipFlagMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(TOOLTIP_FLAG_OWNER)
+                && methodInsn.name.equals("m_7050_")
+                && methodInsn.desc.equals("()Z")) {
+            methodInsn.name = "isAdvanced";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteFluidMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(FLUID_OWNER)) {
+            String newName = switch (methodInsn.name) {
+                case "m_76145_" -> "defaultFluidState";
+                case "m_7444_" -> "isSource";
+                case "m_6212_" -> "isSame";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteFluidStateMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(FLUID_STATE_OWNER)
+                && methodInsn.name.equals("m_76152_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/level/material/Fluid;")) {
+            methodInsn.name = "getType";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteComponentMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(COMPONENT_OWNER)) {
+            String newName = switch (methodInsn.name) {
+                case "m_237113_" -> "literal";
+                case "m_237115_", "m_237110_" -> "translatable";
+                case "m_6879_" -> "plainCopy";
+                case "m_7360_" -> "getSiblings";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals(COMPONENT_OWNER)
+                && methodInsn.name.equals("m_7532_")
+                && methodInsn.desc.equals("()Lnet/minecraft/util/FormattedCharSequence;")) {
+            methodInsn.name = "getVisualOrderText";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteScreensScreenMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            if (methodInsn.name.equals("m_7222_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/client/gui/components/events/GuiEventListener;")) {
+                methodInsn.name = "getFocused";
+                return true;
+            }
+            if (methodInsn.name.equals("m_7522_")
+                    && methodInsn.desc.equals("(Lnet/minecraft/client/gui/components/events/GuiEventListener;)V")) {
+                methodInsn.name = "setFocused";
+                return true;
+            }
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            String newName = switch (methodInsn.name) {
+                case "m_7856_" -> "init";
+                case "m_88315_" -> "render";
+                case "m_280273_" -> "renderBackground";
+                case "m_86600_" -> "removed";
+                case "m_7379_" -> "onClose";
+                case "m_5953_" -> "isMouseOver";
+                case "m_6050_" -> "mouseScrolled";
+                case "m_6375_" -> "mouseClicked";
+                case "m_7933_" -> "keyPressed";
+                case "m_5534_" -> "charTyped";
+                case "m_7043_" -> "isPauseScreen";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteMutableComponentMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(MUTABLE_COMPONENT_OWNER)
+                && methodInsn.name.equals("m_130940_")
+                && methodInsn.desc.equals("(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/MutableComponent;")) {
+            methodInsn.name = "withStyle";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteFontMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(FONT_OWNER)
+                && methodInsn.name.equals("m_92895_")
+                && methodInsn.desc.equals("(Ljava/lang/String;)I")) {
+            methodInsn.name = "width";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(FONT_OWNER)
+                && methodInsn.name.equals("m_92852_")
+                && methodInsn.desc.equals("(Lnet/minecraft/network/chat/FormattedText;)I")) {
+            methodInsn.name = "width";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteClientTooltipComponentMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
+                && methodInsn.name.equals("m_169948_")
+                && methodInsn.desc.equals("(Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
+            methodInsn.name = "create";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
+                && methodInsn.name.equals("m_169950_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
+            methodInsn.name = "create";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteGuiGraphicsMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
+                && methodInsn.name.equals("m_280614_")
+                && methodInsn.desc.equals("(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I")) {
+            methodInsn.name = "drawString";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
+                && methodInsn.name.equals("m_280168_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/vertex/PoseStack;")) {
+            methodInsn.name = "pose";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteMinecraftMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(MINECRAFT_OWNER)
+                && methodInsn.name.equals("m_91258_")
+                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/function/Function;")) {
+            methodInsn.name = "getTextureAtlas";
             return true;
         }
 
@@ -3155,6 +3373,165 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewritePlatformInputConstantsMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants")
+                && methodInsn.name.equals("m_84827_")
+                && methodInsn.desc.equals("(II)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
+            methodInsn.name = "getKey";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteInputConstantsKeyMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+                && methodInsn.name.equals("m_84868_")
+                && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/InputConstants$Type;")) {
+            methodInsn.name = "getType";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+                && methodInsn.name.equals("m_84873_")
+                && methodInsn.desc.equals("()I")) {
+            methodInsn.name = "getValue";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteInputConstantsTypeMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Type")
+                && methodInsn.name.equals("m_84895_")
+                && methodInsn.desc.equals("(I)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
+            methodInsn.name = "getOrCreate";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteMinecraftSharedConstantsMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/SharedConstants")
+                && methodInsn.name.equals("m_136188_")
+                && methodInsn.desc.equals("(C)Z")) {
+            methodInsn.name = "isAllowedChatCharacter";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteRendererGameRendererMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/GameRenderer")
+                && methodInsn.name.equals("m_172817_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/renderer/ShaderInstance;")) {
+            methodInsn.name = "getPositionTexShader";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteVertexTesselatorMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/Tesselator")) {
+            String newName = switch (methodInsn.name) {
+                case "m_85913_" -> "getInstance";
+                case "m_85915_" -> "getBuilder";
+                case "m_85914_" -> "end";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteVertexBufferBuilderMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
+                && methodInsn.name.equals("m_166779_")
+                && methodInsn.desc.equals("(Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;Lcom/mojang/blaze3d/vertex/VertexFormat;)V")) {
+            methodInsn.name = "begin";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/BufferBuilder")
+                && methodInsn.name.equals("m_252986_")
+                && methodInsn.desc.equals("(Lorg/joml/Matrix4f;FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
+            methodInsn.name = "vertex";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewritePoseStackPoseMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/PoseStack$Pose")
+                && methodInsn.name.equals("m_252922_")
+                && methodInsn.desc.equals("()Lorg/joml/Matrix4f;")) {
+            methodInsn.name = "pose";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteVertexVertexConsumerMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
+                && methodInsn.name.equals("m_7421_")
+                && methodInsn.desc.equals("(FF)Lcom/mojang/blaze3d/vertex/VertexConsumer;")) {
+            methodInsn.name = "uv";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("com/mojang/blaze3d/vertex/VertexConsumer")
+                && methodInsn.name.equals("m_5752_")
+                && methodInsn.desc.equals("()V")) {
+            methodInsn.name = "endVertex";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteTextureTextureAtlasSpriteMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/texture/TextureAtlasSprite")) {
+            String newName = switch (methodInsn.name) {
+                case "m_118409_" -> "getU0";
+                case "m_118410_" -> "getU1";
+                case "m_118411_" -> "getV0";
+                case "m_118412_" -> "getV1";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteResourcesTextureAtlasHolderMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/resources/TextureAtlasHolder")
+                && methodInsn.name.equals("m_118901_")
+                && methodInsn.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;")) {
+            methodInsn.name = "getSprite";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewritePlatformWindowMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("com/mojang/blaze3d/platform/Window")) {
             String newName = switch (methodInsn.name) {
                 case "m_85445_" -> "getGuiScaledWidth";
@@ -3169,6 +3546,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewriteClientMouseHandlerMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/client/MouseHandler")) {
             String newName = switch (methodInsn.name) {
                 case "m_91589_" -> "xpos";
@@ -3181,6 +3562,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewritePlayerLocalPlayerMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/client/player/LocalPlayer")
                 && methodInsn.name.equals("m_21220_")
                 && methodInsn.desc.equals("()Ljava/util/Collection;")) {
@@ -3195,18 +3580,41 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
-        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+        return false;
+    }
+
+    private static boolean rewriteInventoryAbstractContainerScreenMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/inventory/AbstractContainerScreen")
+                && methodInsn.name.equals("m_6262_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/inventory/AbstractContainerMenu;")) {
+            methodInsn.name = "getMenu";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteAbstractContainerMenuMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(ABSTRACT_CONTAINER_MENU_OWNER)
+                && methodInsn.name.equals("m_142621_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/item/ItemStack;")) {
+            methodInsn.name = "getCarried";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteRendererRect2iMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals("net/minecraft/client/renderer/Rect2i")) {
             String newName = switch (methodInsn.name) {
-                case "m_7856_" -> "init";
-                case "m_88315_" -> "render";
-                case "m_86600_" -> "removed";
-                case "m_7379_" -> "onClose";
-                case "m_5953_" -> "isMouseOver";
-                case "m_6050_" -> "mouseScrolled";
-                case "m_6375_" -> "mouseClicked";
-                case "m_7933_" -> "keyPressed";
-                case "m_5534_" -> "charTyped";
-                case "m_7043_" -> "isPauseScreen";
+                case "m_110085_" -> "getX";
+                case "m_110086_" -> "getY";
+                case "m_110087_", "m_110090_" -> "getWidth";
+                case "m_110088_", "m_110091_" -> "getHeight";
+                case "m_173049_" -> "setPosition";
+                case "m_173047_" -> "setX";
+                case "m_173054_" -> "setY";
                 default -> null;
             };
             if (newName != null) {
@@ -3215,6 +3623,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
 
+        return false;
+    }
+
+    private static boolean rewriteRecipebookRecipeUpdateListenerMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/client/gui/screens/recipebook/RecipeUpdateListener")
                 && methodInsn.name.equals("m_5564_")
                 && methodInsn.desc.equals("()Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;")) {
@@ -3222,6 +3634,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteRecipebookRecipeBookComponentMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals("net/minecraft/client/gui/screens/recipebook/RecipeBookComponent")
                 && methodInsn.name.equals("m_100385_")
                 && methodInsn.desc.equals("()Z")) {
@@ -3229,6 +3645,10 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean rewriteMezzJeiMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.startsWith("mezz/jei/")) {
             if (methodInsn.name.equals("m_252865_")
                     && methodInsn.desc.equals("(I)V")) {

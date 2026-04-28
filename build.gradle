@@ -1,7 +1,7 @@
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.moddev.legacyforge' version '2.0.141'
+    id 'net.neoforged.moddev' version '2.0.141'
     id 'maven-publish'
 }
 
@@ -13,15 +13,13 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
 
-legacyForge {
-    // Early NeoForge 1.20.1 is configured through the legacy Forge plugin.
-    enable {
-        neoForgeVersion = project.neo_version
-    }
+neoForge {
+    version = project.neo_version
+    validateAccessTransformers = true
 
     runs {
         client {
@@ -60,10 +58,6 @@ legacyForge {
     }
 }
 
-mixin {
-    config "${mod_id}.mixins.json"
-}
-
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
@@ -81,16 +75,17 @@ repositories {
 def isDataGenerationRun = gradle.startParameter.taskNames.any { taskName ->
     taskName.toLowerCase(Locale.ROOT).contains('rundata')
 }
-
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ["-Xdiags:verbose","-Xlint:deprecation","-Xdiags:verbose",
+            "-Xmaxerrs", "1000",
+            "-Xmaxwarns", "1000"]
+}
 dependencies {
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
-
-    // JEI is only needed for client testing. Keeping it out of runData avoids
-    // booting the full JEI mod during datagen on the early NeoForge runtime.
-    if (!isDataGenerationRun) {
-        //runtimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
-    }
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    // at runtime, use the full JEI jar for NeoForge
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -98,6 +93,7 @@ tasks.named('processResources', ProcessResources).configure {
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
             loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
@@ -107,7 +103,7 @@ tasks.named('processResources', ProcessResources).configure {
             mod_description        : mod_description,
     ]
     inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
 }

@@ -6,15 +6,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.menu.MPGBrewingStandMenu;
 
 @OnlyIn(Dist.CLIENT)
 public class BrewingStandScreen extends AbstractContainerScreen<MPGBrewingStandMenu> {
-    private static final ResourceLocation BREWING_STAND_LOCATION = new ResourceLocation("textures/gui/container/brewing_stand.png");
+    private static final ResourceLocation BREWING_STAND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/brewing_stand.png");
     private static final int[] BUBBLELENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
     private final String doubling_text;
 
@@ -29,7 +29,7 @@ public class BrewingStandScreen extends AbstractContainerScreen<MPGBrewingStandM
     }
 
     public void render(@NotNull GuiGraphics p_283297_, int p_283600_, int p_282033_, float p_283410_) {
-        this.renderBackground(p_283297_);
+        this.renderBackground(p_283297_, p_283600_, p_282033_, p_283410_);
         super.render(p_283297_, p_283600_, p_282033_, p_283410_);
         this.renderTooltip(p_283297_, p_283600_, p_282033_);
     }

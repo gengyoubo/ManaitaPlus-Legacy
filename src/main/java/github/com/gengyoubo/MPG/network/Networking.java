@@ -1,64 +1,32 @@
 package github.com.gengyoubo.MPG.network;
 
-import github.com.gengyoubo.MPG.MPG;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import github.com.gengyoubo.MPG.network.client.KeyPressPacket;
 import github.com.gengyoubo.MPG.network.server.DestroyBlockPacket;
 import github.com.gengyoubo.MPG.network.server.ChangeEntityDataPacket;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class Networking {
-    public static SimpleChannel INSTANCE;
     public static final String VERSION = "1.0";
-    private static int ID = 0;
 
-    public static int nextID() {
-        return ++ID;
+    public static void registerMessage(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(VERSION);
+        registrar.playToServer(KeyPressPacket.TYPE, KeyPressPacket.STREAM_CODEC, KeyPressPacket::handle);
+        registrar.playToClient(DestroyBlockPacket.TYPE, DestroyBlockPacket.STREAM_CODEC, DestroyBlockPacket::handle);
+        registrar.playToClient(ChangeEntityDataPacket.TYPE, ChangeEntityDataPacket.STREAM_CODEC, ChangeEntityDataPacket::handle);
     }
 
-    public static void registerMessage() {
-        INSTANCE = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation(MPG.MODID, "manaita_networking"),
-                () -> VERSION,
-                (version) -> version.equals(VERSION),
-                (version) -> version.equals(VERSION)
-        );
-        INSTANCE.messageBuilder(KeyPressPacket.class, nextID())
-                .encoder(KeyPressPacket::toBytes)
-                .decoder(KeyPressPacket::new)
-                .consumerNetworkThread(KeyPressPacket::handler)
-                .add();
-        INSTANCE.messageBuilder(DestroyBlockPacket.class, nextID())
-                .encoder(DestroyBlockPacket::toBytes)
-                .decoder(DestroyBlockPacket::new)
-                .consumerNetworkThread(DestroyBlockPacket::handler)
-                .add();
-        INSTANCE.messageBuilder(ChangeEntityDataPacket.class, nextID())
-                .encoder(ChangeEntityDataPacket::toBytes)
-                .decoder(ChangeEntityDataPacket::new)
-                .consumerNetworkThread(ChangeEntityDataPacket::handler)
-                .add();
-    }
-
-    public static void sendToSameLevelPlayers(Level level,Object packet) {
-        if (level instanceof ServerLevel serverLevel) {
-            for (ServerPlayer serverPlayer : serverLevel.players()) {
-                Networking.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> serverPlayer),
-                        packet
-                );
-            }
+    public static void sendToSameLevelPlayers(Level level, Object packet) {
+        if (level instanceof ServerLevel serverLevel && packet instanceof net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+            PacketDistributor.sendToPlayersInDimension(serverLevel, payload);
         }
     }
 
-// --注释掉检查 START (2026/4/24 23:35):
+// --娉ㄩ噴鎺夋鏌?START (2026/4/24 23:35):
 //    public static void sendToNearByPlayers(Level level, Player center, Object packet, int range) {
 //        if (level instanceof ServerLevel serverLevel) {
 //            if (center == null) {
@@ -76,7 +44,7 @@ public class Networking {
 //            }
 //        }
 //    }
-// --注释掉检查 STOP (2026/4/24 23:35)
+// --娉ㄩ噴鎺夋鏌?STOP (2026/4/24 23:35)
 
     @Deprecated
     public static void sendToNearByPlayers(Level level, Object packet, int range) {
@@ -84,12 +52,15 @@ public class Networking {
     }
 
     public static void sendToServer(Object packet) {
-        INSTANCE.sendToServer(packet);
+        if (packet instanceof net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+            PacketDistributor.sendToServer(payload);
+        }
     }
 
     public static void sendToTrackBySeen(Level level, Player player, Object packet) {
-        if (level instanceof ServerLevel serverLevel) {
-            serverLevel.getChunkSource().broadcast(player,INSTANCE.toVanillaPacket(packet, NetworkDirection.PLAY_TO_CLIENT));
+        if (level instanceof ServerLevel && packet instanceof net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+            PacketDistributor.sendToPlayersTrackingEntity(player, payload);
         }
     }
 }
+

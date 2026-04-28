@@ -13,19 +13,18 @@ import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.village.VillagerTradesEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
 import github.com.gengyoubo.MPG.core.MPGItemCore;
@@ -38,7 +37,7 @@ import github.com.gengyoubo.MPG.util.MPUtils;
 import java.util.Iterator;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = MPG.MODID)
+@EventBusSubscriber(modid = MPG.MODID)
 public class EventHandler {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
@@ -62,10 +61,10 @@ public class EventHandler {
                 }
             }
             if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
+                toolTip.removeLast();
             }
             if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
+                toolTip.removeLast();
             }
         }
     }
@@ -140,7 +139,7 @@ public class EventHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingAttack(LivingAttackEvent event) {
+    public static void onLivingIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof Player player) || hasManaitaProtection(player)) return;
         event.setCanceled(true);
         resetPlayerDamageState(player);
@@ -169,12 +168,6 @@ public class EventHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event) {
-        if (!(event.getEntity() instanceof Player player) || hasManaitaProtection(player)) return;
-        event.setCanceled(true);
-    }
-
-    @SubscribeEvent
     public static void addCustomTrades(VillagerTradesEvent event) {
         if (event.getType() == VillagerProfession.WEAPONSMITH) {
             List<VillagerTrades.ItemListing> tradesTier = event.getTrades().get(5);
@@ -199,3 +192,4 @@ public class EventHandler {
         }
     }
 }
+

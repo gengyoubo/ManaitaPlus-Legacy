@@ -2,8 +2,8 @@ package github.com.gengyoubo.MPG.blockEntity;
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import github.com.gengyoubo.MPG.block.entity.MPBrewingStandBlockEntity;
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
 import java.util.Objects;
@@ -15,3 +15,4 @@ public class RenderBrewingManaitaBlockEntity extends AbstractRenderManaitaBlockE
         Objects.requireNonNull(context);
     }
 }
+

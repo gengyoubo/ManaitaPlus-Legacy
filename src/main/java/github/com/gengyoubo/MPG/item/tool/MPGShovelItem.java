@@ -7,7 +7,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ToolActions;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyTaggedToolItem;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyToolActionHelper;
@@ -18,8 +17,8 @@ public class MPGShovelItem extends ManaitaPlusLegacyTaggedToolItem {
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, net.minecraftforge.common.ToolAction toolAction) {
-        return ToolActions.DEFAULT_SHOVEL_ACTIONS.contains(toolAction);
+    public boolean canPerformAction(@NotNull ItemStack stack, net.neoforged.neoforge.common.@NotNull ItemAbility toolAction) {
+        return net.neoforged.neoforge.common.ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(toolAction);
     }
 
     @Override
@@ -33,3 +32,4 @@ public class MPGShovelItem extends ManaitaPlusLegacyTaggedToolItem {
         return InteractionResult.PASS;
     }
 }
+

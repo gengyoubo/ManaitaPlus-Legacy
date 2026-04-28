@@ -1,19 +1,16 @@
 package github.com.gengyoubo.MPG.item.data;
 
 import net.minecraft.world.item.ItemStack;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 public interface IMPGDoubling {
     default boolean isDoubling(ItemStack itemStack) {
-        if (!itemStack.hasTag()) return false;
-        if (itemStack.getTag() != null) {
-            return itemStack.getTag().getBoolean(MPGNBTData.Doubling);
-        }
-        return false;
+        return MPGItemStackData.getBoolean(itemStack, MPGNBTData.Doubling);
     }
 
     default void setDoubling(ItemStack itemStack, boolean doubling) {
-        itemStack.getOrCreateTag().putBoolean(MPGNBTData.Doubling, doubling);
+        MPGItemStackData.putBoolean(itemStack, MPGNBTData.Doubling, doubling);
     }
 
     default boolean toggleDoubling(ItemStack itemStack) {

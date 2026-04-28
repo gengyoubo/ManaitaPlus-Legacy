@@ -3,7 +3,6 @@ package github.com.gengyoubo.MPG.block;
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -18,6 +17,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 import java.util.List;
@@ -38,11 +38,8 @@ public class MPHookBlock extends Block {
     @Override
     public @NotNull List<ItemStack> getDrops(BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
         ItemStack itemStack = new ItemStack(p_287732_.getBlock());
-        itemStack.setTag(new CompoundTag());
         int type = p_287732_.getValue(MPGBlockData.TYPES);
-        if (itemStack.getTag() != null) {
-            itemStack.getTag().putInt(MPGNBTData.ItemType,type);
-        }
+        MPGItemStackData.putInt(itemStack, MPGNBTData.ItemType, type);
         return Lists.newArrayList(itemStack);
     }
 

@@ -8,12 +8,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.fml.loading.FMLEnvironment;
 import github.com.gengyoubo.MPG.core.MPGKeyBoardCore;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import github.com.gengyoubo.MPG.network.Networking;
@@ -31,7 +31,7 @@ public class ClientEventHandler {
         if (registered) {
             return;
         }
-        MinecraftForge.EVENT_BUS.register(new ClientEventHandler());
+        NeoForge.EVENT_BUS.register(new ClientEventHandler());
         registered = true;
         MPG.LOGGER.info("Registered client runtime event handlers");
     }
@@ -59,10 +59,7 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     @SuppressWarnings("unused")
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public void onClientTick(ClientTickEvent.Post event) {
         if (FMLEnvironment.production) {
             return;
         }
@@ -106,6 +103,7 @@ public class ClientEventHandler {
 
         LevelSummary firstWorld = summaries.get(0);
         MPG.LOGGER.info("Dev auto-loading first world: {}", firstWorld.getLevelId());
-        MC.createWorldOpenFlows().loadLevel(MC.screen, firstWorld.getLevelId());
+        MPG.LOGGER.info("Skipping dev auto-load on 1.21.1 until WorldOpenFlows migration is finished");
     }
 }
+

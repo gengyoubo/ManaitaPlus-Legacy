@@ -4,7 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.entity.PartEntity;
 import github.com.gengyoubo.MPG.entity.MPGLightningBolt;
 
 import java.util.Arrays;
@@ -25,11 +25,11 @@ public class EntitiesWrapper {
 
     public void add(Entity e) {
         if (e.isMultipartEntity()) {
-            if (e.getParts() != null)
-                for (PartEntity<?> part : e.getParts()) {
-                    if (part != null)
-                        add(part);
-                }
+            e.getParts();
+            for (PartEntity<?> part : e.getParts()) {
+                if (part != null)
+                    add(part);
+            }
             if (e instanceof EnderDragon dragon) {
                 EnderDragonPart[] subEntities = dragon.getSubEntities();
                 for (EnderDragonPart subEntity : subEntities) {
@@ -107,7 +107,7 @@ public class EntitiesWrapper {
         }
     }
 
-// --注释掉检查 START (2026/4/24 23:35):
+// --娉ㄩ噴鎺夋鏌?START (2026/4/24 23:35):
 //    public void addCollection(Collection<? extends Entity> collection) {
 //        for (Entity next : collection) {
 //            if (next == null || next instanceof Player || next instanceof MPGLightningBolt) {
@@ -116,7 +116,7 @@ public class EntitiesWrapper {
 //            add(next);
 //        }
 //    }
-// --注释掉检查 STOP (2026/4/24 23:35)
+// --娉ㄩ噴鎺夋鏌?STOP (2026/4/24 23:35)
 
     public void reset() {
         boolean b  = size <= elementData.length - 300;
@@ -128,3 +128,4 @@ public class EntitiesWrapper {
         return elementData;
     }
 }
+

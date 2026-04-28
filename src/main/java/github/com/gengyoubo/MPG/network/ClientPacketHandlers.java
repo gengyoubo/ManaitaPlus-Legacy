@@ -22,10 +22,10 @@ public final class ClientPacketHandlers {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || mc.player == null) return;
-        if (!(packet.getItem() instanceof IMPGDestroy des)) return;
+        if (!(packet.item() instanceof IMPGDestroy des)) return;
 
-        BlockPos blockPos = packet.getBlockPos();
-        int range = packet.getRange();
+        BlockPos blockPos = packet.blockPos();
+        int range = packet.range();
         int xM = blockPos.getX() + range;
         int yM = blockPos.getY() + range;
         int zM = blockPos.getZ() + range;
@@ -47,11 +47,11 @@ public final class ClientPacketHandlers {
     public static void handleChangeEntityData(ChangeEntityDataPacket packet) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
-        Entity entity = level.getEntity(packet.getId());
+        Entity entity = level.getEntity(packet.id());
         if (entity == null) return;
 
-        boolean remove = packet.getFlag() < 0;
-        int flags = remove ? -packet.getFlag() : packet.getFlag();
+        boolean remove = packet.flag() < 0;
+        int flags = remove ? -packet.flag() : packet.flag();
         for (MPGEntityData entityList : MPGEntityData.values()) {
             if ((entityList.getFlag() & flags) != 0) {
                 if (remove) {

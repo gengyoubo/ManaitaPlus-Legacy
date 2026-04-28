@@ -1,44 +1,42 @@
 package github.com.gengyoubo.MPG.network.server;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import github.com.gengyoubo.MPG.network.ClientPacketHandlers;
+import github.com.gengyoubo.MPG.MPG;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
+public record ChangeEntityDataPacket(int id, int flag) implements CustomPacketPayload {
+    public static final Type<ChangeEntityDataPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(MPG.MODID, "change_entity_data"));
+    public static final StreamCodec<ByteBuf, ChangeEntityDataPacket> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public @NotNull ChangeEntityDataPacket decode(ByteBuf buffer) {
+            return new ChangeEntityDataPacket(buffer.readInt(), buffer.readInt());
+        }
 
-public class ChangeEntityDataPacket {
-    private final int id;
-    private final int flag;
+        @Override
+        public void encode(ByteBuf buffer, ChangeEntityDataPacket payload) {
+            buffer.writeInt(payload.id);
+            buffer.writeInt(payload.flag);
+        }
+    };
 
-    public ChangeEntityDataPacket(FriendlyByteBuf buffer) {
-        this.id = buffer.readInt();
-        this.flag = buffer.readInt();
-    }
-
-
-    public ChangeEntityDataPacket(int id, int flag) {
-       this.id = id;
-       this.flag = flag;
-    }
-
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(id);
-        buf.writeInt(flag);
-    }
-
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (!ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ClientPacketHandlers.handleChangeEntityData(this);
+    public static void handle(ChangeEntityDataPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!context.flow().isClientbound()) {
+                return;
+            }
+            ClientPacketHandlers.handleChangeEntityData(payload);
         });
-        ctx.get().setPacketHandled(true);
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public int getFlag() {
-        return flag;
+    @Override
+    public @NotNull Type<ChangeEntityDataPacket> type() {
+        return TYPE;
     }
 }
+

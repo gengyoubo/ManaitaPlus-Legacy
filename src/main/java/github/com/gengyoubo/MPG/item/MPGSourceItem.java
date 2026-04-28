@@ -10,11 +10,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.menu.MPGCraftingMenu;
 import github.com.gengyoubo.MPG.util.MPText;
 
@@ -31,12 +30,12 @@ public class MPGSourceItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.source.1"))));
     }
 
-    @OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
+    @OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     @Override
     public boolean isFoil(@NotNull ItemStack stack) {
         return true;
@@ -46,8 +45,7 @@ public class MPGSourceItem extends Item {
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack heldItem = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(
-                    serverPlayer,
+            serverPlayer.openMenu(
                     new SimpleMenuProvider(
                             (windowId, inventory, menuPlayer) -> new MPGCraftingMenu(windowId, inventory, level),
                             Component.translatable("container.crafting"))
@@ -56,3 +54,4 @@ public class MPGSourceItem extends Item {
         return InteractionResultHolder.sidedSuccess(heldItem, level.isClientSide());
     }
 }
+

@@ -16,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -204,7 +203,7 @@ public class MPUtils {
     public static void destroyBlocks(ItemStack stack, Level level, BlockPos blockPos, Player player) {
         if (stack.getItem() instanceof IMPGDestroy des) {
             int range = des.getRange(stack) >> 1;
-            boolean doubling = stack.getTag() != null && stack.getTag().getBoolean("Doubling");
+            boolean doubling = MPGItemStackData.getBoolean(stack, "Doubling");
             if (range == 0) {
                 destroyBlock(stack, level, blockPos, player,doubling);
                 return;
@@ -244,7 +243,7 @@ public class MPUtils {
                                             p_49859_.setCount(p_49859_.getCount() * MPGConfig.destroy_doubling_value);
                                         popResource(serverLevel, mutableBlockPos, p_49859_);
                                     });
-                                int exp = blockState.getExpDrop(serverLevel, serverLevel.random, mutableBlockPos, stack.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE), stack.getEnchantmentLevel(Enchantments.SILK_TOUCH));
+                                int exp = blockState.getExpDrop(serverLevel, mutableBlockPos, blockEntity, player, stack);
                                 if (doubling)
                                     exp *= MPGConfig.destroy_doubling_value;
                                 block.popExperience(serverLevel, mutableBlockPos, exp);
@@ -265,9 +264,9 @@ public class MPUtils {
             LevelChunk levelchunk = level.getChunkAt(p_46605_);
 
             p_46605_ = p_46605_.immutable(); // Forge - prevent mutable BlockPos leaks
-            net.minecraftforge.common.util.BlockSnapshot blockSnapshot = null;
+            net.neoforged.neoforge.common.util.BlockSnapshot blockSnapshot = null;
             if (level.captureBlockSnapshots && !level.isClientSide) {
-                blockSnapshot = net.minecraftforge.common.util.BlockSnapshot.create(level.dimension(), level, p_46605_, p_46607_);
+                blockSnapshot = net.neoforged.neoforge.common.util.BlockSnapshot.create(level.dimension(), level, p_46605_, p_46607_);
                 level.capturedBlockSnapshots.add(blockSnapshot);
             }
 
@@ -317,7 +316,7 @@ public class MPUtils {
                                 p_49859_.setCount(p_49859_.getCount() * 4);
                             popResource(serverLevel, pos, p_49859_);
                         });
-                    int exp = blockState.getExpDrop(serverLevel, serverLevel.random, pos, stack.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE), stack.getEnchantmentLevel(Enchantments.SILK_TOUCH));
+                    int exp = blockState.getExpDrop(serverLevel, pos, blockEntity, player, stack);
                     if (doubling)
                         exp *= 4;
                     block.popExperience(serverLevel, pos, exp);
@@ -370,3 +369,4 @@ public class MPUtils {
         }
     }
 }
+

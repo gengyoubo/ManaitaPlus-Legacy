@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.FurnaceResultSlot;
@@ -11,6 +12,7 @@ import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.RecipeType;
 import github.com.gengyoubo.MPG.core.MPGMenuCore;
+import org.jetbrains.annotations.NotNull;
 
 public class MPGFurnaceMenu extends AbstractFurnaceMenu {
     @SuppressWarnings("unused")
@@ -29,7 +31,6 @@ public class MPGFurnaceMenu extends AbstractFurnaceMenu {
         UnlimitedFurnaceResultSlot replacement = new UnlimitedFurnaceResultSlot(
                 inventory.player,
                 originalSlot.container,
-                2,
                 originalSlot.x,
                 originalSlot.y
         );
@@ -49,8 +50,8 @@ public class MPGFurnaceMenu extends AbstractFurnaceMenu {
     }
 
     private static class UnlimitedFurnaceResultSlot extends FurnaceResultSlot {
-        private UnlimitedFurnaceResultSlot(net.minecraft.world.entity.player.Player player, Container container, int slot, int x, int y) {
-            super(player, container, slot, x, y);
+        private UnlimitedFurnaceResultSlot(Player player, Container container, int x, int y) {
+            super(player, container, 2, x, y);
         }
 
         @Override
@@ -59,7 +60,7 @@ public class MPGFurnaceMenu extends AbstractFurnaceMenu {
         }
 
         @Override
-        public int getMaxStackSize(net.minecraft.world.item.ItemStack stack) {
+        public int getMaxStackSize(net.minecraft.world.item.@NotNull ItemStack stack) {
             return Integer.MAX_VALUE;
         }
     }

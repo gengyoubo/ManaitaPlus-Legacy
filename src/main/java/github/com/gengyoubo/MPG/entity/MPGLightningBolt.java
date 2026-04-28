@@ -1,6 +1,7 @@
 package github.com.gengyoubo.MPG.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -60,7 +61,8 @@ public class MPGLightningBolt extends Entity {
         return p_20869_ < d0 * d0;
     }
 
-    protected void defineSynchedData() {
+    @Override
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
     }
 
     protected void readAdditionalSaveData(@NotNull CompoundTag p_20873_) {

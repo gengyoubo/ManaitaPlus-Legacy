@@ -4,8 +4,8 @@ import github.com.gengyoubo.MPG.MPG;
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
 import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.client.model.generators.*;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.client.model.generators.*;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
 import github.com.gengyoubo.MPG.util.MPUtils;
 

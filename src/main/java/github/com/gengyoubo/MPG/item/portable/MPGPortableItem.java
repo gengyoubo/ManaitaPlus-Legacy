@@ -11,21 +11,21 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 public abstract class MPGPortableItem extends Item {
     private final String translationPrefix;
 
     protected MPGPortableItem(String translationPrefix) {
-        super(new Properties().defaultDurability(-1).fireResistant().stacksTo(1));
+        super(new Properties().durability(-1).fireResistant().stacksTo(1));
         this.translationPrefix = translationPrefix;
     }
 
     @Override
-    public @NotNull Component getName(ItemStack stack) {
-        return Component.translatable(translationPrefix + stack.getOrCreateTag().getInt(MPGNBTData.ItemType) + ".name");
+    public @NotNull Component getName(@NotNull ItemStack stack) {
+        return Component.translatable(translationPrefix + MPGItemStackData.getInt(stack, MPGNBTData.ItemType) + ".name");
     }
 
     @Override
@@ -40,7 +40,7 @@ public abstract class MPGPortableItem extends Item {
     protected abstract void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level);
 
     protected final void openPortableScreen(ServerPlayer serverPlayer, ItemStack itemInHand, Level level, String titleKey, PortableMenuFactory menuFactory) {
-        NetworkHooks.openScreen(serverPlayer, new MenuProvider() {
+        serverPlayer.openMenu(new MenuProvider() {
             @Override
             public @NotNull Component getDisplayName() {
                 return Component.translatable(titleKey);
@@ -58,3 +58,4 @@ public abstract class MPGPortableItem extends Item {
         AbstractContainerMenu create(int containerId, Inventory inventory, Player player, ItemStack itemInHand, Level level);
     }
 }
+

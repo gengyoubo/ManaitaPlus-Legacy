@@ -2,7 +2,6 @@ package github.com.gengyoubo.MPG.util;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.eventbus.LockHelper;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -11,7 +10,7 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,20 +18,18 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class MPClassLoaderFactory {
     private static final ASMClassLoader LOADER = new ASMClassLoader();
-    private static final HashMap<Class<?>, Class<?>> a = new HashMap<>();
-    private static final LockHelper<Class<?>, Class<?>> cache = new LockHelper<>(a);
+    private static final ConcurrentHashMap<Class<?>, Class<?>> CACHE = new ConcurrentHashMap<>();
 
     public static Class<?> createWrapper(Class<?> callback) {
         if (!Entity.class.isAssignableFrom(callback) || Player.class.isAssignableFrom(callback)) return null;
         if (callback.getName().endsWith("Manaita")) return null;
         try {
-            return cache.computeIfAbsent(callback, () -> {
+            return CACHE.computeIfAbsent(callback, key -> {
                 var node = new ClassNode();
                 transformNode(node, callback);
-                return node;
-            }, MPClassLoaderFactory::defineClass);
+                return defineClass(node);
+            });
         } catch (Exception e) {
-            cache.computeIfAbsent(callback, () -> null);
             return null;
         }
     }

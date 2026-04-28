@@ -1,51 +1,67 @@
 package github.com.gengyoubo.MPG.network.client;
 
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import github.com.gengyoubo.MPG.MPG;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
+public class KeyPressPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<KeyPressPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MPG.MODID, "key_press"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, KeyPressPacket> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public @NotNull KeyPressPacket decode(RegistryFriendlyByteBuf buffer) {
+            return new KeyPressPacket(buffer.readByte());
+        }
 
-public class KeyPressPacket {
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, KeyPressPacket payload) {
+            buffer.writeByte(payload.keyCode);
+        }
+    };
+
     private final byte keyCode;
-
-
-    public KeyPressPacket(FriendlyByteBuf buffer) {
-        keyCode = buffer.readByte();
-    }
-
 
     public KeyPressPacket(byte key) {
         this.keyCode = key;
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeByte(keyCode);
-    }
-
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ServerPlayer sender = ctx.get().getSender();
-            if (sender == null) return;
-            switch (keyCode) {
-                case 0:
+    public static void handle(KeyPressPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.flow().isClientbound()) {
+                return;
+            }
+            if (!(context.player() instanceof ServerPlayer sender)) {
+                return;
+            }
+            switch (payload.keyCode) {
+                case 0 -> {
                     ItemStack mainHandItem = sender.getMainHandItem();
                     if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPGKey keyItem) {
                         keyItem.onManaitaKeyPress(mainHandItem);
                     }
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     for (ItemStack itemStack : sender.getInventory().armor) {
                         if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPGKey keyItem) {
                             keyItem.onManaitaKeyPress(itemStack);
                         }
                     }
-                    break;
+                }
+                default -> {
+                }
             }
         });
-        ctx.get().setPacketHandled(true);
+    }
+
+    @Override
+    public CustomPacketPayload.@NotNull Type<KeyPressPacket> type() {
+        return TYPE;
     }
 }

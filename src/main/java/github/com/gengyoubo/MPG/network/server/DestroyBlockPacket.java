@@ -1,61 +1,54 @@
 package github.com.gengyoubo.MPG.network.server;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import github.com.gengyoubo.MPG.network.ClientPacketHandlers;
+import github.com.gengyoubo.MPG.MPG;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 
-public class DestroyBlockPacket {
-    private final BlockPos blockPos;
-    private final int range;
-    private final Item item;
+public record DestroyBlockPacket(BlockPos blockPos, int range, Item item) implements CustomPacketPayload {
+    public static final Type<DestroyBlockPacket> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(MPG.MODID, "destroy_block"));
+    public static final StreamCodec<ByteBuf, DestroyBlockPacket> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public @NotNull DestroyBlockPacket decode(@NotNull ByteBuf buffer) {
+            BlockPos blockPos = BlockPos.STREAM_CODEC.decode(buffer);
+            int range = buffer.readInt();
+            ResourceLocation itemId = ResourceLocation.STREAM_CODEC.decode(buffer);
+            Item item = BuiltInRegistries.ITEM.get(itemId);
+            return new DestroyBlockPacket(blockPos, range, item);
+        }
 
-    public DestroyBlockPacket(FriendlyByteBuf buffer) {
-        blockPos = buffer.readBlockPos();
-        range = buffer.readInt();
-        ResourceLocation itemId = buffer.readResourceLocation();
-        Item resolved = ForgeRegistries.ITEMS.getValue(itemId);
-        item = resolved == null ? Items.AIR : resolved;
-    }
+        @Override
+        public void encode(@NotNull ByteBuf buffer, DestroyBlockPacket payload) {
+            BlockPos.STREAM_CODEC.encode(buffer, payload.blockPos);
+            buffer.writeInt(payload.range);
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(payload.item);
+            ResourceLocation.STREAM_CODEC.encode(buffer, itemId);
+        }
+    };
 
-
-    public DestroyBlockPacket(BlockPos blockPos, int range, Item item) {
-        this.blockPos = blockPos;
-        this.range = range;
-        this.item = item;
-    }
-
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(blockPos);
-        buf.writeInt(range);
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
-        buf.writeResourceLocation(itemId == null ? Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(Items.AIR)) : itemId);
-    }
-
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (!ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ClientPacketHandlers.handleDestroyBlock(this);
+    public static void handle(DestroyBlockPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!context.flow().isClientbound()) {
+                return;
+            }
+            ClientPacketHandlers.handleDestroyBlock(payload);
         });
-        ctx.get().setPacketHandled(true);
     }
 
-    public BlockPos getBlockPos() {
-        return blockPos;
-    }
-
-    public int getRange() {
-        return range;
-    }
-
-    public Item getItem() {
-        return item;
+    @Override
+    public @NotNull Type<DestroyBlockPacket> type() {
+        return TYPE;
     }
 }
+

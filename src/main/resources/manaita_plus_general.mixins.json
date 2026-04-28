@@ -1,6 +1,4 @@
 {
   "required": false,
-  "minVersion": "0.8",
-  "plugin": "github.com.gengyoubo.MPG.mixin.MixinPlugin",
-  "package": "github.com.gengyoubo.MPG.mixin"
+  "minVersion": "0.8"
 }

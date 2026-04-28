@@ -22,6 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.block.MPHookBlock;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
@@ -36,9 +37,9 @@ public abstract class MPTypedBlockItem extends BlockItem {
     }
 
     @Override
-    public @NotNull Component getName(ItemStack stack) {
+    public @NotNull Component getName(@NotNull ItemStack stack) {
         return Component.literal(I18n.get(
-                translationPrefix + MPUtils.getTypes(stack.getOrCreateTag().getInt(MPGNBTData.ItemType)) + "name"));
+                translationPrefix + MPUtils.getTypes(MPGItemStackData.getInt(stack, MPGNBTData.ItemType)) + "name"));
     }
 
     @Override
@@ -112,8 +113,8 @@ public abstract class MPTypedBlockItem extends BlockItem {
     }
 
     private BlockState updateBlockStateFromTag(BlockPos pos, Level level, ItemStack stack, BlockState state) {
-        if (typedBlockClass.isInstance(state.getBlock()) && stack.getTag() != null) {
-            BlockState typedState = state.setValue(MPGBlockData.TYPES, stack.getTag().getInt(MPGNBTData.ItemType));
+        if (typedBlockClass.isInstance(state.getBlock()) && MPGItemStackData.hasTag(stack)) {
+            BlockState typedState = state.setValue(MPGBlockData.TYPES, MPGItemStackData.getInt(stack, MPGNBTData.ItemType));
             level.setBlock(pos, typedState, 2);
             return typedState;
         }

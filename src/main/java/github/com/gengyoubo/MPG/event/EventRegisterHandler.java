@@ -1,36 +1,23 @@
 package github.com.gengyoubo.MPG.event;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import github.com.gengyoubo.MPG.MPG;
 import github.com.gengyoubo.MPG.core.MPGAttributeCore;
 import github.com.gengyoubo.MPG.datagen.MPBlockStateProvider;
 import github.com.gengyoubo.MPG.datagen.MPItemModelProvider;
 import github.com.gengyoubo.MPG.loottable.MPGLootTable;
-import github.com.gengyoubo.MPG.recipe.condition.EasyModeCondition;
-import github.com.gengyoubo.MPG.recipe.ingredient.MPGNBTIngredient;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = MPG.MODID)
+@EventBusSubscriber(modid = MPG.MODID)
 public class EventRegisterHandler {
     @SubscribeEvent
-    public static void onRegisters(RegisterEvent event) {
-        if (event.getRegistryKey().equals(ForgeRegistries.Keys.RECIPE_SERIALIZERS)) {
-            CraftingHelper.register(new ResourceLocation("manaita_plus_general", "nbt"), MPGNBTIngredient.Serializer.INSTANCE);
-            CraftingHelper.register(EasyModeCondition.Serializer.INSTANCE);
-        }
-    }
-
-    @SubscribeEvent
     public static void onEntityAttributeModification(EntityAttributeModificationEvent event) {
-        event.getTypes().forEach(entityType -> event.add(entityType, MPGAttributeCore.Type.get()));
+        event.getTypes().forEach(entityType -> event.add(entityType, MPGAttributeCore.Type));
     }
 
 
@@ -38,7 +25,7 @@ public class EventRegisterHandler {
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
 
-        gen.addProvider(event.includeServer(), new MPGLootTable(gen.getPackOutput()));
+        gen.addProvider(event.includeServer(), new MPGLootTable(gen.getPackOutput(), event.getLookupProvider()));
 
         PackOutput packOutput = gen.getPackOutput();
         gen.addProvider(event.includeClient(), new MPBlockStateProvider(packOutput, event.getExistingFileHelper()));
@@ -46,3 +33,4 @@ public class EventRegisterHandler {
     }
 
 }
+

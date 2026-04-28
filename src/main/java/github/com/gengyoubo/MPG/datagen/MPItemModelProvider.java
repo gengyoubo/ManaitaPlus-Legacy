@@ -2,8 +2,8 @@ package github.com.gengyoubo.MPG.datagen;
 
 import github.com.gengyoubo.MPG.MPG;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 public class MPItemModelProvider extends ItemModelProvider {
 
@@ -16,9 +16,9 @@ public class MPItemModelProvider extends ItemModelProvider {
         var builder = withExistingParent("hook_block_item", "item/generated")
                 .texture("layer0", modLoc("block/hook/fixed_hook_wooden"));
 
-        // 为不同类型批量添加override
+        // 涓轰笉鍚岀被鍨嬫壒閲忔坊鍔爋verride
         for (int i = 1; i <= 8; i++) {
-            String typeName = getTypeName(i + 1); // 获取类型名称
+            String typeName = getTypeName(i + 1); // 鑾峰彇绫诲瀷鍚嶇О
             builder.override()
                     .predicate(modLoc("manaita_plus_general_type"), i)
                     .model(withExistingParent("block/hook/fixed_hook_" + typeName, "item/generated")
@@ -28,9 +28,9 @@ public class MPItemModelProvider extends ItemModelProvider {
         builder = withExistingParent("block_crafting_manaita", "item/generated")
                 .texture("layer0", modLoc("block/crafting_manaita"));
 
-        // 为不同类型批量添加override
+        // 涓轰笉鍚岀被鍨嬫壒閲忔坊鍔爋verride
         for (int i = 1; i <= 8; i++) {
-            String typeName = getTypeName(i); // 获取类型名称
+            String typeName = getTypeName(i); // 鑾峰彇绫诲瀷鍚嶇О
             builder.override()
                     .predicate(modLoc("manaita_plus_general_type"), i)
                     .model(withExistingParent("crafting_manaita_" + typeName, "item/generated")
@@ -40,9 +40,9 @@ public class MPItemModelProvider extends ItemModelProvider {
         builder = withExistingParent("block_furnace_manaita", "item/generated")
                 .texture("layer0", modLoc("block/furnace_manaita"));
 
-        // 为不同类型批量添加override
+        // 涓轰笉鍚岀被鍨嬫壒閲忔坊鍔爋verride
         for (int i = 1; i <= 8; i++) {
-            String typeName = getTypeName(i); // 获取类型名称
+            String typeName = getTypeName(i); // 鑾峰彇绫诲瀷鍚嶇О
             builder.override()
                     .predicate(modLoc("manaita_plus_general_type"), i)
                     .model(withExistingParent("furnace_manaita_" + typeName, "item/generated")
@@ -52,9 +52,9 @@ public class MPItemModelProvider extends ItemModelProvider {
         builder = withExistingParent("block_brewing_manaita", "item/generated")
                 .texture("layer0", modLoc("block/brewing_manaita"));
 
-        // 为不同类型批量添加override
+        // 涓轰笉鍚岀被鍨嬫壒閲忔坊鍔爋verride
         for (int i = 1; i <= 8; i++) {
-            String typeName = getTypeName(i); // 获取类型名称
+            String typeName = getTypeName(i); // 鑾峰彇绫诲瀷鍚嶇О
             builder.override()
                     .predicate(modLoc("manaita_plus_general_type"), i)
                     .model(withExistingParent("brewing_manaita_" + typeName, "item/generated")

@@ -92,6 +92,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String EDIT_BOX_OWNER = "net/minecraft/client/gui/components/EditBox";
     private static final String TAG_KEY_OWNER = "net/minecraft/tags/TagKey";
     private static final String GUI_GRAPHICS_OWNER = "net/minecraft/client/gui/GuiGraphics";
+    private static final String CLIENT_TOOLTIP_COMPONENT_OWNER = "net/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent";
     private static final String CRASH_REPORT_OWNER = "net/minecraft/CrashReport";
     private static final String CRASH_REPORT_CATEGORY_OWNER = "net/minecraft/CrashReportCategory";
     private static final String ENTITY_OWNER = "net/minecraft/world/entity/Entity";
@@ -172,6 +173,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case EDIT_BOX_OWNER -> processEditBoxClass(classNode);
             case TAG_KEY_OWNER -> processTagKeyClass(classNode);
             case GUI_GRAPHICS_OWNER -> processGuiGraphicsClass(classNode);
+            case CLIENT_TOOLTIP_COMPONENT_OWNER -> processClientTooltipComponentClass(classNode);
             case CRASH_REPORT_OWNER -> processCrashReportClass(classNode);
             case CRASH_REPORT_CATEGORY_OWNER -> processCrashReportCategoryClass(classNode);
             case RESOURCE_RELOAD_LISTENER_OWNER -> processResourceReloadListenerInterface(classNode);
@@ -190,6 +192,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static boolean processGenericJeiCompatibility(ClassNode classNode) {
         boolean patched = false;
         for (MethodNode method : classNode.methods) {
+            patched |= rewriteGenericJeiMethodDefinition(method);
             for (org.objectweb.asm.tree.AbstractInsnNode node = method.instructions.getFirst(); node != null; node = node.getNext()) {
                 if (node instanceof FieldInsnNode fieldInsn) {
                     patched |= rewriteJeiVanillaField(fieldInsn);
@@ -205,6 +208,36 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
         return patched;
+    }
+
+    private static boolean rewriteGenericJeiMethodDefinition(MethodNode method) {
+        String newName = null;
+        if (method.name.equals("m_7856_") && method.desc.equals("()V")) {
+            newName = "init";
+        } else if (method.name.equals("m_88315_") && method.desc.equals("(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")) {
+            newName = "render";
+        } else if (method.name.equals("m_86600_") && method.desc.equals("()V")) {
+            newName = "removed";
+        } else if (method.name.equals("m_7379_") && method.desc.equals("()V")) {
+            newName = "onClose";
+        } else if (method.name.equals("m_5953_") && method.desc.equals("(DD)Z")) {
+            newName = "isMouseOver";
+        } else if (method.name.equals("m_6050_") && method.desc.equals("(DDD)Z")) {
+            newName = "mouseScrolled";
+        } else if (method.name.equals("m_6375_") && method.desc.equals("(DDI)Z")) {
+            newName = "mouseClicked";
+        } else if (method.name.equals("m_7933_") && method.desc.equals("(III)Z")) {
+            newName = "keyPressed";
+        } else if (method.name.equals("m_5534_") && method.desc.equals("(CI)Z")) {
+            newName = "charTyped";
+        } else if (method.name.equals("m_7043_") && method.desc.equals("()Z")) {
+            newName = "isPauseScreen";
+        }
+        if (newName == null) {
+            return false;
+        }
+        method.name = newName;
+        return true;
     }
 
     private static boolean processMinecraftClass(ClassNode classNode) {
@@ -255,6 +288,23 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getSingleplayerServer", "()Lnet/minecraft/client/server/IntegratedServer;", false),
                 new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91106_",
+                "()Lnet/minecraft/client/sounds/SoundManager;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getSoundManager", "()Lnet/minecraft/client/sounds/SoundManager;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_91152_",
+                "(Lnet/minecraft/client/gui/screens/Screen;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "setScreen", "(Lnet/minecraft/client/gui/screens/Screen;)V", false),
+                new InsnNode(Opcodes.RETURN)
         );
         for (MethodNode method : classNode.methods) {
             if (method.name.equals("m_91152_") && method.desc.equals("(Lnet/minecraft/client/gui/screens/Screen;)V")) {
@@ -621,6 +671,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 1),
                 new VarInsnNode(Opcodes.ALOAD, 2),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getTooltipLines", "(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_150921_",
+                "()Ljava/util/Optional;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/world/item/ItemStack", "getTooltipImage", "()Ljava/util/Optional;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
@@ -1138,6 +1196,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "visit", "(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;", true),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7532_",
+                "()Lnet/minecraft/util/FormattedCharSequence;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "getVisualOrderText", "()Lnet/minecraft/util/FormattedCharSequence;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
         return patched;
     }
 
@@ -1232,6 +1298,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FONT_OWNER, "getSplitter", "()Lnet/minecraft/client/StringSplitter;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_92852_",
+                "(Lnet/minecraft/network/chat/FormattedText;)I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, FONT_OWNER, "width", "(Lnet/minecraft/network/chat/FormattedText;)I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
         return patched;
     }
 
@@ -1313,6 +1388,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_94204_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "isEditable", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_93692_",
                 "(Z)V",
                 new VarInsnNode(Opcodes.ALOAD, 0),
@@ -1362,6 +1445,27 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Z",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "canConsumeInput", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_7933_",
+                "(III)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "keyPressed", "(III)Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_5534_",
+                "(CI)Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ILOAD, 1),
+                new VarInsnNode(Opcodes.ILOAD, 2),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, EDIT_BOX_OWNER, "charTyped", "(CI)Z", false),
                 new InsnNode(Opcodes.IRETURN)
         );
         patched |= ensureInstanceBridge(
@@ -1478,6 +1582,58 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Lcom/mojang/blaze3d/vertex/PoseStack;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "pose", "()Lcom/mojang/blaze3d/vertex/PoseStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_280497_",
+                "(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ALOAD, 5),
+                new MethodInsnNode(
+                        Opcodes.INVOKESPECIAL,
+                        GUI_GRAPHICS_OWNER,
+                        "renderTooltipInternal",
+                        "(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V",
+                        false
+                ),
+                new InsnNode(Opcodes.RETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processClientTooltipComponentClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_169948_",
+                "(Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        CLIENT_TOOLTIP_COMPONENT_OWNER,
+                        "create",
+                        "(Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;",
+                        true
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_169950_",
+                "(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        CLIENT_TOOLTIP_COMPONENT_OWNER,
+                        "create",
+                        "(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;",
+                        true
+                ),
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
@@ -1728,16 +1884,75 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (fieldInsn.owner.equals(ITEMS_OWNER)) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_42399_" -> "BOWL";
-                case "f_42738_" -> "POTION";
+                case "f_42354_" -> "TURTLE_HELMET";
+                case "f_42383_" -> "IRON_SWORD";
+                case "f_42384_" -> "IRON_SHOVEL";
+                case "f_42385_" -> "IRON_PICKAXE";
+                case "f_42386_" -> "IRON_AXE";
+                case "f_42387_" -> "IRON_HOE";
+                case "f_42388_" -> "DIAMOND_SWORD";
+                case "f_42389_" -> "DIAMOND_SHOVEL";
+                case "f_42390_" -> "DIAMOND_PICKAXE";
+                case "f_42391_" -> "DIAMOND_AXE";
+                case "f_42392_" -> "DIAMOND_HOE";
+                case "f_42393_" -> "NETHERITE_SWORD";
+                case "f_42394_" -> "NETHERITE_SHOVEL";
+                case "f_42395_" -> "NETHERITE_HOE";
+                case "f_42396_" -> "NETHERITE_PICKAXE";
+                case "f_42397_" -> "NETHERITE_AXE";
+                case "f_42407_" -> "LEATHER_HELMET";
+                case "f_42408_" -> "LEATHER_CHESTPLATE";
+                case "f_42412_" -> "ARROW";
+                case "f_42420_" -> "WOODEN_SWORD";
+                case "f_42421_" -> "WOODEN_SHOVEL";
+                case "f_42422_" -> "WOODEN_PICKAXE";
+                case "f_42423_" -> "WOODEN_AXE";
+                case "f_42424_" -> "WOODEN_HOE";
+                case "f_42425_" -> "STONE_SWORD";
+                case "f_42426_" -> "STONE_SHOVEL";
+                case "f_42427_" -> "STONE_PICKAXE";
+                case "f_42428_" -> "STONE_AXE";
+                case "f_42429_" -> "STONE_HOE";
+                case "f_42430_" -> "GOLDEN_SWORD";
+                case "f_42431_" -> "GOLDEN_SHOVEL";
+                case "f_42432_" -> "GOLDEN_PICKAXE";
+                case "f_42433_" -> "GOLDEN_AXE";
+                case "f_42434_" -> "GOLDEN_HOE";
+                case "f_42462_" -> "LEATHER_LEGGINGS";
+                case "f_42463_" -> "LEATHER_BOOTS";
+                case "f_42464_" -> "CHAINMAIL_HELMET";
+                case "f_42465_" -> "CHAINMAIL_CHESTPLATE";
+                case "f_42466_" -> "CHAINMAIL_LEGGINGS";
+                case "f_42467_" -> "CHAINMAIL_BOOTS";
+                case "f_42468_" -> "IRON_HELMET";
+                case "f_42469_" -> "IRON_CHESTPLATE";
+                case "f_42470_" -> "IRON_LEGGINGS";
+                case "f_42471_" -> "IRON_BOOTS";
+                case "f_42472_" -> "DIAMOND_HELMET";
+                case "f_42473_" -> "DIAMOND_CHESTPLATE";
+                case "f_42474_" -> "DIAMOND_LEGGINGS";
+                case "f_42475_" -> "DIAMOND_BOOTS";
+                case "f_42476_" -> "GOLDEN_HELMET";
+                case "f_42477_" -> "GOLDEN_CHESTPLATE";
+                case "f_42478_" -> "GOLDEN_LEGGINGS";
+                case "f_42479_" -> "GOLDEN_BOOTS";
+                case "f_42480_" -> "NETHERITE_CHESTPLATE";
+                case "f_42481_" -> "NETHERITE_BOOTS";
+                case "f_42482_" -> "NETHERITE_LEGGINGS";
+                case "f_42483_" -> "NETHERITE_HELMET";
+                case "f_42738_" -> "TIPPED_ARROW";
                 case "f_42589_" -> "SPLASH_POTION";
                 case "f_42736_" -> "TIPPED_ARROW";
                 case "f_42739_" -> "LINGERING_POTION";
+                case "f_42740_" -> "SHIELD";
                 case "f_42690_" -> "ENCHANTED_BOOK";
                 case "f_151033_" -> "LIGHT";
                 case "f_42487_" -> "PAINTING";
                 case "f_220219_" -> "GOAT_HORN";
                 case "f_42688_" -> "FIREWORK_ROCKET";
                 case "f_42718_" -> "SUSPICIOUS_STEW";
+                case "f_42714_" -> "PHANTOM_MEMBRANE";
+                case "f_42741_" -> "ELYTRA";
                 default -> null;
             });
         }
@@ -1937,6 +2152,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_41720_" -> "getItem";
                 case "m_41764_" -> "setCount";
                 case "m_41777_" -> "copy";
+                case "m_150921_" -> "getTooltipImage";
                 default -> null;
             };
             if (newName != null) {
@@ -1986,6 +2202,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             });
         }
 
+        if (fieldInsn.owner.equals("net/minecraft/client/gui/screens/inventory/tooltip/DefaultTooltipPositioner")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_262752_" -> "INSTANCE";
+                default -> null;
+            });
+        }
+
         if (fieldInsn.owner.equals("com/mojang/blaze3d/vertex/DefaultVertexFormat")) {
             return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_85817_" -> "POSITION_TEX";
@@ -2001,6 +2224,27 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "f_91073_" -> "level";
                 case "f_91074_" -> "player";
                 case "f_91080_" -> "screen";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/world/item/ItemStack")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_41583_" -> "EMPTY";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/world/item/Items")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_42410_" -> "STONE";
+                default -> null;
+            });
+        }
+
+        if (fieldInsn.owner.equals("net/minecraft/client/Options")) {
+            return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                case "f_92125_" -> "advancedItemTooltips";
                 default -> null;
             });
         }
@@ -2641,6 +2885,34 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals(FONT_OWNER)
+                && methodInsn.name.equals("m_92852_")
+                && methodInsn.desc.equals("(Lnet/minecraft/network/chat/FormattedText;)I")) {
+            methodInsn.name = "width";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
+                && methodInsn.name.equals("m_169948_")
+                && methodInsn.desc.equals("(Lnet/minecraft/util/FormattedCharSequence;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
+            methodInsn.name = "create";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(CLIENT_TOOLTIP_COMPONENT_OWNER)
+                && methodInsn.name.equals("m_169950_")
+                && methodInsn.desc.equals("(Lnet/minecraft/world/inventory/tooltip/TooltipComponent;)Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;")) {
+            methodInsn.name = "create";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(COMPONENT_OWNER)
+                && methodInsn.name.equals("m_7532_")
+                && methodInsn.desc.equals("()Lnet/minecraft/util/FormattedCharSequence;")) {
+            methodInsn.name = "getVisualOrderText";
+            return true;
+        }
+
         if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
                 && methodInsn.name.equals("m_280614_")
                 && methodInsn.desc.equals("(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I")) {
@@ -2676,10 +2948,24 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+                && methodInsn.name.equals("m_84873_")
+                && methodInsn.desc.equals("()I")) {
+            methodInsn.name = "getValue";
+            return true;
+        }
+
         if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Type")
                 && methodInsn.name.equals("m_84895_")
                 && methodInsn.desc.equals("(I)Lcom/mojang/blaze3d/platform/InputConstants$Key;")) {
             methodInsn.name = "getOrCreate";
+            return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/SharedConstants")
+                && methodInsn.name.equals("m_136188_")
+                && methodInsn.desc.equals("(C)Z")) {
+            methodInsn.name = "isAllowedChatCharacter";
             return true;
         }
 
@@ -2783,8 +3069,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         if (methodInsn.owner.equals("net/minecraft/client/renderer/texture/TextureAtlasSprite")) {
             String newName = switch (methodInsn.name) {
                 case "m_118409_" -> "getU0";
-                case "m_118410_" -> "getV0";
-                case "m_118411_" -> "getU1";
+                case "m_118410_" -> "getU1";
+                case "m_118411_" -> "getV0";
                 case "m_118412_" -> "getV1";
                 default -> null;
             };
@@ -2805,6 +3091,20 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 && methodInsn.name.equals("m_91268_")
                 && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/Window;")) {
             methodInsn.name = "getWindow";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(MINECRAFT_OWNER)
+                && methodInsn.name.equals("m_91106_")
+                && methodInsn.desc.equals("()Lnet/minecraft/client/sounds/SoundManager;")) {
+            methodInsn.name = "getSoundManager";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(MINECRAFT_OWNER)
+                && methodInsn.name.equals("m_91152_")
+                && methodInsn.desc.equals("(Lnet/minecraft/client/gui/screens/Screen;)V")) {
+            methodInsn.name = "setScreen";
             return true;
         }
 
@@ -2839,6 +3139,26 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 && methodInsn.desc.equals("()Ljava/util/Collection;")) {
             methodInsn.name = "getActiveEffects";
             return true;
+        }
+
+        if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
+            String newName = switch (methodInsn.name) {
+                case "m_7856_" -> "init";
+                case "m_88315_" -> "render";
+                case "m_86600_" -> "removed";
+                case "m_7379_" -> "onClose";
+                case "m_5953_" -> "isMouseOver";
+                case "m_6050_" -> "mouseScrolled";
+                case "m_6375_" -> "mouseClicked";
+                case "m_7933_" -> "keyPressed";
+                case "m_5534_" -> "charTyped";
+                case "m_7043_" -> "isPauseScreen";
+                default -> null;
+            };
+            if (newName != null) {
+                methodInsn.name = newName;
+                return true;
+            }
         }
 
         if (methodInsn.owner.equals("net/minecraft/client/gui/screens/recipebook/RecipeUpdateListener")
@@ -2878,6 +3198,12 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_93694_" -> "getHeight";
                 case "m_93696_" -> "isFocused";
                 case "m_93692_" -> "setFocused";
+                case "m_5534_" -> "charTyped";
+                case "m_6050_" -> "mouseScrolled";
+                case "m_7043_" -> "isPauseScreen";
+                case "m_7379_" -> "onClose";
+                case "m_7856_" -> "init";
+                case "m_86600_" -> "removed";
                 case "m_94120_" -> "tick";
                 case "m_94144_" -> "setValue";
                 case "m_94155_" -> "getValue";

@@ -1,13 +1,13 @@
 package github.com.gengyoubo.item.tool;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.TooltipFlag;
@@ -28,7 +28,7 @@ import java.util.List;
 
 public class MPShearsItem extends ShearsItem implements IMPKey, IMPDestroy, IMPDoubling {
     public MPShearsItem() {
-        super(new Properties().stacksTo(1).durability(-1).fireResistant());
+        super(new Properties().stacksTo(1).durability(Integer.MAX_VALUE).fireResistant());
     }
 
     @Override
@@ -59,12 +59,9 @@ public class MPShearsItem extends ShearsItem implements IMPKey, IMPDestroy, IMPD
 
     @Override
     public int getRange(ItemStack itemStack) {
-        if (itemStack.getTag() == null) {
-            itemStack.setTag(new CompoundTag());
-        }
-        int range = itemStack.getTag().getInt(MPNBTData.Range);
+        int range = github.com.gengyoubo.util.MPItemStackData.getInt(itemStack, MPNBTData.Range);
         if (range == 0) {
-            itemStack.getTag().putInt(MPNBTData.Range, 1);
+            github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.Range, 1);
             return 1;
         }
         return range;
@@ -74,15 +71,15 @@ public class MPShearsItem extends ShearsItem implements IMPKey, IMPDestroy, IMPD
         if (range == 0) {
             range = 1;
         }
-        itemStack.getOrCreateTag().putInt(MPNBTData.Range, range);
+        github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.Range, range);
         if (player != null) {
             player.displayClientMessage(Component.literal(MPText.manaita_mode.formatting("[" + Component.translatable("item.manaita_plus_general.manaita_shears").getString() + "] " + Component.translatable("mode.range.name").getString() + ": " + range + "x" + range + "x" + range)), true);
         }
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
         MPToolActionHelper.appendRangeAndDoublingTooltip(tooltip, getRange(stack), isDoubling(stack));
     }
 
@@ -102,4 +99,5 @@ public class MPShearsItem extends ShearsItem implements IMPKey, IMPDestroy, IMPD
         return !state.is(BlockTags.MINEABLE_WITH_HOE);
     }
 }
+
 

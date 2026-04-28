@@ -37,3 +37,4 @@ public class MPGLightningBolt extends LightningBolt {
         super.addAdditionalSaveData(tag);
     }
 }
+

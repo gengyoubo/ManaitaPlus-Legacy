@@ -22,29 +22,13 @@ loom {
 	}
 
 }
-
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.compilerArgs += ["-Xdiags:verbose","-Xlint:deprecation","-Xdiags:verbose",
+	                         "-Xmaxerrs", "1000",
+	                         "-Xmaxwarns", "1000"]
+}
 sourceSets {
-	main {
-		java {
-			srcDirs = ['src/main/java']
-			exclude '**/blockEntity/**'
-			exclude '**/event/**'
-			exclude '**/datagen/**'
-			exclude '**/jei/**'
-			exclude '**/transform/**'
-			exclude '**/ManaitaManaitaPlusTransformationService.java'
-			exclude '**/util/Helper.java'
-			exclude '**/util/ManaitaPlusClassLoaderFactory.java'
-			exclude '**/*Renderer.java'
-			exclude '**/gui/**'
-		}
-		resources {
-			srcDirs = ['src/main/resources', 'src/generated/resources']
-			exclude 'META-INF/mods.toml'
-			exclude 'META-INF/accesstransformer.cfg'
-			exclude 'META-INF/services/**'
-		}
-	}
 	client {
 		java {
 			srcDirs += ['src/client/java']
@@ -56,8 +40,8 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation "curse.maven:jei-238222:7920913"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}+${project.minecraft_version}"
+	modImplementation "curse.maven:jei-238222:7420583"
 }
 
 processResources {
@@ -79,7 +63,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 tasks.matching { it.name == 'sourcesJar' }.configureEach {
@@ -88,8 +72,8 @@ tasks.matching { it.name == 'sourcesJar' }.configureEach {
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 tasks.named('remapJar').configure {

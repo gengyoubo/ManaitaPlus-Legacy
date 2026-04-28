@@ -14,3 +14,4 @@ public abstract class PlayerMixin {
         MPArmor.syncArmorState((Player) (Object) this);
     }
 }
+

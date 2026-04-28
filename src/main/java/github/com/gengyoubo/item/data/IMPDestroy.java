@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface IMPDestroy {
     boolean accept(BlockState state);
     int getRange(ItemStack itemStack);
-    // --娉ㄩ噴鎺夋鏌?(2026/4/24 23:35):void setRange(ItemStack itemStack,int range);
+    // --濞夈劑鍣撮幒澶嬵梾閺?(2026/4/24 23:35):void setRange(ItemStack itemStack,int range);
 }
+
 

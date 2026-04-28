@@ -58,9 +58,6 @@ public final class MPGKeyBindings {
     }
 
     private static void sendKeyPacket(byte keyCode) {
-        MPKeyPressPacket packet = new MPKeyPressPacket(keyCode);
-        var buf = MPNetworking.createBuf();
-        packet.write(buf);
-        ClientPlayNetworking.send(MPNetworking.KEY_PRESS, buf);
+        ClientPlayNetworking.send(new MPKeyPressPacket(keyCode));
     }
 }

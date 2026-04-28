@@ -4,15 +4,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import github.com.gengyoubo.core.MPRecipeSerializerCore;
 import github.com.gengyoubo.util.MPNBTData;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -22,9 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class MPNBTCraftingRecipe implements CraftingRecipe {
-    private final ResourceLocation id;
+    private static final StringRepresentable.EnumCodec<CraftingBookCategory> CATEGORY_CODEC =
+            StringRepresentable.fromEnum(CraftingBookCategory::values);
+
     private final String group;
     private final CraftingBookCategory category;
     private final int width;
@@ -33,8 +45,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     private final ItemStack result;
     private final boolean showNotification;
 
-    public MPNBTCraftingRecipe(ResourceLocation id, String group, CraftingBookCategory category, int width, int height, IngredientSpec[] ingredients, ItemStack result, boolean showNotification) {
-        this.id = id;
+    public MPNBTCraftingRecipe(String group, CraftingBookCategory category, int width, int height, IngredientSpec[] ingredients, ItemStack result, boolean showNotification) {
         this.group = group;
         this.category = category;
         this.width = width;
@@ -42,11 +53,6 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
         this.ingredients = ingredients;
         this.result = result;
         this.showNotification = showNotification;
-    }
-
-    @Override
-    public @NotNull ResourceLocation getId() {
-        return id;
     }
 
     @Override
@@ -65,10 +71,11 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
+    public @NotNull ItemStack getResultItem(@NotNull HolderLookup.Provider provider) {
         return result.copy();
     }
 
+    @Override
     public boolean showNotification() {
         return showNotification;
     }
@@ -79,9 +86,9 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingContainer container, @NotNull Level level) {
-        for (int x = 0; x <= container.getWidth() - width; ++x) {
-            for (int y = 0; y <= container.getHeight() - height; ++y) {
+    public boolean matches(CraftingInput container, @NotNull Level level) {
+        for (int x = 0; x <= container.width() - width; ++x) {
+            for (int y = 0; y <= container.height() - height; ++y) {
                 if (matches(container, x, y, true) || matches(container, x, y, false)) {
                     return true;
                 }
@@ -90,9 +97,9 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
         return false;
     }
 
-    private boolean matches(CraftingContainer container, int offsetX, int offsetY, boolean mirrored) {
-        for (int x = 0; x < container.getWidth(); ++x) {
-            for (int y = 0; y < container.getHeight(); ++y) {
+    private boolean matches(CraftingInput container, int offsetX, int offsetY, boolean mirrored) {
+        for (int x = 0; x < container.width(); ++x) {
+            for (int y = 0; y < container.height(); ++y) {
                 int patternX = x - offsetX;
                 int patternY = y - offsetY;
                 IngredientSpec expected = IngredientSpec.EMPTY;
@@ -104,7 +111,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
                     }
                 }
 
-                if (!expected.test(container.getItem(x + y * container.getWidth()))) {
+                if (!expected.test(container.getItem(x + y * container.width()))) {
                     return false;
                 }
             }
@@ -113,63 +120,131 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack assemble(@NotNull CraftingContainer container, @NotNull RegistryAccess registryAccess) {
+    public @NotNull ItemStack assemble(@NotNull CraftingInput container, @NotNull HolderLookup.Provider provider) {
         return result.copy();
     }
 
     public static class Serializer implements RecipeSerializer<MPNBTCraftingRecipe> {
-        @Override
-        public @NotNull MPNBTCraftingRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
-            String group = GsonHelper.getAsString(json, "group", "");
-            CraftingBookCategory category = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(json, "category", null), CraftingBookCategory.MISC);
-            String[] pattern = shrink(patternFromJson(GsonHelper.getAsJsonArray(json, "pattern")));
-            if (pattern.length == 0) {
-                throw new JsonSyntaxException("Invalid pattern: empty pattern not allowed");
+        private static final MapCodec<MPNBTCraftingRecipe> CODEC = new MapCodec<>() {
+            @Override
+            public <T> DataResult<MPNBTCraftingRecipe> decode(DynamicOps<T> ops, MapLike<T> input) {
+                return decodeRecipe(ops, input);
             }
-            int width = pattern[0].length();
-            int height = pattern.length;
-            Map<Character, IngredientSpec> key = keyFromJson(GsonHelper.getAsJsonObject(json, "key"));
-            IngredientSpec[] ingredients = dissolvePattern(pattern, key, width, height);
-            ItemStack result = resultFromJson(GsonHelper.getAsJsonObject(json, "result"));
-            boolean showNotification = GsonHelper.getAsBoolean(json, "show_notification", true);
-            return new MPNBTCraftingRecipe(id, group, category, width, height, ingredients, result, showNotification);
+
+            @Override
+            public <T> RecordBuilder<T> encode(MPNBTCraftingRecipe input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+                return encodeRecipe(input, ops, prefix);
+            }
+
+            @Override
+            public <T> Stream<T> keys(DynamicOps<T> ops) {
+                return Stream.of("group", "category", "pattern", "key", "result", "show_notification").map(ops::createString);
+            }
+        };
+        private static final StreamCodec<RegistryFriendlyByteBuf, MPNBTCraftingRecipe> STREAM_CODEC =
+                StreamCodec.of(Serializer::encodeToNetwork, Serializer::decodeFromNetwork);
+
+        @Override
+        public @NotNull MapCodec<MPNBTCraftingRecipe> codec() {
+            return CODEC;
         }
 
         @Override
-        public @NotNull MPNBTCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
+        public @NotNull StreamCodec<RegistryFriendlyByteBuf, MPNBTCraftingRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
+
+        private static MPNBTCraftingRecipe decodeFromNetwork(RegistryFriendlyByteBuf buf) {
             int width = buf.readVarInt();
             int height = buf.readVarInt();
             String group = buf.readUtf();
-            CraftingBookCategory category = buf.readEnum(CraftingBookCategory.class);
+            CraftingBookCategory category = CraftingBookCategory.STREAM_CODEC.decode(buf);
             IngredientSpec[] ingredients = new IngredientSpec[width * height];
             for (int i = 0; i < ingredients.length; i++) {
-                ingredients[i] = IngredientSpec.fromNetwork(buf);
+                ingredients[i] = IngredientSpec.STREAM_CODEC.decode(buf);
             }
-            ItemStack result = buf.readItem();
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
             boolean showNotification = buf.readBoolean();
-            return new MPNBTCraftingRecipe(id, group, category, width, height, ingredients, result, showNotification);
+            return new MPNBTCraftingRecipe(group, category, width, height, ingredients, result, showNotification);
         }
 
-        @Override
-        public void toNetwork(FriendlyByteBuf buf, MPNBTCraftingRecipe recipe) {
+        private static void encodeToNetwork(RegistryFriendlyByteBuf buf, MPNBTCraftingRecipe recipe) {
             buf.writeVarInt(recipe.width);
             buf.writeVarInt(recipe.height);
             buf.writeUtf(recipe.group);
-            buf.writeEnum(recipe.category);
+            CraftingBookCategory.STREAM_CODEC.encode(buf, recipe.category);
             for (IngredientSpec ingredient : recipe.ingredients) {
-                ingredient.toNetwork(buf);
+                IngredientSpec.STREAM_CODEC.encode(buf, ingredient);
             }
-            buf.writeItem(recipe.result);
+            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
             buf.writeBoolean(recipe.showNotification);
         }
 
+        private static <T> DataResult<MPNBTCraftingRecipe> decodeRecipe(DynamicOps<T> ops, MapLike<T> input) {
+            try {
+                JsonObject json = toJsonObject(ops, input);
+                String group = GsonHelper.getAsString(json, "group", "");
+                CraftingBookCategory category = CATEGORY_CODEC.byName(GsonHelper.getAsString(json, "category", null), CraftingBookCategory.MISC);
+                String[] pattern = shrink(patternFromJson(GsonHelper.getAsJsonArray(json, "pattern")));
+                if (pattern.length == 0) {
+                    throw new JsonSyntaxException("Invalid pattern: empty pattern not allowed");
+                }
+                int width = pattern[0].length();
+                int height = pattern.length;
+                Map<Character, IngredientSpec> key = keyFromJson(GsonHelper.getAsJsonObject(json, "key"));
+                IngredientSpec[] ingredients = dissolvePattern(pattern, key, width, height);
+                ItemStack result = resultFromJson(GsonHelper.getAsJsonObject(json, "result"));
+                boolean showNotification = GsonHelper.getAsBoolean(json, "show_notification", true);
+                return DataResult.success(new MPNBTCraftingRecipe(group, category, width, height, ingredients, result, showNotification));
+            } catch (Exception exception) {
+                return DataResult.error(exception::getMessage);
+            }
+        }
+
+        private static <T> RecordBuilder<T> encodeRecipe(MPNBTCraftingRecipe recipe, DynamicOps<T> ops, RecordBuilder<T> builder) {
+            builder.add("group", ops.createString(recipe.group));
+            builder.add("category", ops.createString(recipe.category.getSerializedName()));
+            builder.add("width", ops.createInt(recipe.width));
+            builder.add("height", ops.createInt(recipe.height));
+            builder.add("ingredients", JsonOps.INSTANCE.convertTo(ops, encodeIngredients(recipe.ingredients, recipe.width, recipe.height)));
+            builder.add("result", JsonOps.INSTANCE.convertTo(ops, encodeResult(recipe.result)));
+            builder.add("show_notification", ops.createBoolean(recipe.showNotification));
+            return builder;
+        }
+
+        private static JsonObject encodeResult(ItemStack stack) {
+            JsonObject result = (JsonObject) ItemStack.STRICT_CODEC.encodeStart(JsonOps.INSTANCE, stack)
+                    .getOrThrow(JsonSyntaxException::new);
+            int type = github.com.gengyoubo.util.MPItemStackData.getInt(stack, MPNBTData.ItemType);
+            if (type != 0) {
+                JsonObject nbt = new JsonObject();
+                nbt.addProperty(MPNBTData.ItemType, type);
+                result.add("nbt", nbt);
+            }
+            return result;
+        }
+
+        private static JsonArray encodeIngredients(IngredientSpec[] ingredients, int width, int height) {
+            JsonArray array = new JsonArray();
+            for (int y = 0; y < height; y++) {
+                JsonArray row = new JsonArray();
+                for (int x = 0; x < width; x++) {
+                    row.add(ingredients[x + y * width].toJson());
+                }
+                array.add(row);
+            }
+            return array;
+        }
+
         private static ItemStack resultFromJson(JsonObject json) {
-            ItemStack stack = new ItemStack(net.minecraft.world.item.crafting.ShapedRecipe.itemFromJson(json), GsonHelper.getAsInt(json, "count", 1));
-            if (json.has("nbt")) {
-                JsonObject nbt = GsonHelper.getAsJsonObject(json, "nbt");
+            JsonObject stackJson = json.deepCopy();
+            JsonObject nbt = stackJson.has("nbt") ? GsonHelper.getAsJsonObject(stackJson, "nbt") : null;
+            stackJson.remove("nbt");
+            ItemStack stack = ItemStack.STRICT_CODEC.parse(JsonOps.INSTANCE, stackJson).getOrThrow(JsonSyntaxException::new);
+            if (nbt != null) {
                 int type = readType(nbt);
                 if (type >= 0) {
-                    stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
+                    github.com.gengyoubo.util.MPItemStackData.putInt(stack, MPNBTData.ItemType, type);
                 }
             }
             return stack;
@@ -297,10 +372,27 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
             }
             return i;
         }
+
+        private static <T> JsonObject toJsonObject(DynamicOps<T> ops, MapLike<T> input) {
+            JsonObject json = new JsonObject();
+            input.entries().forEach(entry -> {
+                JsonElement key = ops.convertTo(JsonOps.INSTANCE, entry.getFirst());
+                JsonElement value = ops.convertTo(JsonOps.INSTANCE, entry.getSecond());
+                json.add(key.getAsString(), value);
+            });
+            return json;
+        }
     }
 
     private record IngredientSpec(Ingredient ingredient, int requiredType) {
         private static final IngredientSpec EMPTY = new IngredientSpec(Ingredient.EMPTY, Integer.MIN_VALUE);
+        private static final StreamCodec<RegistryFriendlyByteBuf, IngredientSpec> STREAM_CODEC = StreamCodec.composite(
+                Ingredient.CONTENTS_STREAM_CODEC,
+                IngredientSpec::ingredient,
+                ByteBufCodecs.INT,
+                IngredientSpec::requiredType,
+                IngredientSpec::new
+        );
 
         private boolean test(ItemStack stack) {
             if (this == EMPTY) {
@@ -312,20 +404,24 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
             if (requiredType == Integer.MIN_VALUE) {
                 return true;
             }
-            return stack.hasTag() && stack.getTag().getInt(MPNBTData.ItemType) == requiredType;
+            return github.com.gengyoubo.util.MPItemStackData.hasTag(stack)
+                    && github.com.gengyoubo.util.MPItemStackData.getTag(stack).getInt(MPNBTData.ItemType) == requiredType;
         }
 
-        private void toNetwork(FriendlyByteBuf buf) {
-            ingredient.toNetwork(buf);
-            buf.writeInt(requiredType);
-        }
-
-        private static IngredientSpec fromNetwork(FriendlyByteBuf buf) {
-            return new IngredientSpec(Ingredient.fromNetwork(buf), buf.readInt());
+        private JsonObject toJson() {
+            JsonObject json = ingredient.isEmpty()
+                    ? new JsonObject()
+                    : (JsonObject) Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, ingredient).getOrThrow(JsonSyntaxException::new);
+            if (requiredType != Integer.MIN_VALUE) {
+                json.addProperty("type", requiredType);
+            }
+            return json;
         }
 
         private static IngredientSpec fromJson(JsonObject json) {
-            Ingredient ingredient = Ingredient.fromJson(json);
+            JsonObject ingredientJson = json.deepCopy();
+            ingredientJson.remove("type");
+            Ingredient ingredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, ingredientJson).getOrThrow(JsonSyntaxException::new);
             int requiredType = Integer.MIN_VALUE;
             if (json.has("type")) {
                 requiredType = GsonHelper.getAsInt(json, "type");

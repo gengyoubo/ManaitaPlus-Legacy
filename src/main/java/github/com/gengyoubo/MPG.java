@@ -4,7 +4,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.CreativeModeTab;
@@ -22,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import github.com.gengyoubo.core.*;
 import github.com.gengyoubo.network.MPNetworking;
+import github.com.gengyoubo.resource.EasyModeResourceCondition;
 import github.com.gengyoubo.util.MPNBTData;
 
 public class MPG implements ModInitializer {
@@ -53,6 +53,7 @@ public class MPG implements ModInitializer {
         MPRecipeSerializerCore.init();
         MPSynchedDataCore.init();
         registerResourceConditions();
+        MPNetworking.initCommon();
         MPNetworking.initServer();
 
         BLOCKS.registerAll();
@@ -63,7 +64,7 @@ public class MPG implements ModInitializer {
         BLOCK_ENTITY_TYPES.registerAll();
         RECIPE_SERIALIZER_DEFERRED_REGISTER.registerAll();
 
-        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation(MODID, "manaita_plus_tab"), FabricItemGroup.builder()
+        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, github.com.gengyoubo.util.MPResource.id(MODID, "manaita_plus_tab"), FabricItemGroup.builder()
             .icon(() -> MPBlockCore.CraftingBlockItem.get().getDefaultInstance())
             .title(Component.translatable("itemGroup.MPTab"))
             .displayItems((context, entries) -> {
@@ -94,15 +95,15 @@ public class MPG implements ModInitializer {
     }
 
     private static void registerResourceConditions() {
-        ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), json ->
-                GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value);
+        ResourceConditions.register(EasyModeResourceCondition.TYPE);
     }
 
     private static void acceptMPGType(Item item, CreativeModeTab.Output entries, int maxType) {
         for (int type = 0; type <= maxType; type++) {
             ItemStack stack = new ItemStack(item);
-            stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
+            github.com.gengyoubo.util.MPItemStackData.putInt(stack, MPNBTData.ItemType, type);
             entries.accept(stack);
         }
     }
 }
+

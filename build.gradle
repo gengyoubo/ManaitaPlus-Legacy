@@ -89,7 +89,7 @@ dependencies {
     // JEI is only needed for client testing. Keeping it out of runData avoids
     // booting the full JEI mod during datagen on the early NeoForge runtime.
     if (!isDataGenerationRun) {
-        runtimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
+        //runtimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
     }
 }
 
@@ -113,6 +113,10 @@ tasks.named('processResources', ProcessResources).configure {
 }
 
 tasks.named('jar', Jar).configure {
+    archiveBaseName.set(mod_name)
+    archiveVersion.set(mod_version)
+    archiveClassifier.set(mod_loader)
+
     manifest {
         attributes([
                 "Specification-Title"     : mod_id,
@@ -126,13 +130,12 @@ tasks.named('jar', Jar).configure {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
+            artifactId = mod_name
+            version = mod_version
+
             from components.java
         }
     }

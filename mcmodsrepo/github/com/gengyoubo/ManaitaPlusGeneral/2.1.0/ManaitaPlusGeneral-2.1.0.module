@@ -1,0 +1,80 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.0-sources.jar",
+          "url": "ManaitaPlusGeneral-2.1.0-sources.jar",
+          "size": 253621,
+          "sha512": "02806624070bc96d3e238f2207c9d6bce3a0d60fcad3e0d17ad3ca66bf7f932b131b564b03a950eeb0594b52fdec9b480882cd26bad1376d71e101b9a44510c8",
+          "sha256": "0950c4446f726736e5cbd09f8504c0d6a696b21655b867739fe2e15c85a3441c",
+          "sha1": "28277900b663c4f33548edb5310ea839a277621a",
+          "md5": "72f704a09835ad87bc4f94b736982a6e"
+        }
+      ]
+    },
+    {
+      "name": "reobfRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.0-neoforge.jar",
+          "url": "ManaitaPlusGeneral-2.1.0-neoforge.jar",
+          "size": 402053,
+          "sha512": "44e4115c2044ac9337c24c900c97002a7ba2da21771019acd6ae8d5a4327f3c57f939ddc6422326024e30027e8abb693e056e702e8060e6bba151dc4bd5544c7",
+          "sha256": "65db73cc3aa30034ea6b4b246bc2f735bd252e656c595ee8b1a17cdbd55a674d",
+          "sha1": "e567c0a4062faf2b1a4af583899d6be09fc32875",
+          "md5": "6254abce495264e2ff2f2f3029894942"
+        }
+      ]
+    },
+    {
+      "name": "reobfApiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.0-neoforge.jar",
+          "url": "ManaitaPlusGeneral-2.1.0-neoforge.jar",
+          "size": 402053,
+          "sha512": "44e4115c2044ac9337c24c900c97002a7ba2da21771019acd6ae8d5a4327f3c57f939ddc6422326024e30027e8abb693e056e702e8060e6bba151dc4bd5544c7",
+          "sha256": "65db73cc3aa30034ea6b4b246bc2f735bd252e656c595ee8b1a17cdbd55a674d",
+          "sha1": "e567c0a4062faf2b1a4af583899d6be09fc32875",
+          "md5": "6254abce495264e2ff2f2f3029894942"
+        }
+      ]
+    }
+  ]
+}

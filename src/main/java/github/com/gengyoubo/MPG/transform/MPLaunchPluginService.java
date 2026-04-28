@@ -68,6 +68,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String RECIPE_MANAGER_OWNER = "net/minecraft/world/item/crafting/RecipeManager";
     private static final String RECIPE_INTERFACE_OWNER = "net/minecraft/world/item/crafting/Recipe";
     private static final String RECIPE_OWNER = "net/minecraft/world/item/crafting/CraftingRecipe";
+    private static final String ABSTRACT_COOKING_RECIPE_OWNER = "net/minecraft/world/item/crafting/AbstractCookingRecipe";
     private static final String CRAFTING_RECIPE_PACKAGE_PREFIX = "net/minecraft/world/item/crafting/";
     private static final String RECIPE_TYPE_OWNER = "net/minecraft/world/item/crafting/RecipeType";
     private static final String INGREDIENT_OWNER = "net/minecraft/world/item/crafting/Ingredient";
@@ -85,13 +86,22 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     private static final String TOOLTIP_FLAG_OWNER = "net/minecraft/world/item/TooltipFlag";
     private static final String TOOLTIP_FLAG_DEFAULT_OWNER = "net/minecraft/world/item/TooltipFlag$Default";
     private static final String SUSPICIOUS_STEW_ITEM_OWNER = "net/minecraft/world/item/SuspiciousStewItem";
+    private static final String SOUND_EVENTS_OWNER = "net/minecraft/sounds/SoundEvents";
     private static final String COMPONENT_OWNER = "net/minecraft/network/chat/Component";
     private static final String MUTABLE_COMPONENT_OWNER = "net/minecraft/network/chat/MutableComponent";
+    private static final String LANGUAGE_OWNER = "net/minecraft/locale/Language";
+    private static final String SLOT_OWNER = "net/minecraft/world/inventory/Slot";
+    private static final String KEY_MAPPING_OWNER = "net/minecraft/client/KeyMapping";
+    private static final String INPUT_CONSTANTS_KEY_OWNER = "com/mojang/blaze3d/platform/InputConstants$Key";
     private static final String FONT_OWNER = "net/minecraft/client/gui/Font";
     private static final String STRING_SPLITTER_OWNER = "net/minecraft/client/StringSplitter";
     private static final String EDIT_BOX_OWNER = "net/minecraft/client/gui/components/EditBox";
     private static final String TAG_KEY_OWNER = "net/minecraft/tags/TagKey";
     private static final String GUI_GRAPHICS_OWNER = "net/minecraft/client/gui/GuiGraphics";
+    private static final String TEXTURE_ATLAS_SPRITE_OWNER = "net/minecraft/client/renderer/texture/TextureAtlasSprite";
+    private static final String MISSING_TEXTURE_ATLAS_SPRITE_OWNER = "net/minecraft/client/renderer/texture/MissingTextureAtlasSprite";
+    private static final String SIMPLE_SOUND_INSTANCE_OWNER = "net/minecraft/client/resources/sounds/SimpleSoundInstance";
+    private static final String SOUND_MANAGER_OWNER = "net/minecraft/client/sounds/SoundManager";
     private static final String CLIENT_TOOLTIP_COMPONENT_OWNER = "net/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent";
     private static final String CRASH_REPORT_OWNER = "net/minecraft/CrashReport";
     private static final String CRASH_REPORT_CATEGORY_OWNER = "net/minecraft/CrashReportCategory";
@@ -155,6 +165,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case POTION_UTILS_OWNER -> processPotionUtilsClass(classNode);
             case RECIPE_INTERFACE_OWNER -> processRecipeInterfaceClass(classNode);
             case RECIPE_MANAGER_OWNER -> processRecipeManagerClass(classNode);
+            case ABSTRACT_COOKING_RECIPE_OWNER -> processAbstractCookingRecipeClass(classNode);
             case TOOLTIP_FLAG_OWNER -> processTooltipFlagClass(classNode);
             case TOOLTIP_FLAG_DEFAULT_OWNER -> processTooltipFlagDefaultClass(classNode);
             case SUSPICIOUS_STEW_ITEM_OWNER -> processSuspiciousStewItemClass(classNode);
@@ -168,11 +179,19 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case COMPONENT_OWNER -> processComponentClass(classNode);
             case STYLED_CONTENT_CONSUMER_OWNER -> processStyledContentConsumerInterface(classNode);
             case MUTABLE_COMPONENT_OWNER -> processMutableComponentClass(classNode);
+            case LANGUAGE_OWNER -> processLanguageClass(classNode);
+            case SLOT_OWNER -> processSlotClass(classNode);
+            case KEY_MAPPING_OWNER -> processKeyMappingClass(classNode);
+            case INPUT_CONSTANTS_KEY_OWNER -> processInputConstantsKeyClass(classNode);
             case FONT_OWNER -> processFontClass(classNode);
             case STRING_SPLITTER_OWNER -> processStringSplitterClass(classNode);
             case EDIT_BOX_OWNER -> processEditBoxClass(classNode);
             case TAG_KEY_OWNER -> processTagKeyClass(classNode);
             case GUI_GRAPHICS_OWNER -> processGuiGraphicsClass(classNode);
+            case TEXTURE_ATLAS_SPRITE_OWNER -> processTextureAtlasSpriteClass(classNode);
+            case MISSING_TEXTURE_ATLAS_SPRITE_OWNER -> processMissingTextureAtlasSpriteClass(classNode);
+            case SIMPLE_SOUND_INSTANCE_OWNER -> processSimpleSoundInstanceClass(classNode);
+            case SOUND_MANAGER_OWNER -> processSoundManagerClass(classNode);
             case "net/minecraft/client/gui/screens/Screen" -> processScreenClass(classNode);
             case CLIENT_TOOLTIP_COMPONENT_OWNER -> processClientTooltipComponentClass(classNode);
             case "net/minecraft/client/renderer/Rect2i" -> processRect2iClass(classNode);
@@ -356,6 +375,72 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Ljava/lang/String;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/resources/language/LanguageManager", "getSelected", "()Ljava/lang/String;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processLanguageClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_128107_",
+                "()Lnet/minecraft/locale/Language;",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, LANGUAGE_OWNER, "getInstance", "()Lnet/minecraft/locale/Language;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_5536_",
+                "(Lnet/minecraft/network/chat/FormattedText;)Lnet/minecraft/util/FormattedCharSequence;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        LANGUAGE_OWNER,
+                        "getVisualOrder",
+                        "(Lnet/minecraft/network/chat/FormattedText;)Lnet/minecraft/util/FormattedCharSequence;",
+                        false
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
+    private static boolean processKeyMappingClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_90862_",
+                "()Z",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, KEY_MAPPING_OWNER, "isUnbound", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+    }
+
+    private static boolean processSlotClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_7993_",
+                "()Lnet/minecraft/world/item/ItemStack;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, SLOT_OWNER, "getItem", "()Lnet/minecraft/world/item/ItemStack;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processInputConstantsKeyClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_84875_",
+                "()Lnet/minecraft/network/chat/Component;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        INPUT_CONSTANTS_KEY_OWNER,
+                        "getDisplayName",
+                        "()Lnet/minecraft/network/chat/Component;",
+                        false
+                ),
                 new InsnNode(Opcodes.ARETURN)
         );
     }
@@ -579,6 +664,42 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new InsnNode(Opcodes.IRETURN)
         );
         return patched;
+    }
+
+    private static boolean processSimpleSoundInstanceClass(ClassNode classNode) {
+        return ensureStaticBridge(
+                classNode,
+                "m_263171_",
+                "(Lnet/minecraft/core/Holder;F)Lnet/minecraft/client/resources/sounds/SimpleSoundInstance;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.FLOAD, 1),
+                new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        SIMPLE_SOUND_INSTANCE_OWNER,
+                        "forUI",
+                        "(Lnet/minecraft/core/Holder;F)Lnet/minecraft/client/resources/sounds/SimpleSoundInstance;",
+                        false
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processSoundManagerClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_120367_",
+                "(Lnet/minecraft/client/resources/sounds/SoundInstance;)V",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        SOUND_MANAGER_OWNER,
+                        "play",
+                        "(Lnet/minecraft/client/resources/sounds/SoundInstance;)V",
+                        false
+                ),
+                new InsnNode(Opcodes.RETURN)
+        );
     }
 
     private static boolean processStyleClass(ClassNode classNode) {
@@ -1144,6 +1265,51 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
     }
 
+    private static boolean processAbstractCookingRecipeClass(ClassNode classNode) {
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_43750_",
+                "()F",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_COOKING_RECIPE_OWNER, "getExperience", "()F", false),
+                new InsnNode(Opcodes.FRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6076_",
+                "()Ljava/lang/String;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_COOKING_RECIPE_OWNER, "getGroup", "()Ljava/lang/String;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_43753_",
+                "()I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_COOKING_RECIPE_OWNER, "getCookingTime", "()I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6671_",
+                "()Lnet/minecraft/world/item/crafting/RecipeType;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_COOKING_RECIPE_OWNER, "getType", "()Lnet/minecraft/world/item/crafting/RecipeType;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_245534_",
+                "()Lnet/minecraft/world/item/crafting/CookingBookCategory;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, ABSTRACT_COOKING_RECIPE_OWNER, "category", "()Lnet/minecraft/world/item/crafting/CookingBookCategory;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
+    }
+
     private static boolean processIngredientClass(ClassNode classNode) {
         boolean patched = false;
         patched |= ensureInstanceBridge(
@@ -1387,6 +1553,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "()Lnet/minecraft/network/chat/MutableComponent;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "plainCopy", "()Lnet/minecraft/network/chat/MutableComponent;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_6881_",
+                "()Lnet/minecraft/network/chat/MutableComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "copy", "()Lnet/minecraft/network/chat/MutableComponent;", true),
                 new InsnNode(Opcodes.ARETURN)
         );
         patched |= ensureInstanceBridge(
@@ -1784,6 +1958,26 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_280649_",
+                "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ILOAD, 5),
+                new VarInsnNode(Opcodes.ILOAD, 6),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        GUI_GRAPHICS_OWNER,
+                        "drawString",
+                        "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I",
+                        false
+                ),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_280614_",
                 "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
                 new VarInsnNode(Opcodes.ALOAD, 0),
@@ -1838,6 +2032,39 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new InsnNode(Opcodes.RETURN)
         );
         return patched;
+    }
+
+    private static boolean processTextureAtlasSpriteClass(ClassNode classNode) {
+        return ensureInstanceBridge(
+                classNode,
+                "m_247685_",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(
+                        Opcodes.INVOKEVIRTUAL,
+                        TEXTURE_ATLAS_SPRITE_OWNER,
+                        "atlasLocation",
+                        "()Lnet/minecraft/resources/ResourceLocation;",
+                        false
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
+    }
+
+    private static boolean processMissingTextureAtlasSpriteClass(ClassNode classNode) {
+        return ensureStaticBridge(
+                classNode,
+                "m_118071_",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        MISSING_TEXTURE_ATLAS_SPRITE_OWNER,
+                        "getLocation",
+                        "()Lnet/minecraft/resources/ResourceLocation;",
+                        false
+                ),
+                new InsnNode(Opcodes.ARETURN)
+        );
     }
 
     private static boolean processClientTooltipComponentClass(ClassNode classNode) {
@@ -2421,6 +2648,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 return rewriteFieldName(fieldInsn, newName);
             }
 
+            case SLOT_OWNER -> {
+                return rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
+                    case "f_40220_" -> "x";
+                    case "f_40221_" -> "y";
+                    default -> null;
+                });
+            }
+
             case "com/mojang/blaze3d/vertex/DefaultVertexFormat" -> {
                 String newName = null;
                 if ("f_85817_".equals(fieldInsn.name)) {
@@ -2455,6 +2690,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 return rewriteFieldName(fieldInsn, newName);
             }
 
+            case SOUND_EVENTS_OWNER -> {
+                String newName = null;
+                if ("f_12490_".equals(fieldInsn.name)) {
+                    newName = "UI_BUTTON_CLICK";
+                }
+                return rewriteFieldName(fieldInsn, newName);
+            }
+
             case "net/minecraft/world/item/Items" -> {
                 String newName = null;
                 if ("f_42410_".equals(fieldInsn.name)) {
@@ -2465,7 +2708,9 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
             case "net/minecraft/client/Options" -> {
                 String newName = null;
-                if ("f_92125_".equals(fieldInsn.name)) {
+                if ("f_92092_".equals(fieldInsn.name)) {
+                    newName = "keyInventory";
+                } else if ("f_92125_".equals(fieldInsn.name)) {
                     newName = "advancedItemTooltips";
                 } else if ("f_92097_".equals(fieldInsn.name)) {
                     newName = "keyPickItem";
@@ -2622,15 +2867,20 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case TOOLTIP_FLAG_OWNER -> rewriteTooltipFlagMethod(methodInsn);
             case FLUID_OWNER -> rewriteFluidMethod(methodInsn);
             case FLUID_STATE_OWNER -> rewriteFluidStateMethod(methodInsn);
+            case LANGUAGE_OWNER -> rewriteLanguageMethod(methodInsn);
+            case SLOT_OWNER -> rewriteSlotMethod(methodInsn);
+            case KEY_MAPPING_OWNER -> rewriteKeyMappingMethod(methodInsn);
             case COMPONENT_OWNER -> rewriteComponentMethod(methodInsn);
             case "net/minecraft/client/gui/screens/Screen" -> rewriteScreensScreenMethod(methodInsn);
             case MUTABLE_COMPONENT_OWNER -> rewriteMutableComponentMethod(methodInsn);
             case FONT_OWNER -> rewriteFontMethod(methodInsn);
             case CLIENT_TOOLTIP_COMPONENT_OWNER -> rewriteClientTooltipComponentMethod(methodInsn);
             case GUI_GRAPHICS_OWNER -> rewriteGuiGraphicsMethod(methodInsn);
+            case SIMPLE_SOUND_INSTANCE_OWNER -> rewriteSimpleSoundInstanceMethod(methodInsn);
+            case SOUND_MANAGER_OWNER -> rewriteSoundManagerMethod(methodInsn);
             case "net/minecraft/client/Minecraft" -> rewriteMinecraftMethod(methodInsn);
             case "com/mojang/blaze3d/platform/InputConstants" -> rewritePlatformInputConstantsMethod(methodInsn);
-            case "com/mojang/blaze3d/platform/InputConstants$Key" -> rewriteInputConstantsKeyMethod(methodInsn);
+            case INPUT_CONSTANTS_KEY_OWNER -> rewriteInputConstantsKeyMethod(methodInsn);
             case "com/mojang/blaze3d/platform/InputConstants$Type" -> rewriteInputConstantsTypeMethod(methodInsn);
             case "net/minecraft/SharedConstants" -> rewriteMinecraftSharedConstantsMethod(methodInsn);
             case "net/minecraft/client/renderer/GameRenderer" -> rewriteRendererGameRendererMethod(methodInsn);
@@ -2638,7 +2888,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case "com/mojang/blaze3d/vertex/BufferBuilder" -> rewriteVertexBufferBuilderMethod(methodInsn);
             case "com/mojang/blaze3d/vertex/PoseStack$Pose" -> rewritePoseStackPoseMethod(methodInsn);
             case "com/mojang/blaze3d/vertex/VertexConsumer" -> rewriteVertexVertexConsumerMethod(methodInsn);
-            case "net/minecraft/client/renderer/texture/TextureAtlasSprite" -> rewriteTextureTextureAtlasSpriteMethod(methodInsn);
+            case TEXTURE_ATLAS_SPRITE_OWNER -> rewriteTextureTextureAtlasSpriteMethod(methodInsn);
+            case MISSING_TEXTURE_ATLAS_SPRITE_OWNER -> rewriteMissingTextureAtlasSpriteMethod(methodInsn);
             case "net/minecraft/client/resources/TextureAtlasHolder" -> rewriteResourcesTextureAtlasHolderMethod(methodInsn);
             case "com/mojang/blaze3d/platform/Window" -> rewritePlatformWindowMethod(methodInsn);
             case "net/minecraft/client/MouseHandler" -> rewriteClientMouseHandlerMethod(methodInsn);
@@ -2653,6 +2904,34 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteCraftingRecipePackageMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(ABSTRACT_COOKING_RECIPE_OWNER)) {
+            if (methodInsn.name.equals("m_43750_")
+                    && methodInsn.desc.equals("()F")) {
+                methodInsn.name = "getExperience";
+                return true;
+            }
+            if (methodInsn.name.equals("m_6076_")
+                    && methodInsn.desc.equals("()Ljava/lang/String;")) {
+                methodInsn.name = "getGroup";
+                return true;
+            }
+            if (methodInsn.name.equals("m_43753_")
+                    && methodInsn.desc.equals("()I")) {
+                methodInsn.name = "getCookingTime";
+                return true;
+            }
+            if (methodInsn.name.equals("m_6671_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/world/item/crafting/RecipeType;")) {
+                methodInsn.name = "getType";
+                return true;
+            }
+            if (methodInsn.name.equals("m_245534_")
+                    && methodInsn.desc.equals("()Lnet/minecraft/world/item/crafting/CookingBookCategory;")) {
+                methodInsn.name = "category";
+                return true;
+            }
+        }
+
         if (methodInsn.owner.startsWith(CRAFTING_RECIPE_PACKAGE_PREFIX)) {
             if (methodInsn.name.equals("m_5598_")
                     && methodInsn.desc.equals("()Z")) {
@@ -3212,6 +3491,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_237113_" -> "literal";
                 case "m_237115_", "m_237110_" -> "translatable";
                 case "m_6879_" -> "plainCopy";
+                case "m_6881_" -> "copy";
                 case "m_7360_" -> "getSiblings";
                 default -> null;
             };
@@ -3319,6 +3599,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
 
     private static boolean rewriteGuiGraphicsMethod(MethodInsnNode methodInsn) {
         if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
+                && methodInsn.name.equals("m_280649_")
+                && methodInsn.desc.equals("(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I")) {
+            methodInsn.name = "drawString";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(GUI_GRAPHICS_OWNER)
                 && methodInsn.name.equals("m_280614_")
                 && methodInsn.desc.equals("(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I")) {
             methodInsn.name = "drawString";
@@ -3329,6 +3616,68 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 && methodInsn.name.equals("m_280168_")
                 && methodInsn.desc.equals("()Lcom/mojang/blaze3d/vertex/PoseStack;")) {
             methodInsn.name = "pose";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteLanguageMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(LANGUAGE_OWNER)
+                && methodInsn.name.equals("m_128107_")
+                && methodInsn.desc.equals("()Lnet/minecraft/locale/Language;")) {
+            methodInsn.name = "getInstance";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(LANGUAGE_OWNER)
+                && methodInsn.name.equals("m_5536_")
+                && methodInsn.desc.equals("(Lnet/minecraft/network/chat/FormattedText;)Lnet/minecraft/util/FormattedCharSequence;")) {
+            methodInsn.name = "getVisualOrder";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteKeyMappingMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(KEY_MAPPING_OWNER)
+                && methodInsn.name.equals("m_90862_")
+                && methodInsn.desc.equals("()Z")) {
+            methodInsn.name = "isUnbound";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteSlotMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(SLOT_OWNER)
+                && methodInsn.name.equals("m_7993_")
+                && methodInsn.desc.equals("()Lnet/minecraft/world/item/ItemStack;")) {
+            methodInsn.name = "getItem";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteSimpleSoundInstanceMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(SIMPLE_SOUND_INSTANCE_OWNER)
+                && methodInsn.name.equals("m_263171_")
+                && methodInsn.desc.equals("(Lnet/minecraft/core/Holder;F)Lnet/minecraft/client/resources/sounds/SimpleSoundInstance;")) {
+            methodInsn.name = "forUI";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteSoundManagerMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(SOUND_MANAGER_OWNER)
+                && methodInsn.name.equals("m_120367_")
+                && methodInsn.desc.equals("(Lnet/minecraft/client/resources/sounds/SoundInstance;)V")) {
+            methodInsn.name = "play";
             return true;
         }
 
@@ -3386,17 +3735,24 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteInputConstantsKeyMethod(MethodInsnNode methodInsn) {
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+        if (methodInsn.owner.equals(INPUT_CONSTANTS_KEY_OWNER)
                 && methodInsn.name.equals("m_84868_")
                 && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/InputConstants$Type;")) {
             methodInsn.name = "getType";
             return true;
         }
 
-        if (methodInsn.owner.equals("com/mojang/blaze3d/platform/InputConstants$Key")
+        if (methodInsn.owner.equals(INPUT_CONSTANTS_KEY_OWNER)
                 && methodInsn.name.equals("m_84873_")
                 && methodInsn.desc.equals("()I")) {
             methodInsn.name = "getValue";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(INPUT_CONSTANTS_KEY_OWNER)
+                && methodInsn.name.equals("m_84875_")
+                && methodInsn.desc.equals("()Lnet/minecraft/network/chat/Component;")) {
+            methodInsn.name = "getDisplayName";
             return true;
         }
 
@@ -3501,18 +3857,30 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteTextureTextureAtlasSpriteMethod(MethodInsnNode methodInsn) {
-        if (methodInsn.owner.equals("net/minecraft/client/renderer/texture/TextureAtlasSprite")) {
+        if (methodInsn.owner.equals(TEXTURE_ATLAS_SPRITE_OWNER)) {
             String newName = switch (methodInsn.name) {
                 case "m_118409_" -> "getU0";
                 case "m_118410_" -> "getU1";
                 case "m_118411_" -> "getV0";
                 case "m_118412_" -> "getV1";
+                case "m_247685_" -> "atlasLocation";
                 default -> null;
             };
             if (newName != null) {
                 methodInsn.name = newName;
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private static boolean rewriteMissingTextureAtlasSpriteMethod(MethodInsnNode methodInsn) {
+        if (methodInsn.owner.equals(MISSING_TEXTURE_ATLAS_SPRITE_OWNER)
+                && methodInsn.name.equals("m_118071_")
+                && methodInsn.desc.equals("()Lnet/minecraft/resources/ResourceLocation;")) {
+            methodInsn.name = "getLocation";
+            return true;
         }
 
         return false;

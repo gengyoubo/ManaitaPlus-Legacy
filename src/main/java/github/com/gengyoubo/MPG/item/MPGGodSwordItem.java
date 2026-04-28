@@ -36,11 +36,37 @@ import github.com.gengyoubo.MPG.util.MPUtils;
 
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaLightningBolt;
 
 public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
+    public static final IClientItemExtensions CLIENT_EXTENSIONS = new IClientItemExtensions() {
+        @Nullable
+        @Override
+        public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
+            if (entityLiving.getUsedItemHand() == hand && entityLiving.getUseItemRemainingTicks() > 0) {
+                return HumanoidModel.ArmPose.BLOCK;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack itemInHand, float partialTick, float equipProcess, float swingProcess) {
+            if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == (arm == HumanoidArm.LEFT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) {
+                int side = arm == HumanoidArm.RIGHT ? 1 : -1;
+                double f = Mth.sin(swingProcess * swingProcess * Mth.PI);
+                double f1 = Mth.sin(Mth.sqrt(swingProcess) * Mth.PI);
+                poseStack.translate(side * 0.56, -0.52 + equipProcess * -0.6, -0.72);
+                poseStack.translate(side * -0.1414214, 0.08, 0.1414214);
+                poseStack.mulPose(Axis.XP.rotationDegrees((float) (-102.25F - f1 * 80.0F)));
+                poseStack.mulPose(Axis.YP.rotationDegrees((float) (side * 13.365F - f * 20.0F)));
+                poseStack.mulPose(Axis.ZP.rotationDegrees((float) (side * 78.050003F - f1 * 20.0F)));
+                return true;
+            }
+            return false;
+        }
+    };
+
     public MPGGodSwordItem() {
         super(new MPGToolTier(), new Item.Properties().fireResistant());
     }
@@ -65,7 +91,7 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
     }
 
     @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
         if (entity instanceof Player player) {
             MPUtils.godKill(player,isRemove(stack),player.isShiftKeyDown());
         }
@@ -111,35 +137,6 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
         p_41423_.add(Component.literal(MPText.manaita_mode.formatting(I18n.get("mode.remove.name") + ":" + (isRemove(p_41421_) ? I18n.get("info.on") : I18n.get("info.off")))));
         p_41423_.add(Component.empty());
         p_41423_.add(Component.literal(MPText.manaita_enchantment.formatting(I18n.get("info.item.manaita_sword_god.1"))));
-    }
-
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Nullable
-            @Override
-            public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
-                if (entityLiving.getUsedItemHand() == hand && entityLiving.getUseItemRemainingTicks() > 0)
-                    return HumanoidModel.ArmPose.BLOCK;
-                return null;
-            }
-
-            @Override
-            public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack itemInHand, float partialTick, float equipProcess, float swingProcess) {
-                if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == (arm == HumanoidArm.LEFT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) {
-                        int side = arm == HumanoidArm.RIGHT ? 1 : -1;
-                        double f = Mth.sin(swingProcess * swingProcess * Mth.PI);
-                        double f1 = Mth.sin(Mth.sqrt(swingProcess) * Mth.PI);
-                        poseStack.translate(side * 0.56, -0.52 + equipProcess * -0.6, -0.72);
-                        poseStack.translate(side * -0.1414214, 0.08, 0.1414214);
-                        poseStack.mulPose(Axis.XP.rotationDegrees((float) (-102.25F - f1 * 80.0F)));
-                        poseStack.mulPose(Axis.YP.rotationDegrees((float) (side * 13.365F - f * 20.0F)));
-                        poseStack.mulPose(Axis.ZP.rotationDegrees((float) (side * 78.050003F - f1 * 20.0F)));
-                        return true;
-                }
-                return false;
-            }
-        });
     }
 
     @Override

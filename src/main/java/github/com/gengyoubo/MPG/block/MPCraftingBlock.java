@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +65,8 @@ public class MPCraftingBlock extends BaseEntityBlock {
     }
 
 
-    public @NotNull InteractionResult use(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_) {
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull BlockHitResult p_52237_) {
         if (p_52234_.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {

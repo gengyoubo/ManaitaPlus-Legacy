@@ -4,6 +4,7 @@ import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -38,7 +39,7 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
     }
 
     @Override
-    public boolean onEntitySwing(@NotNull ItemStack stack, @NotNull LivingEntity entity) {
+    public boolean onEntitySwing(@NotNull ItemStack stack, @NotNull LivingEntity entity, @NotNull InteractionHand hand) {
         if (entity instanceof Player player) {
             int sweep = getSweep(stack);
             for (int i1 = 0; i1 < sweep; i1++) {

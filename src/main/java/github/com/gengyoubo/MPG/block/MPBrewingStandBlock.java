@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -79,7 +80,8 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
         return list;
     }
 
-    public @NotNull InteractionResult use(Level p_50931_, @NotNull BlockPos p_50932_, @NotNull Player p_50933_) {
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState p_50930_, Level p_50931_, @NotNull BlockPos p_50932_, @NotNull Player p_50933_, @NotNull BlockHitResult p_50934_) {
         if (p_50931_.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {

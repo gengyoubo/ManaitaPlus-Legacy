@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
@@ -24,6 +25,7 @@ import github.com.gengyoubo.MPG.blockEntity.RenderBrewingManaitaBlockEntity;
 import github.com.gengyoubo.MPG.blockEntity.RenderCraftingManaitaBlockEntity;
 import github.com.gengyoubo.MPG.blockEntity.RenderFurnaceManaitaBlockEntity;
 import github.com.gengyoubo.MPG.entity.MPLightningBoltRenderer;
+import github.com.gengyoubo.MPG.item.MPGGodSwordItem;
 import github.com.gengyoubo.MPG.entity.RenderManaitaArrow;
 import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
@@ -64,6 +66,11 @@ public class RegisterEventHandler {
         BlockEntityRenderers.register(MPGBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), RenderFurnaceManaitaBlockEntity::new);
         BlockEntityRenderers.register(MPGBlockEntityCore.BREWING_BLOCK_ENTITY.get(), RenderBrewingManaitaBlockEntity::new);
         BlockEntityRenderers.register(MPGBlockEntityCore.CRAFTING_BLOCK_ENTITY.get(), RenderCraftingManaitaBlockEntity::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
+        event.registerItem(MPGGodSwordItem.CLIENT_EXTENSIONS, MPGItemCore.ManaitaSwordGod.get());
     }
 
     @SubscribeEvent

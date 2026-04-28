@@ -2467,6 +2467,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 String newName = null;
                 if ("f_92125_".equals(fieldInsn.name)) {
                     newName = "advancedItemTooltips";
+                } else if ("f_92097_".equals(fieldInsn.name)) {
+                    newName = "keyPickItem";
                 }
                 return rewriteFieldName(fieldInsn, newName);
             }

@@ -288,6 +288,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_91297_",
+                "()F",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MINECRAFT_OWNER, "getFrameTime", "()F", false),
+                new InsnNode(Opcodes.FRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_91092_",
                 "()Lnet/minecraft/client/server/IntegratedServer;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
@@ -553,7 +561,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processScreenClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_280273_",
                 "(Lnet/minecraft/client/gui/GuiGraphics;)V",
@@ -562,6 +571,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/gui/screens/Screen", "renderBackground", "(Lnet/minecraft/client/gui/GuiGraphics;)V", false),
                 new InsnNode(Opcodes.RETURN)
         );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_96638_",
+                "()Z",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, "net/minecraft/client/gui/screens/Screen", "hasShiftDown", "()Z", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        return patched;
     }
 
     private static boolean processStyleClass(ClassNode classNode) {
@@ -1143,6 +1160,30 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 "(Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new MethodInsnNode(Opcodes.INVOKESTATIC, INGREDIENT_OWNER, "of", "(Lnet/minecraft/tags/TagKey;)Lnet/minecraft/world/item/crafting/Ingredient;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_43929_",
+                "([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, INGREDIENT_OWNER, "of", "([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_43927_",
+                "([Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/crafting/Ingredient;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, INGREDIENT_OWNER, "of", "([Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/crafting/Ingredient;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureStaticBridge(
+                classNode,
+                "m_43938_",
+                "(Ljava/util/stream/Stream;)Lnet/minecraft/world/item/crafting/Ingredient;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, INGREDIENT_OWNER, "fromValues", "(Ljava/util/stream/Stream;)Lnet/minecraft/world/item/crafting/Ingredient;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
@@ -1753,6 +1794,20 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ILOAD, 5),
                 new VarInsnNode(Opcodes.ILOAD, 6),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "drawString", "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", false),
+                new InsnNode(Opcodes.IRETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_280430_",
+                "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new VarInsnNode(Opcodes.ALOAD, 2),
+                new VarInsnNode(Opcodes.ILOAD, 3),
+                new VarInsnNode(Opcodes.ILOAD, 4),
+                new VarInsnNode(Opcodes.ILOAD, 5),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, GUI_GRAPHICS_OWNER, "drawCenteredString", "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", false),
+                new InsnNode(Opcodes.ICONST_0),
                 new InsnNode(Opcodes.IRETURN)
         );
         patched |= ensureInstanceBridge(
@@ -2485,9 +2540,6 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             case FLUID_OWNER ->
                     rewriteFieldName(fieldInsn, "f_257020_".equals(fieldInsn.name) ? "builtInRegistryHolder" : null);
 
-            case "net/minecraft/client/Minecraft" ->
-                    rewriteFieldName(fieldInsn,
-                            "f_91062_".equals(fieldInsn.name) ? "font" : null);
             case POTIONS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_43598_" -> "EMPTY";
                 case "f_43599_" -> "WATER";
@@ -2510,70 +2562,6 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             });
             case INGREDIENT_OWNER ->
                     rewriteFieldName(fieldInsn, "f_43901_".equals(fieldInsn.name) ? "EMPTY" : null);
-            case "net/minecraft/world/item/Items" -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
-                case "f_42412_" -> "ARROW";
-                case "f_42354_" -> "TURTLE_HELMET";
-                case "f_42383_" -> "IRON_SWORD";
-                case "f_42384_" -> "IRON_SHOVEL";
-                case "f_42385_" -> "IRON_PICKAXE";
-                case "f_42386_" -> "IRON_AXE";
-                case "f_42387_" -> "IRON_HOE";
-                case "f_42388_" -> "DIAMOND_SWORD";
-                case "f_42389_" -> "DIAMOND_SHOVEL";
-                case "f_42390_" -> "DIAMOND_PICKAXE";
-                case "f_42391_" -> "DIAMOND_AXE";
-                case "f_42392_" -> "DIAMOND_HOE";
-                case "f_42393_" -> "NETHERITE_SWORD";
-                case "f_42394_" -> "NETHERITE_SHOVEL";
-                case "f_42395_" -> "NETHERITE_HOE";
-                case "f_42396_" -> "NETHERITE_PICKAXE";
-                case "f_42397_" -> "NETHERITE_AXE";
-                case "f_42407_" -> "LEATHER_HELMET";
-                case "f_42408_" -> "LEATHER_CHESTPLATE";
-                case "f_42420_" -> "WOODEN_SWORD";
-                case "f_42421_" -> "WOODEN_SHOVEL";
-                case "f_42422_" -> "WOODEN_PICKAXE";
-                case "f_42423_" -> "WOODEN_AXE";
-                case "f_42424_" -> "WOODEN_HOE";
-                case "f_42425_" -> "STONE_SWORD";
-                case "f_42426_" -> "STONE_SHOVEL";
-                case "f_42427_" -> "STONE_PICKAXE";
-                case "f_42428_" -> "STONE_AXE";
-                case "f_42429_" -> "STONE_HOE";
-                case "f_42430_" -> "GOLDEN_SWORD";
-                case "f_42431_" -> "GOLDEN_SHOVEL";
-                case "f_42432_" -> "GOLDEN_PICKAXE";
-                case "f_42433_" -> "GOLDEN_AXE";
-                case "f_42434_" -> "GOLDEN_HOE";
-                case "f_42462_" -> "LEATHER_LEGGINGS";
-                case "f_42463_" -> "LEATHER_BOOTS";
-                case "f_42464_" -> "CHAINMAIL_HELMET";
-                case "f_42465_" -> "CHAINMAIL_CHESTPLATE";
-                case "f_42466_" -> "CHAINMAIL_LEGGINGS";
-                case "f_42467_" -> "CHAINMAIL_BOOTS";
-                case "f_42468_" -> "IRON_HELMET";
-                case "f_42469_" -> "IRON_CHESTPLATE";
-                case "f_42470_" -> "IRON_LEGGINGS";
-                case "f_42471_" -> "IRON_BOOTS";
-                case "f_42472_" -> "DIAMOND_HELMET";
-                case "f_42473_" -> "DIAMOND_CHESTPLATE";
-                case "f_42474_" -> "DIAMOND_LEGGINGS";
-                case "f_42475_" -> "DIAMOND_BOOTS";
-                case "f_42476_" -> "GOLDEN_HELMET";
-                case "f_42477_" -> "GOLDEN_CHESTPLATE";
-                case "f_42478_" -> "GOLDEN_LEGGINGS";
-                case "f_42479_" -> "GOLDEN_BOOTS";
-                case "f_42480_" -> "NETHERITE_CHESTPLATE";
-                case "f_42481_" -> "NETHERITE_BOOTS";
-                case "f_42482_" -> "NETHERITE_LEGGINGS";
-                case "f_42483_" -> "NETHERITE_HELMET";
-                case "f_42738_" -> "TIPPED_ARROW";
-                case "f_42739_" -> "LINGERING_POTION";
-                case "f_42740_" -> "SHIELD";
-                case "f_42714_" -> "PHANTOM_MEMBRANE";
-                case "f_42741_" -> "ELYTRA";
-                default -> null;
-            });
             case ITEM_TAGS_OWNER -> rewriteFieldName(fieldInsn, switch (fieldInsn.name) {
                 case "f_13168_" -> "PLANKS";
                 case "f_13191_" -> "BANNERS";
@@ -3268,6 +3256,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_7933_" -> "keyPressed";
                 case "m_5534_" -> "charTyped";
                 case "m_7043_" -> "isPauseScreen";
+                case "m_96638_" -> "hasShiftDown";
                 default -> null;
             };
             if (newName != null) {
@@ -3356,6 +3345,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 && methodInsn.name.equals("m_91268_")
                 && methodInsn.desc.equals("()Lcom/mojang/blaze3d/platform/Window;")) {
             methodInsn.name = "getWindow";
+            return true;
+        }
+
+        if (methodInsn.owner.equals(MINECRAFT_OWNER)
+                && (methodInsn.name.equals("m_91296_") || methodInsn.name.equals("m_91297_"))
+                && methodInsn.desc.equals("()F")) {
+            methodInsn.name = "getFrameTime";
             return true;
         }
 

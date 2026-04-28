@@ -450,7 +450,8 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean processStyleClass(ClassNode classNode) {
-        return ensureInstanceBridge(
+        boolean patched = false;
+        patched |= ensureInstanceBridge(
                 classNode,
                 "m_131179_",
                 "()Z",
@@ -458,6 +459,34 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STYLE_OWNER, "isEmpty", "()Z", false),
                 new InsnNode(Opcodes.IRETURN)
         );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_131140_",
+                "(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/Style;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STYLE_OWNER, "applyFormat", "(Lnet/minecraft/ChatFormatting;)Lnet/minecraft/network/chat/Style;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_131162_",
+                "(Ljava/lang/Boolean;)Lnet/minecraft/network/chat/Style;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STYLE_OWNER, "withUnderlined", "(Ljava/lang/Boolean;)Lnet/minecraft/network/chat/Style;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_131142_",
+                "(Lnet/minecraft/network/chat/ClickEvent;)Lnet/minecraft/network/chat/Style;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, STYLE_OWNER, "withClickEvent", "(Lnet/minecraft/network/chat/ClickEvent;)Lnet/minecraft/network/chat/Style;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        return patched;
     }
 
     private static boolean processHolderClass(ClassNode classNode) {
@@ -1188,6 +1217,14 @@ public class MPLaunchPluginService implements ILaunchPluginService {
         );
         patched |= ensureInstanceBridge(
                 classNode,
+                "m_6879_",
+                "()Lnet/minecraft/network/chat/MutableComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new MethodInsnNode(Opcodes.INVOKEINTERFACE, COMPONENT_OWNER, "plainCopy", "()Lnet/minecraft/network/chat/MutableComponent;", true),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
                 "m_7451_",
                 "(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
                 new VarInsnNode(Opcodes.ALOAD, 0),
@@ -1242,6 +1279,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 new VarInsnNode(Opcodes.ALOAD, 0),
                 new VarInsnNode(Opcodes.ALOAD, 1),
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "append", "(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;", false),
+                new InsnNode(Opcodes.ARETURN)
+        );
+        patched |= ensureInstanceBridge(
+                classNode,
+                "m_130946_",
+                "(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;",
+                new VarInsnNode(Opcodes.ALOAD, 0),
+                new VarInsnNode(Opcodes.ALOAD, 1),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, MUTABLE_COMPONENT_OWNER, "append", "(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;", false),
                 new InsnNode(Opcodes.ARETURN)
         );
         return patched;
@@ -2850,6 +2896,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
                 case "m_237113_" -> "literal";
                 case "m_237115_" -> "translatable";
                 case "m_237110_" -> "translatable";
+                case "m_6879_" -> "plainCopy";
                 default -> null;
             };
             if (newName != null) {
@@ -3141,6 +3188,13 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             return true;
         }
 
+        if (methodInsn.owner.equals("net/minecraft/client/player/LocalPlayer")
+                && methodInsn.name.equals("m_5661_")
+                && methodInsn.desc.equals("(Lnet/minecraft/network/chat/Component;Z)V")) {
+            methodInsn.name = "displayClientMessage";
+            return true;
+        }
+
         if (methodInsn.owner.equals("net/minecraft/client/gui/screens/Screen")) {
             String newName = switch (methodInsn.name) {
                 case "m_7856_" -> "init";
@@ -3227,7 +3281,7 @@ public class MPLaunchPluginService implements ILaunchPluginService {
     }
 
     private static boolean rewriteGenericJeiInvokeDynamic(InvokeDynamicInsnNode invokeDynamicInsn) {
-        boolean patched = false;
+        boolean patched = rewriteGenericJeiInvokeDynamicName(invokeDynamicInsn);
         Handle rewrittenBootstrap = rewriteGenericJeiHandle(invokeDynamicInsn.bsm);
         if (rewrittenBootstrap != null) {
             invokeDynamicInsn.bsm = rewrittenBootstrap;
@@ -3244,6 +3298,15 @@ public class MPLaunchPluginService implements ILaunchPluginService {
             }
         }
         return patched;
+    }
+
+    private static boolean rewriteGenericJeiInvokeDynamicName(InvokeDynamicInsnNode invokeDynamicInsn) {
+        if (invokeDynamicInsn.name.equals("m_93750_")
+                && invokeDynamicInsn.desc.endsWith(")Lnet/minecraft/client/gui/components/Button$OnPress;")) {
+            invokeDynamicInsn.name = "onPress";
+            return true;
+        }
+        return false;
     }
 
     private static Handle rewriteGenericJeiHandle(Handle handle) {

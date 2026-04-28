@@ -1,0 +1,77 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.0-forge.jar",
+          "url": "ManaitaPlusGeneral-2.1.0-forge.jar",
+          "size": 403386,
+          "sha512": "8c97b23fa3a870fe5f11a2197a8456285857dd3b1cb2b341751cb56892567cadd58f3e43900d79dd1c6e005f3ca94ab796c8fafcd614d7228b187ae3fd0b52ba",
+          "sha256": "00e35859bdf800f64d3ed456f0c2f544ff0df933c70e9e49905b12d1c4371f29",
+          "sha1": "aa4a721e3468cd421cff3fea44ac76a31bee7742",
+          "md5": "a326f383e8a0a1f074351a14669ba72d"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.minecraftforge",
+          "module": "forge",
+          "version": {
+            "requires": "1.20.1-47.2.19_mapped_official_1.20.1_at_99f53f25a68b1e1af640a7a095c9b9c82000d67c"
+          }
+        },
+        {
+          "group": "mezz.jei",
+          "module": "jei-1.20.1-forge",
+          "version": {
+            "strictly": "15.8.2.26_mapped_official_1.20.1",
+            "requires": "15.8.2.26_mapped_official_1.20.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.0-forge.jar",
+          "url": "ManaitaPlusGeneral-2.1.0-forge.jar",
+          "size": 403386,
+          "sha512": "8c97b23fa3a870fe5f11a2197a8456285857dd3b1cb2b341751cb56892567cadd58f3e43900d79dd1c6e005f3ca94ab796c8fafcd614d7228b187ae3fd0b52ba",
+          "sha256": "00e35859bdf800f64d3ed456f0c2f544ff0df933c70e9e49905b12d1c4371f29",
+          "sha1": "aa4a721e3468cd421cff3fea44ac76a31bee7742",
+          "md5": "a326f383e8a0a1f074351a14669ba72d"
+        }
+      ]
+    }
+  ]
+}

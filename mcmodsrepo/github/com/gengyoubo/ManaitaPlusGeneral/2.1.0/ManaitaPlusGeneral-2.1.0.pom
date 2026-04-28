@@ -8,13 +8,14 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>github.com.gengyoubo</groupId>
-  <artifactId>ManaitaPlus</artifactId>
-  <version>2.0.1</version>
+  <artifactId>ManaitaPlusGeneral</artifactId>
+  <version>2.1.0</version>
+  <packaging>pom</packaging>
   <dependencies>
     <dependency>
       <groupId>net.minecraftforge</groupId>
       <artifactId>forge</artifactId>
-      <version>1.20.1-47.2.19_mapped_official_1.20.1_at_7282289405b3da0334059ab7cc69e3d7eb083d10</version>
+      <version>1.20.1-47.2.19_mapped_official_1.20.1_at_99f53f25a68b1e1af640a7a095c9b9c82000d67c</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>

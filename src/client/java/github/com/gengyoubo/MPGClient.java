@@ -36,7 +36,10 @@ public class MPGClient implements ClientModInitializer {
             "block_hook_manaita",
             "manaita_crafting_portable",
             "manaita_furnace_portable",
-            "manaita_brewing_portable"
+            "manaita_brewing_portable",
+            "manaita_crafting_ring",
+            "manaita_furnace_ring",
+            "manaita_brewing_ring"
     };
     private static boolean predicatesRegistered;
 

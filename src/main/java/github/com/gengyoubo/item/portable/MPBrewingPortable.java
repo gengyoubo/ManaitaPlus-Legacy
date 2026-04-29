@@ -26,11 +26,7 @@ public class MPBrewingPortable extends MPGPortableItem {
 
     @Override
     protected void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level) {
-        openPortableScreen(serverPlayer, itemInHand, level, "container.brewing_manaita",
-                (containerId, inventory, player, heldStack, world) -> {
-                    MPBrewingStandBlockEntity blockEntity = new MPBrewingStandBlockEntity(inventory.player, heldStack);
-                    return blockEntity.createMenu(containerId, inventory, player);
-                });
+        MPPortableMenuOpener.openBrewing(serverPlayer, itemInHand, level);
     }
 
     public static class MPBrewingStandBlockEntity extends BaseContainerBlockEntity {

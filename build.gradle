@@ -9,6 +9,7 @@ group = project.maven_group
 
 repositories {
 	maven { url "https://cursemaven.com/" }
+	maven { url "https://maven.ladysnake.org/releases" }
 }
 
 loom {
@@ -58,6 +59,9 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	modImplementation "curse.maven:jei-238222:7920913"
+	modImplementation "curse.maven:trinkets-341284:5173501"
+	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.2.0"
+	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.2.0"
 }
 
 processResources {

@@ -38,11 +38,7 @@ public class MPFurnacePortable extends MPGPortableItem {
 
     @Override
     protected void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level) {
-        openPortableScreen(serverPlayer, itemInHand, level, "container.furnace_manaita",
-                (containerId, inventory, player, heldStack, world) -> {
-                    MPFurnaceBlockEntity block = new MPFurnaceBlockEntity(player, heldStack);
-                    return block.createMenu(containerId, inventory, player);
-                });
+        MPPortableMenuOpener.openFurnace(serverPlayer, itemInHand, level);
     }
 
 

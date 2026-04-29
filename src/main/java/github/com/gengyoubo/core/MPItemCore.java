@@ -35,6 +35,10 @@ public class MPItemCore {
 
     public static final RegistryObject<Item> ManaitaSource = ITEMS.register("manaita_source", MPSourceItem::new);
     public static final RegistryObject<Item> ManaitaHook = ITEMS.register("manaita_hook", MPHookItem::new);
+    public static final RegistryObject<Item> ManaitaRing = ITEMS.register("manaita_ring", MPRingItem::new);
+    public static final RegistryObject<Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", () -> new MPTypedRingItem("item.ringCrafting.", MPTypedRingItem.RingKind.CRAFTING));
+    public static final RegistryObject<Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", () -> new MPTypedRingItem("item.ringFurnace.", MPTypedRingItem.RingKind.FURNACE));
+    public static final RegistryObject<Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", () -> new MPTypedRingItem("item.ringBrewing.", MPTypedRingItem.RingKind.BREWING));
 
     public static final RegistryObject<Item> ManaitaCraftingPortable = ITEMS.register("manaita_crafting_portable", MPCraftingPortable::new);
     public static final RegistryObject<Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPFurnacePortable::new);

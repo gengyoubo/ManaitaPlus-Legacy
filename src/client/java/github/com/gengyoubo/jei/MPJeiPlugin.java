@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 @JeiPlugin
 public class MPJeiPlugin implements IModPlugin {
@@ -52,6 +53,9 @@ public class MPJeiPlugin implements IModPlugin {
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingPortable.get(), MPJeiPlugin::getTypedSubtype);
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnacePortable.get(), MPJeiPlugin::getTypedSubtype);
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingPortable.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingRing.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnaceRing.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingRing.get(), MPJeiPlugin::getTypedSubtype);
     }
 
     @Override
@@ -85,14 +89,13 @@ public class MPJeiPlugin implements IModPlugin {
     }
 
     private static List<MPSourceCopyJeiRecipe> createSourceCopyRecipes() {
-        return java.util.stream.Stream.concat(
-                        java.util.stream.Stream.of(MPItemCore.ManaitaSource.get()),
+        return Stream.concat(
                         BuiltInRegistries.ITEM.stream()
+                                .filter(MPJeiPlugin::isCopyableItem)
+                                .sorted(Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString()))
+                                .map(Item::getDefaultInstance),
+                        createTypedCopyableStacks()
                 )
-                .distinct()
-                .filter(MPJeiPlugin::isCopyableItem)
-                .sorted(Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString()))
-                .map(Item::getDefaultInstance)
                 .filter(stack -> !stack.isEmpty())
                 .map(MPJeiPlugin::createRecipe)
                 .toList();
@@ -106,10 +109,38 @@ public class MPJeiPlugin implements IModPlugin {
     }
 
     private static boolean isCopyableItem(Item item) {
+        if (item == MPItemCore.ManaitaSource.get()) {
+            return false;
+        }
         if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem || item instanceof MPHookBlockItem) {
             return false;
         }
         return item != net.minecraft.world.item.Items.AIR;
+    }
+
+    private static Stream<ItemStack> createTypedCopyableStacks() {
+        return Stream.of(
+                        createTypedStacks(MPBlockCore.CraftingBlockItem.get(), 8),
+                        createTypedStacks(MPBlockCore.FurnaceBlockItem.get(), 8),
+                        createTypedStacks(MPBlockCore.BrewingBlockItem.get(), 8),
+                        createTypedStacks(MPBlockCore.HookBlockItem.get(), 7),
+                        createTypedStacks(MPItemCore.ManaitaCraftingPortable.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaFurnacePortable.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaBrewingPortable.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaCraftingRing.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaFurnaceRing.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaBrewingRing.get(), 8)
+                )
+                .flatMap(s -> s);
+    }
+
+    private static Stream<ItemStack> createTypedStacks(Item item, int maxType) {
+        return java.util.stream.IntStream.rangeClosed(0, maxType)
+                .mapToObj(type -> {
+                    ItemStack stack = new ItemStack(item);
+                    stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
+                    return stack;
+                });
     }
 
     private static List<CraftingRecipe> createTypedCraftingRecipes() {

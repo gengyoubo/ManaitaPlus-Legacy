@@ -90,6 +90,9 @@ public class MPG implements ModInitializer {
                 entries.accept(MPItemCore.ManaitaLeggings.get());
                 entries.accept(MPItemCore.ManaitaBoots.get());
                 entries.accept(MPItemCore.ManaitaSource.get());
+                acceptMPGType(MPItemCore.ManaitaCraftingRing.get(), entries, 8);
+                acceptMPGType(MPItemCore.ManaitaFurnaceRing.get(), entries, 8);
+                acceptMPGType(MPItemCore.ManaitaBrewingRing.get(), entries, 8);
             }).build());
     }
 

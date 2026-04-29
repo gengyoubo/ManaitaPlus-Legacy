@@ -19,6 +19,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 @OnlyIn(Dist.CLIENT)
@@ -29,7 +30,7 @@ public abstract class AbstractRenderManaitaBlockEntity<T extends BlockEntity> im
     protected AbstractRenderManaitaBlockEntity(ItemStack displayStack) {
         this.displayStack = displayStack;
         this.hookBlockTemplate = MPGBlockCore.HookBlock.get().defaultBlockState();
-        this.displayStack.setTag(new CompoundTag());
+        MPGItemStackData.setTag(this.displayStack, new CompoundTag());
     }
 
     @Override
@@ -47,7 +48,7 @@ public abstract class AbstractRenderManaitaBlockEntity<T extends BlockEntity> im
     }
 
     private void renderMainBlockItem(T blockEntity, BlockState blockState, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        displayStack.getOrCreateTag().putInt(MPGNBTData.ItemType, blockState.getValue(MPGBlockData.TYPES));
+        MPGItemStackData.putInt(displayStack, MPGNBTData.ItemType, blockState.getValue(MPGBlockData.TYPES));
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         BakedModel bakedModel = itemRenderer.getModel(displayStack, blockEntity.getLevel(), null, 0);
         itemRenderer.render(displayStack, ItemDisplayContext.FIXED, true, poseStack, bufferSource, packedLight, packedOverlay, bakedModel);
@@ -116,3 +117,4 @@ public abstract class AbstractRenderManaitaBlockEntity<T extends BlockEntity> im
         }
     }
 }
+

@@ -4,6 +4,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.level.Level;
 
 public final class MPGBrewingLogicHelper {
@@ -27,13 +28,13 @@ public final class MPGBrewingLogicHelper {
         items.set(ingredientSlot, ingredient);
     }
 
-    public static boolean canPlaceItem(int index, ItemStack stack, ItemStack currentSlotItem) {
+    public static boolean canPlaceItem(PotionBrewing potionBrewing, int index, ItemStack stack, ItemStack currentSlotItem) {
         if (index == 3) {
-            return net.minecraftforge.common.brewing.BrewingRecipeRegistry.isValidIngredient(stack);
+            return potionBrewing.isIngredient(stack);
         }
         if (index == 4) {
             return stack.is(Items.BLAZE_POWDER);
         }
-        return net.minecraftforge.common.brewing.BrewingRecipeRegistry.isValidInput(stack) && currentSlotItem.isEmpty();
+        return (potionBrewing.isContainerIngredient(stack) || stack.is(Items.GLASS_BOTTLE)) && currentSlotItem.isEmpty();
     }
 }

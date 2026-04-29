@@ -21,7 +21,7 @@ public class MPGEntityArrow extends AbstractArrow {
     }
 
     private MPGEntityArrow(Level p_36866_, LivingEntity p_36867_) {
-        super(MPGEntityCore.ManaitaArrow.get(), p_36867_, p_36866_);
+        super(MPGEntityCore.ManaitaArrow.get(), p_36867_, p_36866_, ItemStack.EMPTY, ItemStack.EMPTY);
     }
 
     public static MPGEntityArrow create(Level p_36866_, LivingEntity p_36867_) {
@@ -34,13 +34,17 @@ public class MPGEntityArrow extends AbstractArrow {
     }
 
     @Override
+    protected @NotNull ItemStack getDefaultPickupItem() {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult p_36757_) {
         Entity entity = p_36757_.getEntity();
         super.onHitEntity(p_36757_);
         if (!entity.level().isClientSide) {
             while (entity instanceof PartEntity<?> part) entity = part.getParent();
 
-            if (entity == null) return;
             Entity owner = this.getOwner();
             if (owner instanceof Player living) {
                 DamageSource source = entity.damageSources().playerAttack(living);
@@ -76,3 +80,4 @@ public class MPGEntityArrow extends AbstractArrow {
 
     }
 }
+

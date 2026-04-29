@@ -9,4 +9,18 @@ displayName="${mod_name}"
 displayURL="None"
 authors="${mod_authors}"
 description="${mod_description}"
-logoFile= "assets/manaita_plus_general/textures/logo.png"
+logoFile="assets/manaita_plus_general/textures/logo.png"
+
+[[dependencies.${mod_id}]]
+modId="forge"
+mandatory=true
+versionRange="${forge_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+mandatory=true
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

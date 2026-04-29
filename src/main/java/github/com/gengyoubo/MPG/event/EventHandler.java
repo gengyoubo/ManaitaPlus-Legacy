@@ -13,12 +13,11 @@ import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -38,7 +37,7 @@ import github.com.gengyoubo.MPG.util.MPUtils;
 import java.util.Iterator;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = MPG.MODID)
+@Mod.EventBusSubscriber(modid = MPG.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EventHandler {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
@@ -62,10 +61,10 @@ public class EventHandler {
                 }
             }
             if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
+                toolTip.removeLast();
             }
             if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
+                toolTip.removeLast();
             }
         }
     }
@@ -140,7 +139,7 @@ public class EventHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingAttack(LivingAttackEvent event) {
+    public static void onLivingIncomingDamage(LivingAttackEvent event) {
         if (!(event.getEntity() instanceof Player player) || hasManaitaProtection(player)) return;
         event.setCanceled(true);
         resetPlayerDamageState(player);
@@ -166,12 +165,6 @@ public class EventHandler {
         player.fallDistance = 0;
         player.hurtTime = 0;
         player.deathTime = 0;
-    }
-
-    @SubscribeEvent
-    public static void onLivingHurt(LivingHurtEvent event) {
-        if (!(event.getEntity() instanceof Player player) || hasManaitaProtection(player)) return;
-        event.setCanceled(true);
     }
 
     @SubscribeEvent

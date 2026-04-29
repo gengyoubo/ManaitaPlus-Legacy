@@ -37,8 +37,13 @@ public class SourceCopyRecipeCategory implements IRecipeCategory<SourceCopyJeiRe
     }
 
     @Override
-    public @NotNull IDrawable getBackground() {
-        return background;
+    public int getWidth() {
+        return background.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return background.getHeight();
     }
 
     @Override
@@ -55,6 +60,7 @@ public class SourceCopyRecipeCategory implements IRecipeCategory<SourceCopyJeiRe
 
     @Override
     public void draw(@NotNull SourceCopyJeiRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        background.draw(guiGraphics, 0, 0);
         guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, ">", 72, 22, 0x404040, false);
         guiGraphics.drawString(
                 net.minecraft.client.Minecraft.getInstance().font,

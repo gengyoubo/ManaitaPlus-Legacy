@@ -15,3 +15,4 @@ public class RenderCraftingManaitaBlockEntity extends AbstractRenderManaitaBlock
         Objects.requireNonNull(context);
     }
 }
+

@@ -2,7 +2,8 @@ package github.com.gengyoubo.MPG.util;
 
 import cpw.mods.modlauncher.Launcher;
 import cpw.mods.modlauncher.api.NamedPath;
-import github.com.gengyoubo.MPG.MPG;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraftforge.fml.loading.ModDirTransformerDiscoverer;
 import sun.misc.Unsafe;
 
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Helper {
+    private static final Logger LOGGER = LogManager.getLogger("ManaitaPlusBootstrap");
     public static final Unsafe UNSAFE;
     private static final MethodHandles.Lookup lookup;
     private static final Object internalUNSAFE;
@@ -33,7 +35,7 @@ public class Helper {
             }
             objectFieldOffsetInternal = Objects.requireNonNull(lookup).findVirtual(internalUNSAFEClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class)).bindTo(internalUNSAFE);
         } catch (Exception e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
     }
 
@@ -43,7 +45,7 @@ public class Helper {
             theUnsafe.setAccessible(true);
             return (Unsafe) theUnsafe.get(null);
         } catch (Exception e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
         return null;
     }
@@ -53,7 +55,7 @@ public class Helper {
             Class<?> clazz = lookup.findClass("jdk.internal.misc.Unsafe");
             return lookup.findStatic(clazz, "getUnsafe", MethodType.methodType(clazz)).invoke();
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
         return null;
     }
@@ -63,12 +65,12 @@ public class Helper {
         try {
             long offset;
             if (Modifier.isStatic(f.getModifiers())) {
-                target = UNSAFE.staticFieldBase(f);
+                target = MethodHandles.lookup().unreflectVarHandle(f);
                 offset = UNSAFE.staticFieldOffset(f);
             } else offset = objectFieldOffset(f);
             return (T) UNSAFE.getObject(target, offset);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
         return null;
     }
@@ -80,7 +82,7 @@ public class Helper {
             try {
                 return (long) objectFieldOffsetInternal.invoke(f);
             } catch (Throwable t1) {
-                MPG.LOGGER.error(String.valueOf(t1));
+                LOGGER.error(String.valueOf(t1));
             }
         }
         return 0L;
@@ -90,7 +92,7 @@ public class Helper {
         try {
             return getFieldValue(target.getClass().getDeclaredField(fieldName), target);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
         return null;
     }
@@ -99,7 +101,7 @@ public class Helper {
         try {
             return getFieldValue(target.getDeclaredField(fieldName), (Object) null);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
         return null;
     }
@@ -109,7 +111,7 @@ public class Helper {
             int aVolatile = UNSAFE.getIntVolatile(UNSAFE.allocateInstance(value), 8L);
             UNSAFE.putIntVolatile(target,8L,aVolatile);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
     }
 
@@ -117,7 +119,7 @@ public class Helper {
         try {
             setFieldValue(target.getClass().getDeclaredField(fieldName), target, value);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
     }
 
@@ -126,12 +128,12 @@ public class Helper {
         try {
             long offset;
             if (Modifier.isStatic(f.getModifiers())) {
-                target = UNSAFE.staticFieldBase(f);
+                target = MethodHandles.lookup().unreflectVarHandle(f);
                 offset = UNSAFE.staticFieldOffset(f);
             } else offset = objectFieldOffset(f);
             UNSAFE.putObject(target, offset, value);
         } catch (Throwable e) {
-            MPG.LOGGER.error(String.valueOf(e));
+            LOGGER.error(String.valueOf(e));
         }
     }
 
@@ -151,12 +153,27 @@ public class Helper {
     @SuppressWarnings({"ConstantConditions", "unchecked", "rawtypes"})
     public static void coexistenceCoreAndMod() {
         List<NamedPath> found = Helper.getFieldValue(ModDirTransformerDiscoverer.class, "found");
+        if (found == null) {
+            LOGGER.warn("Skipping coexistenceCoreAndMod cleanup because ModDirTransformerDiscoverer.found is not available yet");
+            return;
+        }
         found.removeIf(namedPath -> Helper.getJarPath(Helper.class).equals(namedPath.paths()[0].toString()));
 
         Object moduleLayerHandler = Helper.getFieldValue(Launcher.INSTANCE, "moduleLayerHandler");
+        if (moduleLayerHandler == null) {
+            LOGGER.warn("Skipping coexistenceCoreAndMod cleanup because moduleLayerHandler is not available yet");
+            return;
+        }
         Map<?, ?> completedLayers = Helper.getFieldValue(moduleLayerHandler, "completedLayers");
+        if (completedLayers == null) {
+            LOGGER.warn("Skipping coexistenceCoreAndMod cleanup because completedLayers is not available yet");
+            return;
+        }
         completedLayers.values().forEach(layerInfo -> {
             ModuleLayer layer = Helper.getFieldValue(layerInfo, "layer");
+            if (layer == null) {
+                return;
+            }
 
             layer.modules().forEach(module -> {
                 if (module.getName().equals(Helper.class.getModule().getName())) {
@@ -173,3 +190,4 @@ public class Helper {
     }
 
 }
+

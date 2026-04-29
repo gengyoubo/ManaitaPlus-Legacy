@@ -2,6 +2,9 @@ package github.com.gengyoubo.MPG.item.tier;
 
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
 
@@ -22,13 +25,13 @@ public class MPGToolTier implements Tier {
     }
 
     @Override
-    public int getLevel() {
-        return Integer.MAX_VALUE;
+    public int getEnchantmentValue() {
+        return 0;
     }
 
     @Override
-    public int getEnchantmentValue() {
-        return 0;
+    public @NotNull TagKey<Block> getIncorrectBlocksForDrops() {
+        return BlockTags.INCORRECT_FOR_NETHERITE_TOOL;
     }
 
     @Override

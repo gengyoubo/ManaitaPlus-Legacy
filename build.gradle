@@ -2,59 +2,63 @@ buildscript {
     repositories {
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net' }
     }
     dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
+
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0,6.3)'
     id 'maven-publish'
 }
-apply plugin: 'org.spongepowered.mixin'
+
 group = mod_group_id
 version = mod_version
+
 base {
     archivesName = mod_id
 }
+
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
+
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
+    mappings channel: mapping_channel, version: minecraft_version
     copyIdeResources = true
-     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
     runs {
         configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+
             mods {
                 "${mod_id}" {
                     source sourceSets.main
                 }
             }
         }
+
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
         }
+
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
     }
 }
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
-repositories {
-}
 
 repositories {
+    mavenCentral()
     maven {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
@@ -63,24 +67,43 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
-    compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
-    runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += [
+            "-Xlint:removal",
+            "-Xlint:unchecked",
+            "-Xlint:deprecation",
+            "-Xdiags:verbose",
+            "-Xmaxerrs", "1000",
+            "-Xmaxwarns", "1000"
+    ]
 }
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
     ]
     inputs.properties replaceProperties
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
-    }}
+    }
+}
+
 tasks.named('jar', Jar).configure {
     archiveBaseName.set(mod_name)
     archiveVersion.set(mod_version)
@@ -104,7 +127,6 @@ publishing {
         register('mavenJava', MavenPublication) {
             artifactId = mod_name
             version = mod_version
-
             from components.java
         }
     }

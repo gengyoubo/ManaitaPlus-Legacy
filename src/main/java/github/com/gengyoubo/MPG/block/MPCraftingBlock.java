@@ -1,5 +1,6 @@
 package github.com.gengyoubo.MPG.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -30,13 +31,23 @@ import static github.com.gengyoubo.MPG.block.MPBrewingStandBlock.getItemStacks;
 
 @SuppressWarnings("deprecation")
 public class MPCraftingBlock extends BaseEntityBlock {
+    public static final MapCodec<MPCraftingBlock> CODEC = simpleCodec(MPCraftingBlock::new);
 
     private static final Component CONTAINER_TITLE = Component.translatable("container.crafting_manaita");
 
 
     public MPCraftingBlock() {
-        super(BlockBehaviour.Properties.of().noOcclusion());
+        this(BlockBehaviour.Properties.of().noOcclusion());
+    }
+
+    private MPCraftingBlock(BlockBehaviour.Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(MPGBlockData.FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(MPGBlockData.TYPES,0));
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
 
@@ -54,7 +65,8 @@ public class MPCraftingBlock extends BaseEntityBlock {
     }
 
 
-    public @NotNull InteractionResult use(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull InteractionHand p_52237_, @NotNull BlockHitResult p_52238_) {
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull BlockHitResult p_52237_) {
         if (p_52234_.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {

@@ -2,7 +2,10 @@ package github.com.gengyoubo.MPG.item.tool;
 
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ToolAction;
+import net.minecraftforge.common.ToolActions;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyTaggedToolItem;
+import org.jetbrains.annotations.NotNull;
 
 public class MPGPickaxeItem extends ManaitaPlusLegacyTaggedToolItem {
     public MPGPickaxeItem() {
@@ -10,8 +13,8 @@ public class MPGPickaxeItem extends ManaitaPlusLegacyTaggedToolItem {
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, net.minecraftforge.common.ToolAction toolAction) {
-        return net.minecraftforge.common.ToolActions.DEFAULT_PICKAXE_ACTIONS.contains(toolAction);
+    public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ToolAction toolAction) {
+        return ToolActions.DEFAULT_PICKAXE_ACTIONS.contains(toolAction);
     }
 
 }

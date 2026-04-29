@@ -1,47 +1,26 @@
 package github.com.gengyoubo.MPG.recipe.condition;
 
-import com.google.gson.JsonObject;
-import github.com.gengyoubo.MPG.MPG;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import github.com.gengyoubo.MPG.MPGConfig;
+import net.minecraftforge.common.crafting.conditions.ICondition;
+import org.jetbrains.annotations.NotNull;
 
-public class EasyModeCondition implements ICondition {
-    public static final ResourceLocation ID = new ResourceLocation(MPG.MODID, "easy_mode");
-    private final boolean value;
-
-    public EasyModeCondition(boolean value) {
-        this.value = value;
-    }
-
-    @Override
-    public ResourceLocation getID() {
-        return ID;
-    }
+public record EasyModeCondition(boolean value) implements ICondition {
+    public static final MapCodec<EasyModeCondition> CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(Codec.BOOL.optionalFieldOf("value", true).forGetter(EasyModeCondition::value))
+                    .apply(instance, EasyModeCondition::new)
+    );
 
     @Override
-    public boolean test(IContext context) {
+    public boolean test(@NotNull IContext context, DynamicOps<?> ops) {
         return MPGConfig.easy_mode_value == value;
     }
 
-    public static class Serializer implements IConditionSerializer<EasyModeCondition> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public void write(JsonObject json, EasyModeCondition value) {
-            json.addProperty("value", value.value);
-        }
-
-        @Override
-        public EasyModeCondition read(JsonObject json) {
-            return new EasyModeCondition(GsonHelper.getAsBoolean(json, "value", true));
-        }
-
-        @Override
-        public ResourceLocation getID() {
-            return ID;
-        }
+    @Override
+    public @NotNull MapCodec<? extends ICondition> codec() {
+        return CODEC;
     }
 }

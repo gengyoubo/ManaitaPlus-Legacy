@@ -1,5 +1,6 @@
 package github.com.gengyoubo.MPG.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
@@ -29,9 +30,20 @@ import static github.com.gengyoubo.MPG.block.MPBrewingStandBlock.getItemStacks;
 
 @SuppressWarnings("deprecation")
 public class MPFurnaceBlock extends AbstractFurnaceBlock {
+    public static final MapCodec<MPFurnaceBlock> CODEC = simpleCodec(MPFurnaceBlock::new);
+
     public MPFurnaceBlock() {
-        super(BlockBehaviour.Properties.of().noOcclusion());
+        this(BlockBehaviour.Properties.of().noOcclusion());
+    }
+
+    private MPFurnaceBlock(BlockBehaviour.Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(LIT, Boolean.FALSE).setValue(MPGBlockData.TYPES,0));
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends AbstractFurnaceBlock> codec() {
+        return CODEC;
     }
 
     protected void openContainer(Level p_53631_, @NotNull BlockPos p_53632_, @NotNull Player p_53633_) {

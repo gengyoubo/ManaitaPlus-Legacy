@@ -1,56 +1,41 @@
 package github.com.gengyoubo.MPG.recipe;
 
-import com.google.gson.JsonObject;
-import github.com.gengyoubo.MPG.core.MPGBlockCore;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.block.item.MPBrewingBlockItem;
 import github.com.gengyoubo.MPG.block.item.MPCraftingBlockItem;
 import github.com.gengyoubo.MPG.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.MPG.block.item.MPHookBlockItem;
+import github.com.gengyoubo.MPG.core.MPGBlockCore;
 import github.com.gengyoubo.MPG.core.MPGItemCore;
 import github.com.gengyoubo.MPG.core.MPGRecipeSerializerCore;
 import github.com.gengyoubo.MPG.item.MPGSourceItem;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
-public class MPGCraftingRecipe implements CraftingRecipe {
+public class MPGCraftingRecipe extends CustomRecipe {
     private static final ItemStack SOURCE_RESULT = new ItemStack(MPGItemCore.ManaitaSource.get());
 
-    private final ResourceLocation id;
-    private final CraftingBookCategory category;
-
-    public MPGCraftingRecipe(ResourceLocation id, CraftingBookCategory category) {
-        this.id = id;
-        this.category = category;
+    public MPGCraftingRecipe(CraftingBookCategory category) {
+        super(category);
     }
 
     @Override
-    public @NotNull ResourceLocation getId() {
-        return id;
-    }
-
-    @Override
-    public @NotNull CraftingBookCategory category() {
-        return category;
-    }
-
-    @Override
-    public boolean matches(CraftingContainer container, @NotNull Level level) {
+    public boolean matches(CraftingInput container, @NotNull Level level) {
         boolean hasSource = false;
         int nonEmptyCount = 0;
-        for (ItemStack stack : container.getItems()) {
+        for (int i = 0; i < container.size(); i++) {
+            ItemStack stack = container.getItem(i);
             if (stack.isEmpty()) {
                 continue;
             }
@@ -66,7 +51,8 @@ public class MPGCraftingRecipe implements CraftingRecipe {
 
         boolean hasUpgradeableBlock = false;
         boolean hasMaterial = false;
-        for (ItemStack stack : container.getItems()) {
+        for (int i = 0; i < container.size(); i++) {
+            ItemStack stack = container.getItem(i);
             Item item = stack.getItem();
             if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem || item instanceof MPHookBlockItem) {
                 hasUpgradeableBlock = true;
@@ -78,13 +64,14 @@ public class MPGCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack assemble(CraftingContainer container, @NotNull RegistryAccess registryAccess) {
+    public @NotNull ItemStack assemble(CraftingInput container, @NotNull HolderLookup.Provider provider) {
         ItemStack material = ItemStack.EMPTY;
         ItemStack blockInput = ItemStack.EMPTY;
         ItemStack hookInput = ItemStack.EMPTY;
         boolean hasSource = false;
 
-        for (ItemStack stack : container.getItems()) {
+        for (int i = 0; i < container.size(); i++) {
+            ItemStack stack = container.getItem(i);
             Item item = stack.getItem();
             if (item instanceof MPGSourceItem) {
                 hasSource = true;
@@ -123,14 +110,14 @@ public class MPGCraftingRecipe implements CraftingRecipe {
             if (result.isEmpty()) {
                 return ItemStack.EMPTY;
             }
-            result.getOrCreateTag().putInt(MPGNBTData.ItemType, type);
+            MPGItemStackData.putInt(result, MPGNBTData.ItemType, type);
             return result;
         }
         return ItemStack.EMPTY;
     }
 
     private static ItemStack assemblePortable(ItemStack blockInput, ItemStack hookInput) {
-        if (blockInput.getOrCreateTag().getInt(MPGNBTData.ItemType) != 0) {
+        if (MPGItemStackData.getInt(blockInput, MPGNBTData.ItemType) != 0) {
             return ItemStack.EMPTY;
         }
 
@@ -146,8 +133,8 @@ public class MPGCraftingRecipe implements CraftingRecipe {
             return ItemStack.EMPTY;
         }
 
-        int hookType = hookInput.getOrCreateTag().getInt(MPGNBTData.ItemType);
-        portable.getOrCreateTag().putInt(MPGNBTData.ItemType, hookType + 1);
+        int hookType = MPGItemStackData.getInt(hookInput, MPGNBTData.ItemType);
+        MPGItemStackData.putInt(portable, MPGNBTData.ItemType, hookType + 1);
         return portable;
     }
 
@@ -182,8 +169,8 @@ public class MPGCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
-        return SOURCE_RESULT;
+    public @NotNull ItemStack getResultItem(@NotNull HolderLookup.Provider provider) {
+        return SOURCE_RESULT.copy();
     }
 
     @Override
@@ -191,21 +178,9 @@ public class MPGCraftingRecipe implements CraftingRecipe {
         return MPGRecipeSerializerCore.CraftingRecipe.get();
     }
 
-    public static class Serializer implements RecipeSerializer<MPGCraftingRecipe> {
-        @Override
-        public @NotNull MPGCraftingRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
-            CraftingBookCategory category = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(json, "category", null), CraftingBookCategory.MISC);
-            return new MPGCraftingRecipe(id, category);
-        }
-
-        @Override
-        public MPGCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
-            return new MPGCraftingRecipe(id, buf.readEnum(CraftingBookCategory.class));
-        }
-
-        @Override
-        public void toNetwork(FriendlyByteBuf buf, MPGCraftingRecipe recipe) {
-            buf.writeEnum(recipe.category);
+    public static class Serializer extends SimpleCraftingRecipeSerializer<MPGCraftingRecipe> {
+        public Serializer() {
+            super(MPGCraftingRecipe::new);
         }
     }
 }

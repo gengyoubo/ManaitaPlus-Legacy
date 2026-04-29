@@ -5,8 +5,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 public  class MPGSwordGodVillagerTrade implements VillagerTrades.ItemListing {
     private final ItemStack input;
@@ -27,8 +30,8 @@ public  class MPGSwordGodVillagerTrade implements VillagerTrades.ItemListing {
     @Override
     public MerchantOffer getOffer(@NotNull Entity trader, @NotNull RandomSource rand) {
         return new MerchantOffer(
-                input.copy(),
-                input1.copy(),
+                new ItemCost(input.getItem(), input.getCount()),
+                Optional.of(new ItemCost(input1.getItem(), input1.getCount())),
                 output.copy(),
                 maxUses,
                 xp,

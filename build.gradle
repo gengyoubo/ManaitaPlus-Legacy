@@ -1,18 +1,9 @@
-buildscript {
-    repositories {
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        mavenCentral()
-        maven { url = 'https://maven.minecraftforge.net' }
-    }
-    dependencies {
-    }
-}
-
 plugins {
-    id 'eclipse'
+    id 'java'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.3)'
+    id 'eclipse'
     id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[7.0.3,8)'
 }
 
 group = mod_group_id
@@ -22,54 +13,80 @@ base {
     archivesName = mod_id
 }
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
-}
+// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Include generated resources
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 minecraft {
-    mappings channel: mapping_channel, version: minecraft_version
-    copyIdeResources = true
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    mappings channel: 'official', version: "${minecraft_version}"
 
     runs {
         configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            workingDir = layout.projectDirectory.dir('run')
 
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
+            systemProperty 'forge.enabledGameTestNamespaces', 'examplemod'
         }
 
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
+        register('client')
 
-        server {
-            property 'forge.enabledGameTestNamespaces', mod_id
+        register('server') {
             args '--nogui'
+        }
+
+        register('gameTestServer')
+
+        register('data') {
+            workingDir = layout.projectDirectory.dir('run-data')
+
+            args '--mod', "${mod_id}", '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
         }
     }
 }
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
+configurations.configureEach {
+    resolutionStrategy.force 'net.sf.jopt-simple:jopt-simple:5.0.4'
+}
+def replaceProperties = [
+        minecraft_version       : minecraft_version,
+        minecraft_version_range : minecraft_version_range,
+        forge_version           : forge_version,
+        forge_version_range     : forge_version_range,
+        loader_version_range    : loader_version_range,
+        mod_id                  : mod_id,
+        mod_name                : mod_name,
+        mod_license             : mod_license,
+        mod_version             : mod_version,
+        mod_authors             : mod_authors,
+        mod_description         : mod_description
+].collectEntries { key, value ->
+    [(key): value.toString()]
+}
+processResources {
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties
+    }
+}
 repositories {
-    mavenCentral()
+    minecraft.mavenizer(it)
+
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+
     maven {
-        name = "Jared's maven"
+        name = "BlameJared"
         url = "https://maven.blamejared.com/"
     }
+
+    mavenCentral()
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
-    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -83,27 +100,6 @@ tasks.withType(JavaCompile).configureEach {
             "-Xmaxwarns", "1000"
     ]
 }
-
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            forge_version          : forge_version,
-            forge_version_range    : forge_version_range,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_description        : mod_description,
-    ]
-    inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
-}
-
 tasks.named('jar', Jar).configure {
     archiveBaseName.set(mod_name)
     archiveVersion.set(mod_version)

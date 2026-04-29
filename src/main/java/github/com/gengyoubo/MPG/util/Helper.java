@@ -60,7 +60,7 @@ public class Helper {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     public static <T> T getFieldValue(Field f, Object target) {
         try {
             long offset;
@@ -75,6 +75,7 @@ public class Helper {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public static long objectFieldOffset(Field f) {
         try {
             return UNSAFE.objectFieldOffset(f);
@@ -124,6 +125,7 @@ public class Helper {
     }
 
 
+    @SuppressWarnings("deprecation")
     public static void setFieldValue(Field f, Object target, Object value) {
         try {
             long offset;

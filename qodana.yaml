@@ -1,5 +1,0 @@
-version: "1.0"
-profile:
-  name: qodana.starter
-projectJDK: "17" #(Applied in CI/CD pipeline)
-linter: jetbrains/qodana-jvm:2026.1

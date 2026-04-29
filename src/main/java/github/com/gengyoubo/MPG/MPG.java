@@ -16,7 +16,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig.Type;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -69,7 +70,10 @@ public class MPG {
                 output.accept(MPGItemCore.ManaitaSource.get());
             }).build());
 
-    public MPG(IEventBus modEventBus, ModContainer modContainer) {
+    @SuppressWarnings("removal")
+    public MPG() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModContainer modContainer = FMLJavaModLoadingContext.get().getContainer();
         Networking.registerMessage();
 
         // Force-load all registry holder classes before RegisterEvent starts firing.
@@ -92,7 +96,7 @@ public class MPG {
         RECIPE_SERIALIZER_DEFERRED_REGISTER.register(modEventBus);
         MPGConditionCore.CONDITION_CODECS.register(modEventBus);
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MPGConfig.SPEC);
+        modContainer.addConfig(new ModConfig(Type.COMMON, MPGConfig.SPEC, modContainer));
     }
 
     private static void acceptMPGType(Item item, CreativeModeTab.Output output, int maxType) {

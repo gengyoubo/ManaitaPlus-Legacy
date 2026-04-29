@@ -1,10 +1,8 @@
 ﻿{
-  "neoforge:conditions": [
-    {
-      "type": "manaita_plus_general:easy_mode",
-      "value": true
-    }
-  ],
+  "forge:condition": {
+    "type": "manaita_plus_general:easy_mode",
+    "value": true
+  },
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [

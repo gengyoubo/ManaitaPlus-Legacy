@@ -42,7 +42,10 @@ public final class MPGLogicHelper {
     }
 
     public static ItemStack assembleResult(RecipeHolder<?> recipe, ItemStack input, RegistryAccess registryAccess) {
-        return ((RecipeHolder<? extends AbstractCookingRecipe>) recipe).value().assemble(new SingleRecipeInput(input), registryAccess);
+        if (!(recipe.value() instanceof AbstractCookingRecipe cookingRecipe)) {
+            return ItemStack.EMPTY;
+        }
+        return cookingRecipe.assemble(new SingleRecipeInput(input), registryAccess);
     }
 
     public static void awardUsedRecipesAndPopExperience(ServerPlayer player, NonNullList<ItemStack> items, Object2IntMap<ResourceLocation> recipesUsed) {

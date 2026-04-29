@@ -1,0 +1,76 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.4.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.1.1-forge.jar",
+          "size": 382909,
+          "sha512": "d69dd51af5e4bbeb1e60774aed237f2bd64180407e90a0ad5fc2cb412f45bf044c3a296aadc2c4f9fa8af36cb380da9db7c8c03b9eaf062282bca7cd6e590481",
+          "sha256": "169fe737dc0472c5dc0527bc668630c5820c4a863dcd914e7cbfa8af699727fc",
+          "sha1": "3df81bdc3c137a0ac347575674c9abfd04e3e476",
+          "md5": "7277f3ed56dc08710d464f88bdf07c79"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.minecraftforge",
+          "module": "forge",
+          "version": {
+            "requires": "1.21.1-52.0.42"
+          }
+        },
+        {
+          "group": "mezz.jei",
+          "module": "jei-1.21.1-forge",
+          "version": {
+            "requires": "19.27.0.340"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.1.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.1.1-forge.jar",
+          "size": 382909,
+          "sha512": "d69dd51af5e4bbeb1e60774aed237f2bd64180407e90a0ad5fc2cb412f45bf044c3a296aadc2c4f9fa8af36cb380da9db7c8c03b9eaf062282bca7cd6e590481",
+          "sha256": "169fe737dc0472c5dc0527bc668630c5820c4a863dcd914e7cbfa8af699727fc",
+          "sha1": "3df81bdc3c137a0ac347575674c9abfd04e3e476",
+          "md5": "7277f3ed56dc08710d464f88bdf07c79"
+        }
+      ]
+    }
+  ]
+}

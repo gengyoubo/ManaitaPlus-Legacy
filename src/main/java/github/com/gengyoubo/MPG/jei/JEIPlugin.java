@@ -37,7 +37,7 @@ import java.util.List;
 public class JEIPlugin implements IModPlugin {
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return new ResourceLocation("manaita_plus_general", "jei_plugin");
+        return ResourceLocation.fromNamespaceAndPath("manaita_plus_general", "jei_plugin");
     }
 
     @Override

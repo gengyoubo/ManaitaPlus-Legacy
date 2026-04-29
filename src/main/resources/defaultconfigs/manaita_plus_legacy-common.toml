@@ -4,7 +4,7 @@
 creative_range_destroy = false
 
 # Easy mode: simplify recipes (for example, use diamond block instead of cobblestone)
-easy_mode = false
+easy_mode = true
 
 # ExperienceDropsDoubling
 experience_drops_doubling_value = 4

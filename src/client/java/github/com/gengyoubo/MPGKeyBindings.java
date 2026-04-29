@@ -16,6 +16,9 @@ import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 public final class MPGKeyBindings {
+    private static boolean wasRawCDown;
+    private static boolean wasRawYDown;
+
     private MPGKeyBindings() {
     }
 
@@ -49,27 +52,53 @@ public final class MPGKeyBindings {
             return;
         }
 
+        handleRawFallbackKeys(client);
+
         while (MPKeyBoardCore.MESSAGE_KEY.consumeClick()) {
-            boolean shiftDown = Screen.hasShiftDown();
-            if (!shiftDown && MPTypedRingItem.findPrimaryEquippedRing(client.player).isPresent()) {
-                sendKeyPacket((byte) 0, false);
-                continue;
-            }
-            ItemStack mainHandItem = client.player.getMainHandItem();
-            if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPKey keyItem) {
-                keyItem.onManaitaKeyPressOnClient(mainHandItem, client.player);
-            }
-            sendKeyPacket((byte) 0, shiftDown);
+            handleMessageKey(client, Screen.hasShiftDown());
         }
 
         while (MPKeyBoardCore.MESSAGE_ARMOR_KEY.consumeClick()) {
-            for (ItemStack itemStack : client.player.getInventory().armor) {
-                if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPKey keyItem) {
-                    keyItem.onManaitaKeyPressOnClient(itemStack, client.player);
-                }
-            }
-            sendKeyPacket((byte) 1, Screen.hasShiftDown());
+            handleArmorKey(client, Screen.hasShiftDown());
         }
+    }
+
+    private static void handleRawFallbackKeys(Minecraft client) {
+        long window = client.getWindow().getWindow();
+        boolean rawCDown = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_C);
+        boolean rawYDown = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_Y);
+
+        if (rawCDown && !wasRawCDown) {
+            handleMessageKey(client, Screen.hasShiftDown());
+        }
+
+        if (rawYDown && !wasRawYDown) {
+            handleArmorKey(client, Screen.hasShiftDown());
+        }
+
+        wasRawCDown = rawCDown;
+        wasRawYDown = rawYDown;
+    }
+
+    private static void handleMessageKey(Minecraft client, boolean shiftDown) {
+        if (!shiftDown && MPTypedRingItem.findPrimaryEquippedRing(client.player).isPresent()) {
+            sendKeyPacket((byte) 0, false);
+            return;
+        }
+        ItemStack mainHandItem = client.player.getMainHandItem();
+        if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPKey keyItem) {
+            keyItem.onManaitaKeyPressOnClient(mainHandItem, client.player);
+        }
+        sendKeyPacket((byte) 0, shiftDown);
+    }
+
+    private static void handleArmorKey(Minecraft client, boolean shiftDown) {
+        for (ItemStack itemStack : client.player.getInventory().armor) {
+            if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPKey keyItem) {
+                keyItem.onManaitaKeyPressOnClient(itemStack, client.player);
+            }
+        }
+        sendKeyPacket((byte) 1, shiftDown);
     }
 
     private static void sendKeyPacket(byte keyCode, boolean shiftDown) {

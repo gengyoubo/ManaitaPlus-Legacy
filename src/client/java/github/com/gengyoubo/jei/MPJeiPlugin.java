@@ -6,8 +6,10 @@ import github.com.gengyoubo.block.item.MPBrewingBlockItem;
 import github.com.gengyoubo.block.item.MPCraftingBlockItem;
 import github.com.gengyoubo.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.block.item.MPHookBlockItem;
+import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.core.MPItemCore;
 import github.com.gengyoubo.recipe.MPNBTCraftingRecipe;
+import github.com.gengyoubo.util.MPNBTData;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
@@ -18,6 +20,7 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -38,6 +41,17 @@ public class MPJeiPlugin implements IModPlugin {
     @Override
     public @NotNull ResourceLocation getPluginUid() {
         return UID;
+    }
+
+    @Override
+    public void registerItemSubtypes(ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(MPBlockCore.CraftingBlockItem.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPBlockCore.FurnaceBlockItem.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPBlockCore.BrewingBlockItem.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPBlockCore.HookBlockItem.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingPortable.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnacePortable.get(), MPJeiPlugin::getTypedSubtype);
+        registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingPortable.get(), MPJeiPlugin::getTypedSubtype);
     }
 
     @Override
@@ -109,5 +123,12 @@ public class MPJeiPlugin implements IModPlugin {
                 .map(CraftingRecipe.class::cast)
                 .sorted(Comparator.comparing(recipe -> recipe.getId().toString()))
                 .toList();
+    }
+
+    private static String getTypedSubtype(ItemStack stack, mezz.jei.api.ingredients.subtypes.UidContext context) {
+        if (stack.hasTag() && stack.getTag().contains(MPNBTData.ItemType)) {
+            return MPNBTData.ItemType + ":" + stack.getTag().getInt(MPNBTData.ItemType);
+        }
+        return "default";
     }
 }

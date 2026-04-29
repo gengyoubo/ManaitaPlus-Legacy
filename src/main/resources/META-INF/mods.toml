@@ -3,10 +3,10 @@ loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
 [[mods]]
-modId="manaita_plus_general"
+modId="${modId}"
 version= "${mod_version}"
 displayName="${mod_name}"
 displayURL="None"
-authors="Rikuto0204, RealSenPhent, gengyoubo"
+authors="${mod_authors}"
 description="A replica mod that makes a manaita_plus from 1.7.10, for nothing else, just feelings"
 logoFile= "assets/manaita_plus_general/textures/logo.png"

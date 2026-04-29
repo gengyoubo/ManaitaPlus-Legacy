@@ -7,6 +7,7 @@ import github.com.gengyoubo.block.item.MPCraftingBlockItem;
 import github.com.gengyoubo.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.block.item.MPHookBlockItem;
 import github.com.gengyoubo.core.MPItemCore;
+import github.com.gengyoubo.recipe.MPNBTCraftingRecipe;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
@@ -17,11 +18,14 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
@@ -46,6 +50,7 @@ public class MPJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         MPG.LOGGER.info("Registering JEI recipes for source copying");
         registration.addRecipes(MPSourceCopyRecipeCategory.TYPE, createSourceCopyRecipes());
+        registration.addRecipes(RecipeTypes.CRAFTING, createTypedCraftingRecipes());
         registration.addItemStackInfo(
                 new ItemStack(MPItemCore.ManaitaSource.get()),
                 Component.translatable("jei.manaita_plus_general.source.info.1"),
@@ -91,5 +96,18 @@ public class MPJeiPlugin implements IModPlugin {
             return false;
         }
         return item != net.minecraft.world.item.Items.AIR;
+    }
+
+    private static List<CraftingRecipe> createTypedCraftingRecipes() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            MPG.LOGGER.warn("Skipping JEI typed crafting recipe registration because no client level is loaded yet");
+            return List.of();
+        }
+        return minecraft.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
+                .filter(MPNBTCraftingRecipe.class::isInstance)
+                .map(CraftingRecipe.class::cast)
+                .sorted(Comparator.comparing(recipe -> recipe.getId().toString()))
+                .toList();
     }
 }

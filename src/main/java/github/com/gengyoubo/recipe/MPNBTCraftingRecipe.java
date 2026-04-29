@@ -15,12 +15,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MPNBTCraftingRecipe implements CraftingRecipe {
@@ -69,8 +71,35 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
         return result.copy();
     }
 
+    @Override
+    public @NotNull NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> list = NonNullList.withSize(width * height, Ingredient.EMPTY);
+        for (int i = 0; i < ingredients.length; i++) {
+            list.set(i, ingredients[i].toDisplayIngredient());
+        }
+        return list;
+    }
+
     public boolean showNotification() {
         return showNotification;
+    }
+
+    public int getRecipeWidth() {
+        return width;
+    }
+
+    public int getRecipeHeight() {
+        return height;
+    }
+
+    public @NotNull List<List<ItemStack>> getDisplayIngredients() {
+        return Arrays.stream(ingredients)
+                .map(IngredientSpec::getDisplayStacks)
+                .toList();
+    }
+
+    public @NotNull ItemStack getDisplayResult() {
+        return result.copy();
     }
 
     @Override
@@ -165,9 +194,12 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
 
         private static ItemStack resultFromJson(JsonObject json) {
             ItemStack stack = new ItemStack(net.minecraft.world.item.crafting.ShapedRecipe.itemFromJson(json), GsonHelper.getAsInt(json, "count", 1));
-            if (json.has("nbt")) {
+            int type = readType(json);
+            if (type >= 0) {
+                stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
+            } else if (json.has("nbt")) {
                 JsonObject nbt = GsonHelper.getAsJsonObject(json, "nbt");
-                int type = readType(nbt);
+                type = readType(nbt);
                 if (type >= 0) {
                     stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
                 }
@@ -312,7 +344,10 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
             if (requiredType == Integer.MIN_VALUE) {
                 return true;
             }
-            return stack.hasTag() && stack.getTag().getInt(MPNBTData.ItemType) == requiredType;
+            if (!stack.hasTag()) {
+                return requiredType == 0;
+            }
+            return stack.getTag().getInt(MPNBTData.ItemType) == requiredType;
         }
 
         private void toNetwork(FriendlyByteBuf buf) {
@@ -331,6 +366,28 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
                 requiredType = GsonHelper.getAsInt(json, "type");
             }
             return new IngredientSpec(ingredient, requiredType);
+        }
+
+        private List<ItemStack> getDisplayStacks() {
+            if (this == EMPTY) {
+                return List.of();
+            }
+            return Arrays.stream(ingredient.getItems())
+                    .map(ItemStack::copy)
+                    .peek(stack -> {
+                        if (requiredType > 0) {
+                            stack.getOrCreateTag().putInt(MPNBTData.ItemType, requiredType);
+                        }
+                    })
+                    .toList();
+        }
+
+        private Ingredient toDisplayIngredient() {
+            if (this == EMPTY) {
+                return Ingredient.EMPTY;
+            }
+            ItemStack[] stacks = getDisplayStacks().toArray(ItemStack[]::new);
+            return Ingredient.of(stacks);
         }
     }
 }

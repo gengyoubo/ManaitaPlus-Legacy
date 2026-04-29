@@ -187,6 +187,9 @@ public class MPCraftingRecipe implements CraftingRecipe {
     }
 
     private static ItemStack createBlockResult(Item blockItem) {
+        if (blockItem instanceof MPCraftingBlockItem) {
+            return new ItemStack(MPBlockCore.CraftingBlockItem.get());
+        }
         if (blockItem instanceof MPFurnaceBlockItem) {
             return new ItemStack(MPBlockCore.FurnaceBlockItem.get());
         }

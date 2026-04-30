@@ -21,16 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Third-Party Code (Baubles)
+Third-Party (Baubles)
 
-This project includes code derived from Baubles.
+This project includes code and resource derived from Baubles.
 
 Original author: Azanor
 Original license: CC BY-NC-SA 3.0
 http://creativecommons.org/licenses/by-nc-sa/3.0/
 
-These portions include the Baubles compatibility API and related classes,
-and are licensed under CC BY-NC-SA 3.0.
+These portions include the Baubles compatibility API, related classes,
+and graphical user interface assets, and are licensed under CC BY-NC-SA 3.0.
 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (Assets)
 

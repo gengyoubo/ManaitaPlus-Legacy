@@ -1,5 +1,6 @@
 MIT License (Code)
 
+This license applies only to source code not derived from Baubles.
 Copyright (c) 2019-2026 Rikuto0204, RealSenPhent, gengyoubo
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +20,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-This license applies only to source code.
+
+Third-Party Code (Baubles)
+
+This project includes code derived from Baubles.
+
+Original author: Azanor
+Original license: CC BY-NC-SA 3.0
+http://creativecommons.org/licenses/by-nc-sa/3.0/
+
+These portions include the Baubles compatibility API and related classes,
+and are licensed under CC BY-NC-SA 3.0.
 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (Assets)
 

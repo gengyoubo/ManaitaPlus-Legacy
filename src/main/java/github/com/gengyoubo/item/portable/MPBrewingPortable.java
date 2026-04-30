@@ -30,7 +30,6 @@ public class MPBrewingPortable extends MPGPortableItem {
     }
 
     public static class MPBrewingStandBlockEntity extends BaseContainerBlockEntity {
-        private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
         private NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
         private boolean[] lastPotionCount;
         private final Player player;

@@ -27,9 +27,5 @@ public class MPBlockCore {
 
     public static final RegistryObject<Block> HookBlock = BLOCKS.register("block_hook_manaita", MPHookBlock::new);
     public static final RegistryObject<Item> HookBlockItem = ITEMS.register("block_hook_manaita", MPHookBlockItem::new);
-
-    public static void init() {
-    }
-
 }
 

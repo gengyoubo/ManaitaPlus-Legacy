@@ -1,8 +1,8 @@
 package github.com.gengyoubo;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import github.com.gengyoubo.core.MPKeyBoardCore;
-import github.com.gengyoubo.item.MPTypedRingItem;
 import github.com.gengyoubo.item.data.IMPKey;
 import github.com.gengyoubo.network.MPNetworking;
 import github.com.gengyoubo.network.client.MPKeyPressPacket;
@@ -81,8 +81,11 @@ public final class MPGKeyBindings {
     }
 
     private static void handleMessageKey(Minecraft client, boolean shiftDown) {
-        if (!shiftDown && MPTypedRingItem.findPrimaryEquippedRing(client.player).isPresent()) {
+        if (!shiftDown && MPTrinketsCompat.findPrimaryEquippedRing(client.player).isPresent()) {
             sendKeyPacket((byte) 0, false);
+            return;
+        }
+        if(client.player==null){
             return;
         }
         ItemStack mainHandItem = client.player.getMainHandItem();
@@ -93,9 +96,11 @@ public final class MPGKeyBindings {
     }
 
     private static void handleArmorKey(Minecraft client, boolean shiftDown) {
-        for (ItemStack itemStack : client.player.getInventory().armor) {
-            if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPKey keyItem) {
-                keyItem.onManaitaKeyPressOnClient(itemStack, client.player);
+        if (client.player != null) {
+            for (ItemStack itemStack : client.player.getInventory().armor) {
+                if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPKey keyItem) {
+                    keyItem.onManaitaKeyPressOnClient(itemStack, client.player);
+                }
             }
         }
         sendKeyPacket((byte) 1, shiftDown);

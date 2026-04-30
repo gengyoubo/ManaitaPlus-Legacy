@@ -19,12 +19,6 @@ public class MPDestroyBlockPacket {
         this.item = BuiltInRegistries.ITEM.get(itemId);
     }
 
-    public MPDestroyBlockPacket(BlockPos blockPos, int range, Item item) {
-        this.blockPos = blockPos;
-        this.range = range;
-        this.item = item;
-    }
-
     public FriendlyByteBuf toBuf() {
         FriendlyByteBuf buf = MPNetworking.createBuf();
         buf.writeBlockPos(blockPos);

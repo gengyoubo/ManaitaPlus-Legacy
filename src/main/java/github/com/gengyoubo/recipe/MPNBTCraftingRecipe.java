@@ -20,10 +20,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MPNBTCraftingRecipe implements CraftingRecipe {
     private final ResourceLocation id;
@@ -35,7 +32,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     private final ItemStack result;
     private final boolean showNotification;
 
-    public MPNBTCraftingRecipe(ResourceLocation id, String group, CraftingBookCategory category, int width, int height, IngredientSpec[] ingredients, ItemStack result, boolean showNotification) {
+    private MPNBTCraftingRecipe(ResourceLocation id, String group, CraftingBookCategory category, int width, int height, IngredientSpec[] ingredients, ItemStack result, boolean showNotification) {
         this.id = id;
         this.group = group;
         this.category = category;
@@ -347,7 +344,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
             if (!stack.hasTag()) {
                 return requiredType == 0;
             }
-            return stack.getTag().getInt(MPNBTData.ItemType) == requiredType;
+            return Objects.requireNonNull(stack.getTag()).getInt(MPNBTData.ItemType) == requiredType;
         }
 
         private void toNetwork(FriendlyByteBuf buf) {

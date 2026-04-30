@@ -9,7 +9,6 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -138,10 +137,6 @@ public class MPArmor extends ArmorItem {
             return Component.translatable("item.helmet.name");
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
-            return "manaita_plus_general:textures/models/armor/manaita_armor_layer_1.png";
-        }
-
         @Override
         public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean selected) {
             if (slot == 3 && entity instanceof Player player) {
@@ -189,10 +184,6 @@ public class MPArmor extends ArmorItem {
             return Component.translatable("item.chestplate.name");
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
-            return "manaita_plus_general:textures/models/armor/manaita_armor_layer_1.png";
-        }
-
         @Override
         public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean selected) {
             if (slot == 2 && entity instanceof Player player) {
@@ -217,10 +208,6 @@ public class MPArmor extends ArmorItem {
         @Override
         public @NotNull Component getName(@NotNull ItemStack stack) {
             return Component.translatable("item.leggings.name");
-        }
-
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
-            return "manaita_plus_general:textures/models/armor/manaita_armor_layer_2.png";
         }
 
         @Override
@@ -271,10 +258,6 @@ public class MPArmor extends ArmorItem {
         @Override
         public @NotNull Component getName(@NotNull ItemStack stack) {
             return Component.translatable("item.boots.name");
-        }
-
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
-            return "manaita_plus_general:textures/models/armor/manaita_armor_layer_2.png";
         }
 
         @Override

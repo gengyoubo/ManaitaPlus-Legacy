@@ -9,7 +9,6 @@ public enum MPEntityData {
     death,
     remove;
 
-    public static final String KEY = "manaita_plus_general_type";
     public static final EntityDataAccessor<Integer> TYPE = MPSynchedDataCore.get();
 
     private final String tagName;
@@ -40,15 +39,6 @@ public enum MPEntityData {
         if (entity.getEntityData().hasItem(TYPE)) {
             entity.getEntityData().set(TYPE, entity.getEntityData().get(TYPE) & ~flag);
         }
-    }
-
-    public boolean accept(Entity entity) {
-        if (entity == null) {
-            return false;
-        }
-
-        return entity.getTags().contains(tagName)
-                || (entity.getEntityData().hasItem(TYPE) && (entity.getEntityData().get(TYPE) & flag) != 0);
     }
 
     public int getFlag() {

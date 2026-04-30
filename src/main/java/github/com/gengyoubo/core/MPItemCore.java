@@ -1,8 +1,13 @@
 package github.com.gengyoubo.core;
 
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.RegistryObject;
-import github.com.gengyoubo.item.*;
+import github.com.gengyoubo.item.MPBowItem;
+import github.com.gengyoubo.item.MPGodSwordItem;
+import github.com.gengyoubo.item.MPHookItem;
+import github.com.gengyoubo.item.MPSourceItem;
+import github.com.gengyoubo.item.MPSwordItem;
 import github.com.gengyoubo.item.armor.MPArmor;
 import github.com.gengyoubo.item.portable.MPBrewingPortable;
 import github.com.gengyoubo.item.portable.MPCraftingPortable;
@@ -35,16 +40,11 @@ public class MPItemCore {
 
     public static final RegistryObject<Item> ManaitaSource = ITEMS.register("manaita_source", MPSourceItem::new);
     public static final RegistryObject<Item> ManaitaHook = ITEMS.register("manaita_hook", MPHookItem::new);
-    public static final RegistryObject<Item> ManaitaRing = ITEMS.register("manaita_ring", MPRingItem::new);
-    public static final RegistryObject<Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", () -> new MPTypedRingItem("item.ringCrafting.", MPTypedRingItem.RingKind.CRAFTING));
-    public static final RegistryObject<Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", () -> new MPTypedRingItem("item.ringFurnace.", MPTypedRingItem.RingKind.FURNACE));
-    public static final RegistryObject<Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", () -> new MPTypedRingItem("item.ringBrewing.", MPTypedRingItem.RingKind.BREWING));
+    public static final RegistryObject<Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", () -> MPTrinketsCompat.createRingItem("item.ringCrafting.", "CRAFTING"));
+    public static final RegistryObject<Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", () -> MPTrinketsCompat.createRingItem("item.ringFurnace.", "FURNACE"));
+    public static final RegistryObject<Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", () -> MPTrinketsCompat.createRingItem("item.ringBrewing.", "BREWING"));
 
     public static final RegistryObject<Item> ManaitaCraftingPortable = ITEMS.register("manaita_crafting_portable", MPCraftingPortable::new);
     public static final RegistryObject<Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPFurnacePortable::new);
     public static final RegistryObject<Item> ManaitaBrewingPortable = ITEMS.register("manaita_brewing_portable", MPBrewingPortable::new);
-
-    public static void init() {
-    }
-
 }

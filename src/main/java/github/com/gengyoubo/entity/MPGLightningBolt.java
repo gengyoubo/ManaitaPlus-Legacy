@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 public class MPGLightningBolt extends LightningBolt {
     public MPGLightningBolt(EntityType<? extends LightningBolt> entityType, Level level) {
         super(entityType, level);
-        this.noCulling = true;
     }
 
     @Override

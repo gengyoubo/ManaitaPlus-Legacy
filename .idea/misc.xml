@@ -4,6 +4,7 @@
     <list size="1">
       <item index="0" class="java.lang.String" itemvalue="mezz.jei.api.JeiPlugin" />
     </list>
+    <pattern value="github.com.gengyoubo.recipe.MPCraftingRecipe" method="MPCraftingRecipe" />
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">

@@ -10,7 +10,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 public final class MPNetworking {
@@ -47,17 +46,6 @@ public final class MPNetworking {
     @Deprecated
     public static void sendToNearByPlayers(Level level, MPDestroyBlockPacket packet, int range) {
         sendToSameLevelPlayers(level, packet);
-    }
-
-    public static void sendToTrackBySeen(Level level, Player player, MPDestroyBlockPacket packet) {
-        if (level instanceof ServerLevel serverLevel) {
-            FriendlyByteBuf buf = packet.toBuf();
-            for (ServerPlayer serverPlayer : serverLevel.players()) {
-                if (serverPlayer == player || serverPlayer.distanceToSqr(player) <= 128.0D * 128.0D) {
-                    ServerPlayNetworking.send(serverPlayer, DESTROY_BLOCK, PacketByteBufs.copy(buf));
-                }
-            }
-        }
     }
 
     public static FriendlyByteBuf createBuf() {

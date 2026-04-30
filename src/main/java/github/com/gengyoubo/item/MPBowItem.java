@@ -1,6 +1,5 @@
 package github.com.gengyoubo.item;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -77,12 +76,6 @@ public class MPBowItem extends Item implements IMPKey, IMPDoubling {
     @Override
     public void onManaitaKeyPress(ItemStack itemStack) {
         toggleDoubling(itemStack);
-    }
-
-    @Override
-    public void onManaitaKeyPressOnClient(ItemStack itemStack, Player player) {
-        boolean doubling = toggleDoubling(itemStack);
-        player.displayClientMessage(Component.literal(String.format("[%s%s] %s%s: %s", MPText.manaita_mode.formatting(Component.translatable("item.manaita_bow.name").getString()), ChatFormatting.RESET, ChatFormatting.RESET, Component.translatable("mode.doubling").getString(), (doubling ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))), true);
     }
 
     private void shootArrow(Level level, Player player, ItemStack stack, InteractionHand hand) {

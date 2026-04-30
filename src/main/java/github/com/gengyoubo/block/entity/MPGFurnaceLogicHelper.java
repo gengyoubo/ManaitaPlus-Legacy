@@ -2,6 +2,7 @@ package github.com.gengyoubo.block.entity;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import github.com.gengyoubo.MPGConfig;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,26 @@ public final class MPGFurnaceLogicHelper {
     @SuppressWarnings("unchecked")
     public static ItemStack assembleResult(Recipe<?> recipe, WorldlyContainer container, RegistryAccess registryAccess) {
         return ((Recipe<WorldlyContainer>) recipe).assemble(container, registryAccess);
+    }
+
+    public static boolean burn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, WorldlyContainer container) {
+        if (recipe == null || !canBurn(registryAccess, recipe, items, container)) {
+            return false;
+        }
+
+        ItemStack input = items.get(0);
+        ItemStack assembled = assembleResult(recipe, container, registryAccess);
+        ItemStack output = items.get(2);
+        if (output.isEmpty()) {
+            ItemStack copy = assembled.copy();
+            copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
+            items.set(2, copy);
+        } else if (output.is(assembled.getItem())) {
+            output.grow(assembled.getCount() * MPGConfig.furnace_doubling_value);
+        }
+
+        input.shrink(1);
+        return true;
     }
 
     public static void awardUsedRecipesAndPopExperience(ServerPlayer player, NonNullList<ItemStack> items, Object2IntMap<ResourceLocation> recipesUsed) {

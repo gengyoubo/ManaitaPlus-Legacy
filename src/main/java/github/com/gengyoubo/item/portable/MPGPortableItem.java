@@ -43,8 +43,4 @@ public abstract class MPGPortableItem extends Item {
     }
 
     protected abstract void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level);
-
-    protected final void openPortableScreen(ServerPlayer serverPlayer, ItemStack itemInHand, Level level, String titleKey, MPGPortableScreenHelper.PortableMenuFactory menuFactory) {
-        MPGPortableScreenHelper.openPortableScreen(serverPlayer, itemInHand, level, titleKey, menuFactory);
-    }
 }

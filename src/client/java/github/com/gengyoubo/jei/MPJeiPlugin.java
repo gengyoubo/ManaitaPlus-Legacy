@@ -1,5 +1,6 @@
 package github.com.gengyoubo.jei;
 
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.MPG;
 import github.com.gengyoubo.block.item.MPBrewingBlockItem;
@@ -53,9 +54,11 @@ public class MPJeiPlugin implements IModPlugin {
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingPortable.get(), MPJeiPlugin::getTypedSubtype);
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnacePortable.get(), MPJeiPlugin::getTypedSubtype);
         registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingPortable.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingRing.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnaceRing.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingRing.get(), MPJeiPlugin::getTypedSubtype);
+        if (MPTrinketsCompat.isLoaded()) {
+            registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingRing.get(), MPJeiPlugin::getTypedSubtype);
+            registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnaceRing.get(), MPJeiPlugin::getTypedSubtype);
+            registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingRing.get(), MPJeiPlugin::getTypedSubtype);
+        }
     }
 
     @Override
@@ -119,19 +122,26 @@ public class MPJeiPlugin implements IModPlugin {
     }
 
     private static Stream<ItemStack> createTypedCopyableStacks() {
-        return Stream.of(
+        Stream<ItemStack> baseStacks = Stream.of(
                         createTypedStacks(MPBlockCore.CraftingBlockItem.get(), 8),
                         createTypedStacks(MPBlockCore.FurnaceBlockItem.get(), 8),
                         createTypedStacks(MPBlockCore.BrewingBlockItem.get(), 8),
                         createTypedStacks(MPBlockCore.HookBlockItem.get(), 7),
                         createTypedStacks(MPItemCore.ManaitaCraftingPortable.get(), 8),
                         createTypedStacks(MPItemCore.ManaitaFurnacePortable.get(), 8),
-                        createTypedStacks(MPItemCore.ManaitaBrewingPortable.get(), 8),
+                        createTypedStacks(MPItemCore.ManaitaBrewingPortable.get(), 8)
+                )
+                .flatMap(s -> s);
+
+        Stream<ItemStack> ringStacks = MPTrinketsCompat.isLoaded()
+                ? Stream.of(
                         createTypedStacks(MPItemCore.ManaitaCraftingRing.get(), 8),
                         createTypedStacks(MPItemCore.ManaitaFurnaceRing.get(), 8),
                         createTypedStacks(MPItemCore.ManaitaBrewingRing.get(), 8)
-                )
-                .flatMap(s -> s);
+                ).flatMap(s -> s)
+                : Stream.empty();
+
+        return Stream.concat(baseStacks, ringStacks);
     }
 
     private static Stream<ItemStack> createTypedStacks(Item item, int maxType) {
@@ -151,13 +161,12 @@ public class MPJeiPlugin implements IModPlugin {
         }
         return minecraft.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
                 .filter(MPNBTCraftingRecipe.class::isInstance)
-                .map(CraftingRecipe.class::cast)
                 .sorted(Comparator.comparing(recipe -> recipe.getId().toString()))
                 .toList();
     }
 
     private static String getTypedSubtype(ItemStack stack, mezz.jei.api.ingredients.subtypes.UidContext context) {
-        if (stack.hasTag() && stack.getTag().contains(MPNBTData.ItemType)) {
+        if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains(MPNBTData.ItemType)) {
             return MPNBTData.ItemType + ":" + stack.getTag().getInt(MPNBTData.ItemType);
         }
         return "default";

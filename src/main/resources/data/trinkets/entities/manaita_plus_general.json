@@ -1,9 +1,14 @@
 {
-  "entities": [
-    "player"
-  ],
-  "slots": [
-    "hand/ring",
-    "offhand/ring"
-  ]
+    "fabric:load_conditions":  [
+                                   {
+                                       "condition":  "manaita_plus_general:trinkets_loaded"
+                                   }
+                               ],
+    "entities":  [
+                     "player"
+                 ],
+    "slots":  [
+                  "hand/ring",
+                  "offhand/ring"
+              ]
 }

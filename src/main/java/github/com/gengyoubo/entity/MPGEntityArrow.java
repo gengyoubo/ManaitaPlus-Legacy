@@ -27,9 +27,7 @@ public class MPGEntityArrow extends Arrow {
         Arrow arrow = null;
         if (BuiltInRegistries.ENTITY_TYPE.containsKey(ENTITY_ID)) {
             EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(ENTITY_ID);
-            if (entityType != null) {
-                arrow = (Arrow) entityType.create(level);
-            }
+            arrow = (Arrow) entityType.create(level);
         }
         if (arrow == null) {
             arrow = new Arrow(level, owner);

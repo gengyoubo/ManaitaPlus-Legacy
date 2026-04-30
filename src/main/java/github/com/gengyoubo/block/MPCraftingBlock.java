@@ -29,8 +29,6 @@ import github.com.gengyoubo.menu.MPCraftingMenu;
 
 import java.util.List;
 
-import static github.com.gengyoubo.block.MPBrewingStandBlock.getItemStacks;
-
 @SuppressWarnings("deprecation")
 public class MPCraftingBlock extends BaseEntityBlock {
 

@@ -3,6 +3,7 @@ package github.com.gengyoubo;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Registry;
@@ -44,13 +45,7 @@ public class MPG implements ModInitializer {
     public static void initFabric() {
         MPGConfig.load();
 
-        // Force-load all registry holder classes before registration.
-        MPBlockCore.init();
-        MPItemCore.init();
-        MPBlockEntityCore.init();
-        MPMenuCore.init();
-        MPAttributeCore.init();
-        MPRecipeSerializerCore.init();
+        forceLoadRegistryHolders();
         MPSynchedDataCore.init();
         registerResourceConditions();
         MPNetworking.initServer();
@@ -90,15 +85,35 @@ public class MPG implements ModInitializer {
                 entries.accept(MPItemCore.ManaitaLeggings.get());
                 entries.accept(MPItemCore.ManaitaBoots.get());
                 entries.accept(MPItemCore.ManaitaSource.get());
-                acceptMPGType(MPItemCore.ManaitaCraftingRing.get(), entries, 8);
-                acceptMPGType(MPItemCore.ManaitaFurnaceRing.get(), entries, 8);
-                acceptMPGType(MPItemCore.ManaitaBrewingRing.get(), entries, 8);
+                if (MPTrinketsCompat.isLoaded()) {
+                    acceptMPGType(MPItemCore.ManaitaCraftingRing.get(), entries, 8);
+                    acceptMPGType(MPItemCore.ManaitaFurnaceRing.get(), entries, 8);
+                    acceptMPGType(MPItemCore.ManaitaBrewingRing.get(), entries, 8);
+                }
             }).build());
     }
 
     private static void registerResourceConditions() {
         ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), json ->
                 GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value);
+        ResourceConditions.register(new ResourceLocation(MODID, "trinkets_loaded"), json ->
+                MPTrinketsCompat.isLoaded());
+    }
+
+    private static void forceLoadRegistryHolders() {
+        forceInit(MPBlockCore.class);
+        forceInit(MPItemCore.class);
+        forceInit(MPBlockEntityCore.class);
+        forceInit(MPMenuCore.class);
+        forceInit(MPRecipeSerializerCore.class);
+    }
+
+    private static void forceInit(Class<?> type) {
+        try {
+            Class.forName(type.getName(), true, type.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Failed to initialize registry holder: " + type.getName(), e);
+        }
     }
 
     private static void acceptMPGType(Item item, CreativeModeTab.Output entries, int maxType) {

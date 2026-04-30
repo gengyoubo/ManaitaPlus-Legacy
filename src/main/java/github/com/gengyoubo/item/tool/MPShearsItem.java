@@ -57,8 +57,7 @@ public class MPShearsItem extends ShearsItem implements IMPKey, IMPDestroy, IMPD
         return InteractionResultHolder.pass(itemInHand);
     }
 
-    @Override
-    public int getRange(ItemStack itemStack) {
+    private int getRange(ItemStack itemStack) {
         if (itemStack.getTag() == null) {
             itemStack.setTag(new CompoundTag());
         }

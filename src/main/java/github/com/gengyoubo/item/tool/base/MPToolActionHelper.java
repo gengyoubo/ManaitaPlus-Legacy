@@ -54,10 +54,6 @@ public final class MPToolActionHelper {
         return changed;
     }
 
-    public static boolean applyHoeTillAction(UseOnContext context, BlockPos pos, BlockState blockState) {
-        return true;
-    }
-
     public static void handleRangeOrEnchantmentUse(Level level, Player player, ItemStack itemInHand, int nextRange, IntConsumer rangeSetter) {
         if (level.isClientSide) {
             return;
@@ -82,10 +78,6 @@ public final class MPToolActionHelper {
         String rangeValue = String.valueOf(range);
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.manaita_tool").getString() + ": " + rangeValue + "x" + rangeValue + "x" + rangeValue)));
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.doubling").getString() + ":" + (doubling ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
-    }
-
-    public static boolean applyAxeActions(UseOnContext context, BlockPos pos, BlockState blockState) {
-        return false;
     }
 
     public static boolean applyGrowPlantAction(UseOnContext context, BlockPos pos, BlockState blockState) {

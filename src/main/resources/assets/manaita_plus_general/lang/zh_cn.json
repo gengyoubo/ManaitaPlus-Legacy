@@ -56,7 +56,6 @@
   "item.boots.name": "砧板靴",
 
   "item.source.name": "砧板之尘",
-  "item.manaita_plus_general.manaita_ring": "砧板戒指",
   "item.manaita_plus_general.manaita_crafting_ring": "砧板工作台戒指",
   "item.manaita_plus_general.manaita_furnace_ring": "砧板熔炉戒指",
   "item.manaita_plus_general.manaita_brewing_ring": "砧板酿造台戒指",
@@ -102,7 +101,7 @@
   "tile.fixed_hook.4.name": "钻石砧板挂钩",
   "tile.fixed_hook.5.name": "绿宝石砧板挂钩",
   "tile.fixed_hook.6.name": "红石砧板挂钩",
-  "tile.fixed_hook.7.name": "下届合金砧板挂钩",
+  "tile.fixed_hook.7.name": "下界合金砧板挂钩",
 
   "item.portableCrafting.0.name": "便携式砧板工作台",
   "item.portableCrafting.1.name": "木制便携式木砧板工作台",
@@ -112,7 +111,7 @@
   "item.portableCrafting.5.name": "钻石便携式砧板工作台",
   "item.portableCrafting.6.name": "绿宝石便携式砧板工作台",
   "item.portableCrafting.7.name": "红石便携式砧板工作台",
-  "item.portableCrafting.8.name": "下届合金便携式砧板工作台",
+  "item.portableCrafting.8.name": "下界合金便携式砧板工作台",
 
   "item.portableFurnace.0.name": "便携式砧板熔炉",
   "item.portableFurnace.1.name": "木制便携式砧板熔炉",
@@ -122,7 +121,7 @@
   "item.portableFurnace.5.name": "钻石便携式砧板熔炉",
   "item.portableFurnace.6.name": "绿宝石便携式砧板熔炉",
   "item.portableFurnace.7.name": "红石便携式砧板熔炉",
-  "item.portableFurnace.8.name": "下届合金便携式砧板熔炉",
+  "item.portableFurnace.8.name": "下界合金便携式砧板熔炉",
 
   "item.portableBrewing.0.name": "便携式砧板酿造台",
   "item.portableBrewing.1.name": "木制便携式砧板酿造台",
@@ -132,7 +131,7 @@
   "item.portableBrewing.5.name": "钻石便携式砧板酿造台",
   "item.portableBrewing.6.name": "绿宝石便携式砧板酿造台",
   "item.portableBrewing.7.name": "红石便携式砧板酿造台",
-  "item.portableBrewing.8.name": "下届合金便携式砧板酿造台",
+  "item.portableBrewing.8.name": "下界合金便携式砧板酿造台",
 
   "item.manaita_plus_general.manaita_hook": "砧板钩",
 

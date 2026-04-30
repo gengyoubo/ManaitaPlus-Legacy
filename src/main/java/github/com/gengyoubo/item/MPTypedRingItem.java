@@ -1,9 +1,6 @@
 package github.com.gengyoubo.item;
 
-import dev.emi.trinkets.api.TrinketItem;
-import dev.emi.trinkets.api.TrinketsApi;
-import dev.emi.trinkets.api.TrinketComponent;
-import dev.emi.trinkets.api.TrinketInventory;
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import github.com.gengyoubo.item.data.IMPKey;
 import github.com.gengyoubo.item.portable.MPPortableMenuOpener;
 import github.com.gengyoubo.util.MPNBTData;
@@ -12,14 +9,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-import java.util.Optional;
-
-public class MPTypedRingItem extends TrinketItem implements IMPKey {
+public class MPTypedRingItem extends Item implements IMPKey {
     private final String translationPrefix;
     private final RingKind ringKind;
 
@@ -37,11 +32,14 @@ public class MPTypedRingItem extends TrinketItem implements IMPKey {
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
         if (player.isShiftKeyDown()) {
-            return super.use(level, player, hand);
+            if (!level.isClientSide && MPTrinketsCompat.equipItem(player, stack)) {
+                return InteractionResultHolder.success(stack);
+            }
+            return InteractionResultHolder.pass(stack);
         }
 
-        ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             openWorkMenu(serverPlayer, stack);
         }
@@ -61,38 +59,6 @@ public class MPTypedRingItem extends TrinketItem implements IMPKey {
             case FURNACE -> MPPortableMenuOpener.openFurnace(player, stack, player.level());
             case BREWING -> MPPortableMenuOpener.openBrewing(player, stack, player.level());
         }
-    }
-
-    public static Optional<ItemStack> findPrimaryEquippedRing(Player player) {
-        return TrinketsApi.getTrinketComponent(player).flatMap(component -> {
-            ItemStack handRing = findFirstRing(component, "hand", "ring");
-            if (!handRing.isEmpty()) {
-                return Optional.of(handRing);
-            }
-            ItemStack offhandRing = findFirstRing(component, "offhand", "ring");
-            if (!offhandRing.isEmpty()) {
-                return Optional.of(offhandRing);
-            }
-            return Optional.empty();
-        });
-    }
-
-    private static ItemStack findFirstRing(TrinketComponent component, String groupName, String slotName) {
-        Map<String, TrinketInventory> group = component.getInventory().get(groupName);
-        if (group == null) {
-            return ItemStack.EMPTY;
-        }
-        TrinketInventory inventory = group.get(slotName);
-        if (inventory == null) {
-            return ItemStack.EMPTY;
-        }
-        for (int i = 0; i < inventory.getContainerSize(); i++) {
-            ItemStack stack = inventory.getItem(i);
-            if (!stack.isEmpty() && stack.getItem() instanceof MPTypedRingItem) {
-                return stack;
-            }
-        }
-        return ItemStack.EMPTY;
     }
 
     private static String getRingTypeKey(int type) {

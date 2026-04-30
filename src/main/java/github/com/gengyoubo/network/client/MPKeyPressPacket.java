@@ -1,7 +1,7 @@
 package github.com.gengyoubo.network.client;
 
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import github.com.gengyoubo.item.data.IMPKey;
-import github.com.gengyoubo.item.MPTypedRingItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -29,9 +29,9 @@ public class MPKeyPressPacket {
         switch (keyCode) {
             case 0 -> {
                 if (!shiftDown) {
-                    var ring = MPTypedRingItem.findPrimaryEquippedRing(sender);
-                    if (ring.isPresent() && ring.get().getItem() instanceof MPTypedRingItem ringItem) {
-                        ringItem.onManaitaKeyPress(ring.get(), sender);
+                    var ring = MPTrinketsCompat.findPrimaryEquippedRing(sender);
+                    if (ring.isPresent() && ring.get().getItem() instanceof IMPKey keyItem) {
+                        keyItem.onManaitaKeyPress(ring.get(), sender);
                         return;
                     }
                 }

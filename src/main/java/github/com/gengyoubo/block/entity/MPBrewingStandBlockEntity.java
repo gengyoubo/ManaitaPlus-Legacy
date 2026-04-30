@@ -124,7 +124,6 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     private static void doBrew(Level p_155291_, BlockPos p_155292_, NonNullList<ItemStack> p_155293_) {
-        ItemStack itemstack = p_155293_.get(3);
         for (int slotsForSide : SLOTS_FOR_SIDES) {
             ItemStack itemStack = p_155293_.get(slotsForSide);
             if (!itemStack.isEmpty()) {

@@ -1,25 +1,30 @@
 {
-  "type": "manaita_plus_general:manaita_crafting_type",
-  "category": "misc",
-  "pattern": [
-    "XY ",
-    "YY ",
-    "   "
-  ],
-  "key": {
-    "X": {
-      "item": "manaita_plus_general:manaita_brewing_portable",
-      "type": 1
-    },
-    "Y": {
-      "item": "minecraft:diamond"
-    }
-  },
-  "result": {
-    "item": "manaita_plus_general:manaita_brewing_ring",
-    "count": 1,
-    "nbt": {
-      "ManaitaType": 1
-    }
-  }
+    "fabric:load_conditions":  [
+                                   {
+                                       "condition":  "manaita_plus_general:trinkets_loaded"
+                                   }
+                               ],
+    "type":  "manaita_plus_general:manaita_crafting_type",
+    "category":  "misc",
+    "pattern":  [
+                    "XY ",
+                    "YY ",
+                    "   "
+                ],
+    "key":  {
+                "X":  {
+                          "item":  "manaita_plus_general:manaita_brewing_portable",
+                          "type":  1
+                      },
+                "Y":  {
+                          "item":  "minecraft:diamond"
+                      }
+            },
+    "result":  {
+                   "item":  "manaita_plus_general:manaita_brewing_ring",
+                   "count":  1,
+                   "nbt":  {
+                               "ManaitaType":  1
+                           }
+               }
 }

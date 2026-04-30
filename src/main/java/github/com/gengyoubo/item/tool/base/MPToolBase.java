@@ -52,7 +52,6 @@ public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDou
         return true;
     }
 
-    @Override
     public int getRange(ItemStack itemStack) {
         if (!itemStack.hasTag()) {
             return 1;

@@ -70,7 +70,7 @@ public class MPGFurnacePortable extends MPGPortableItem {
             return Component.translatable("container.furnace_manaita");
         }
 
-        protected @NotNull AbstractContainerMenu createMenu(int p_59293_, @NotNull Inventory p_59294_) {
+        public @NotNull AbstractContainerMenu createMenu(int p_59293_, @NotNull Inventory p_59294_) {
             return new MPGFurnaceMenu(p_59293_, p_59294_, this, this.dataAccess);
         }
 

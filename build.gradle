@@ -63,8 +63,10 @@ def replaceProperties = [
     [(key): value.toString()]
 }
 processResources {
-    filesMatching(['META-INF/mods.toml']) {
-        expand replaceProperties
+    inputs.properties(replaceProperties)
+
+    filesMatching(["META-INF/mods.toml", "fabric.mod.json", "pack.mcmeta"]) {
+        expand(replaceProperties)
     }
 }
 repositories {
@@ -103,7 +105,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('jar', Jar).configure {
     archiveBaseName.set(mod_name)
     archiveVersion.set(mod_version)
-    archiveClassifier.set(mod_loader)
+    archiveClassifier.set("${minecraft_version}-${mod_loader}")
 
     manifest {
         attributes([

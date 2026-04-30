@@ -1,0 +1,76 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.2.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.4.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.21.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.21.1-forge.jar",
+          "size": 472070,
+          "sha512": "8fe07132f9eb3769b47b88981f6ab0d3173f1d79d9e4afa2312d890ffb50a864592bfc4b4aacef00dd7a29e620616f332de0dda7487bc888c9bbfad519d33fa6",
+          "sha256": "97e8beaa4fee920e53b918c7b9b5ccc026d2d1855c897ef22d379a62e50ba532",
+          "sha1": "d0ae0ed09c685d690189d998bd7aa416bb30504d",
+          "md5": "2d9e7459a7db666c1d1262a71b9940d4"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.minecraftforge",
+          "module": "forge",
+          "version": {
+            "requires": "1.21.1-52.0.42"
+          }
+        },
+        {
+          "group": "mezz.jei",
+          "module": "jei-1.21.1-forge",
+          "version": {
+            "requires": "19.27.0.340"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.21.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.21.1-forge.jar",
+          "size": 472070,
+          "sha512": "8fe07132f9eb3769b47b88981f6ab0d3173f1d79d9e4afa2312d890ffb50a864592bfc4b4aacef00dd7a29e620616f332de0dda7487bc888c9bbfad519d33fa6",
+          "sha256": "97e8beaa4fee920e53b918c7b9b5ccc026d2d1855c897ef22d379a62e50ba532",
+          "sha1": "d0ae0ed09c685d690189d998bd7aa416bb30504d",
+          "md5": "2d9e7459a7db666c1d1262a71b9940d4"
+        }
+      ]
+    }
+  ]
+}

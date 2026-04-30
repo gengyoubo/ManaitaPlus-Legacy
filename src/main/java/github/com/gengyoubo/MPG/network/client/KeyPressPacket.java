@@ -1,5 +1,6 @@
 package github.com.gengyoubo.MPG.network.client;
 
+import github.com.gengyoubo.MPG.baubles.common.lib.PlayerHandler;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -42,9 +43,14 @@ public class KeyPressPacket implements CustomPacketPayload {
             }
             switch (payload.keyCode) {
                 case 0 -> {
+                    ItemStack equippedRing = PlayerHandler.getEquippedRing(sender).orElse(ItemStack.EMPTY);
+                    if (!equippedRing.isEmpty() && equippedRing.getItem() instanceof IMPGKey keyItem) {
+                        keyItem.onManaitaKeyPress(equippedRing, sender);
+                        return;
+                    }
                     ItemStack mainHandItem = sender.getMainHandItem();
                     if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPGKey keyItem) {
-                        keyItem.onManaitaKeyPress(mainHandItem);
+                        keyItem.onManaitaKeyPress(mainHandItem, sender);
                     }
                 }
                 case 1 -> {

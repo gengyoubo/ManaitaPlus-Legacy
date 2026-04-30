@@ -2,6 +2,7 @@ package github.com.gengyoubo.MPG.network;
 
 import github.com.gengyoubo.MPG.MPG;
 import github.com.gengyoubo.MPG.network.client.KeyPressPacket;
+import github.com.gengyoubo.MPG.network.client.OpenBaublesPacket;
 import github.com.gengyoubo.MPG.network.server.ChangeEntityDataPacket;
 import github.com.gengyoubo.MPG.network.server.DestroyBlockPacket;
 import net.minecraft.network.protocol.PacketFlow;
@@ -29,12 +30,17 @@ public class Networking {
                 .codec(KeyPressPacket.STREAM_CODEC)
                 .consumerMainThread(KeyPressPacket::handle)
                 .add();
-        CHANNEL.messageBuilder(DestroyBlockPacket.class, 1)
+        CHANNEL.messageBuilder(OpenBaublesPacket.class, 1)
+                .direction(PacketFlow.SERVERBOUND)
+                .codec(OpenBaublesPacket.STREAM_CODEC)
+                .consumerMainThread(OpenBaublesPacket::handle)
+                .add();
+        CHANNEL.messageBuilder(DestroyBlockPacket.class, 2)
                 .direction(PacketFlow.CLIENTBOUND)
                 .codec(DestroyBlockPacket.STREAM_CODEC)
                 .consumerMainThread(DestroyBlockPacket::handle)
                 .add();
-        CHANNEL.messageBuilder(ChangeEntityDataPacket.class, 2)
+        CHANNEL.messageBuilder(ChangeEntityDataPacket.class, 3)
                 .direction(PacketFlow.CLIENTBOUND)
                 .codec(ChangeEntityDataPacket.STREAM_CODEC)
                 .consumerMainThread(ChangeEntityDataPacket::handle)

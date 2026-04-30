@@ -1,7 +1,6 @@
 package github.com.gengyoubo.MPG.block.item;
 
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -38,8 +37,8 @@ public abstract class MPTypedBlockItem extends BlockItem {
 
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        return Component.literal(I18n.get(
-                translationPrefix + MPUtils.getTypes(MPGItemStackData.getInt(stack, MPGNBTData.ItemType)) + "name"));
+        return Component.translatable(
+                translationPrefix + MPUtils.getTypes(MPGItemStackData.getInt(stack, MPGNBTData.ItemType)) + "name");
     }
 
     @Override

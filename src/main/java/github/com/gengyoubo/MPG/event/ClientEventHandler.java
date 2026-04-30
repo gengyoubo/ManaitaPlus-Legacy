@@ -1,6 +1,7 @@
 package github.com.gengyoubo.MPG.event;
 
 import github.com.gengyoubo.MPG.MPG;
+import github.com.gengyoubo.MPG.baubles.common.capability.BaublesCapability;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -17,6 +18,7 @@ import github.com.gengyoubo.MPG.core.MPGKeyBoardCore;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import github.com.gengyoubo.MPG.network.Networking;
 import github.com.gengyoubo.MPG.network.client.KeyPressPacket;
+import github.com.gengyoubo.MPG.network.client.OpenBaublesPacket;
 
 import java.util.List;
 
@@ -53,6 +55,9 @@ public class ClientEventHandler {
                 }
             }
             Networking.sendToServer(new KeyPressPacket((byte) 1));
+        }
+        if (BaublesCapability.isEnabled() && MPGKeyBoardCore.BAUBLES_KEY.isDown()) {
+            Networking.sendToServer(new OpenBaublesPacket());
         }
     }
 

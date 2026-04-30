@@ -197,7 +197,7 @@ public class MPGBrewingPortable extends MPGPortableItem {
             this.items.clear();
         }
 
-        protected @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
+        public @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
             return new MPGBrewingStandMenu(containerId, inventory, this, this.dataAccess);
         }
     }

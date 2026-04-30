@@ -19,6 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import github.com.gengyoubo.MPG.gui.BrewingStandScreen;
+import github.com.gengyoubo.MPG.gui.BaublesScreen;
 import github.com.gengyoubo.MPG.gui.CraftingManaitaScreen;
 import github.com.gengyoubo.MPG.gui.FurnaceManaitaScreen;
 import github.com.gengyoubo.MPG.blockEntity.RenderBrewingManaitaBlockEntity;
@@ -42,6 +43,7 @@ public class RegisterEventHandler {
             MenuScreens.register(MPGMenuCore.CraftingManaita.get(), CraftingManaitaScreen::new);
             MenuScreens.register(MPGMenuCore.FurnaceManaita.get(), FurnaceManaitaScreen::new);
             MenuScreens.register(MPGMenuCore.BrewingStandManaita.get(), BrewingStandScreen::new);
+            MenuScreens.register(MPGMenuCore.Baubles.get(), BaublesScreen::new);
             acceptTypePropertyFunction(
                     MPGBlockCore.CraftingBlockItem.get(),
                     MPGBlockCore.FurnaceBlockItem.get(),
@@ -49,7 +51,10 @@ public class RegisterEventHandler {
                     MPGBlockCore.HookBlockItem.get(),
                     MPGItemCore.ManaitaCraftingPortable.get(),
                     MPGItemCore.ManaitaFurnacePortable.get(),
-                    MPGItemCore.ManaitaBrewingPortable.get()
+                    MPGItemCore.ManaitaBrewingPortable.get(),
+                    MPGItemCore.ManaitaCraftingRing.get(),
+                    MPGItemCore.ManaitaFurnaceRing.get(),
+                    MPGItemCore.ManaitaBrewingRing.get()
             );
         });
     }
@@ -69,8 +74,10 @@ public class RegisterEventHandler {
     {
         MPGKeyBoardCore.MESSAGE_KEY = new KeyMapping("key.manaita", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 88, "key.categories.misc");
         MPGKeyBoardCore.MESSAGE_ARMOR_KEY = new KeyMapping("key.manaita.armor", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 89, "key.categories.misc");
+        MPGKeyBoardCore.BAUBLES_KEY = new KeyMapping("key.manaita.baubles", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 66, "key.categories.inventory");
         event.register(MPGKeyBoardCore.MESSAGE_KEY);
         event.register(MPGKeyBoardCore.MESSAGE_ARMOR_KEY);
+        event.register(MPGKeyBoardCore.BAUBLES_KEY);
     }
 
     @SuppressWarnings("deprecation")

@@ -21,9 +21,11 @@ import github.com.gengyoubo.MPG.util.MPGNBTData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -412,7 +414,31 @@ public class MPGNBTCraftingRecipe implements CraftingRecipe {
     }
 
     private static Ingredient ingredientFromJsonObject(JsonObject json) {
+        if (json.has("tag")) {
+            return ingredientFromTag(json);
+        }
         return Ingredient.of(itemStackFromIngredient(json));
+    }
+
+    private static Ingredient ingredientFromTag(JsonObject json) {
+        String tagId = GsonHelper.getAsString(json, "tag");
+        TagKey<Item> tagKey = TagKey.create(Registries.ITEM, ResourceLocation.parse(tagId));
+        int type = GsonHelper.getAsInt(json, "type", 0);
+        ItemStack[] stacks = BuiltInRegistries.ITEM.getTag(tagKey)
+                .orElseThrow(() -> new JsonSyntaxException("Unknown item tag '" + tagId + "'"))
+                .stream()
+                .map(holder -> {
+                    ItemStack stack = new ItemStack(holder.value());
+                    if (type != 0) {
+                        MPGItemStackData.putInt(stack, MPGNBTData.ItemType, type);
+                    }
+                    return stack;
+                })
+                .toArray(ItemStack[]::new);
+        if (stacks.length == 0) {
+            throw new JsonSyntaxException("Item tag '" + tagId + "' has no values");
+        }
+        return Ingredient.of(stacks);
     }
 
     private static ItemStack itemStackFromIngredient(JsonObject json) {

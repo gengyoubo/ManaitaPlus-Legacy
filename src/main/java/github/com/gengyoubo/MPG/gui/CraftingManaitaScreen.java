@@ -14,6 +14,7 @@ import github.com.gengyoubo.MPG.menu.MPGCraftingMenu;
 @OnlyIn(Dist.CLIENT)
 public class CraftingManaitaScreen extends AbstractContainerScreen<MPGCraftingMenu> {
     private static final ResourceLocation CRAFTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png");
+    private static final ResourceLocation UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
     private final String doubling_text;
 
     public CraftingManaitaScreen(MPGCraftingMenu p_98448_, Inventory p_98449_, Component p_98450_) {
@@ -35,7 +36,7 @@ public class CraftingManaitaScreen extends AbstractContainerScreen<MPGCraftingMe
     protected void renderLabels(GuiGraphics p_281635_, int p_282681_, int p_283686_) {
         p_281635_.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
         p_281635_.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
-        p_281635_.drawString(this.font, doubling_text,126, 22, 4210752);
+        p_281635_.drawString(this.font, Component.literal(doubling_text).withStyle(style -> style.withFont(UNIFORM_FONT)), 126, 22, 4210752, false);
     }
 
 

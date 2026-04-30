@@ -60,12 +60,6 @@ public class EventHandler {
                     }
                 }
             }
-            if (!toolTip.isEmpty()) {
-                toolTip.removeLast();
-            }
-            if (!toolTip.isEmpty()) {
-                toolTip.removeLast();
-            }
         }
     }
 

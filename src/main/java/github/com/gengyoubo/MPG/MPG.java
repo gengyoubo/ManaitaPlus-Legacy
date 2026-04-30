@@ -26,6 +26,7 @@ import github.com.gengyoubo.MPG.core.*;
 import github.com.gengyoubo.MPG.network.Networking;
 import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
+import github.com.gengyoubo.MPG.baubles.common.capability.BaublesCapability;
 
 @Mod(MPG.MODID)
 public class MPG {
@@ -52,6 +53,11 @@ public class MPG {
                 acceptMPGType(MPGItemCore.ManaitaCraftingPortable.get(), output, 8);
                 acceptMPGType(MPGItemCore.ManaitaFurnacePortable.get(), output, 8);
                 acceptMPGType(MPGItemCore.ManaitaBrewingPortable.get(), output, 8);
+                if (BaublesCapability.isEnabled()) {
+                    acceptMPGType(MPGItemCore.ManaitaCraftingRing.get(), output, 8);
+                    acceptMPGType(MPGItemCore.ManaitaFurnaceRing.get(), output, 8);
+                    acceptMPGType(MPGItemCore.ManaitaBrewingRing.get(), output, 8);
+                }
 
                 output.accept(MPGItemCore.ManaitaSwordGod.get());
                 output.accept(MPGItemCore.ManaitaSword.get());

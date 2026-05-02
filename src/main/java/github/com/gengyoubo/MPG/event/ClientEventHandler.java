@@ -9,6 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import github.com.gengyoubo.MPG.core.MPGKeyBoardCore;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
+import github.com.gengyoubo.MPG.item.ring.MPGCuriosHelper;
 import github.com.gengyoubo.MPG.network.Networking;
 import github.com.gengyoubo.MPG.network.client.KeyPressPacket;
 
@@ -20,6 +21,12 @@ public class ClientEventHandler {
     public static void onKeyInput(InputEvent.Key event) {
         if (MC.player == null) return;
         if (MPGKeyBoardCore.MESSAGE_KEY.isDown()) {
+            if (MPGCuriosHelper.findFirstMatching(MC.player, stack -> stack.getItem() instanceof IMPGKey).isPresent()) {
+                MPGCuriosHelper.findFirstMatching(MC.player, stack -> stack.getItem() instanceof IMPGKey)
+                        .ifPresent(stack -> ((IMPGKey) stack.getItem()).onManaitaKeyPressOnClient(stack, MC.player));
+                Networking.sendToServer(new KeyPressPacket((byte) 0));
+                return;
+            }
             ItemStack mainHandItem = MC.player.getMainHandItem();
             if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPGKey keyItem) {
                 keyItem.onManaitaKeyPressOnClient(mainHandItem, MC.player);

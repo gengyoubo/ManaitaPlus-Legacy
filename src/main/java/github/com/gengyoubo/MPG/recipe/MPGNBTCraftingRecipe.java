@@ -5,9 +5,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.*;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
@@ -19,6 +21,7 @@ import net.minecraftforge.common.crafting.IShapedRecipe;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.core.MPGRecipeSerializerCore;
 import github.com.gengyoubo.MPG.recipe.ingredient.MPGNBTIngredient;
+import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -354,11 +357,15 @@ public class MPGNBTCraftingRecipe implements CraftingRecipe, IShapedRecipe<Craft
                 ItemStack p43953 = new ItemStack(item);
                 if (p_289797_.has("type")) {
                     int type = GsonHelper.getAsInt(p_289797_, "type");
-                    p43953.getOrCreateTag().putInt("ManaitaType", type);
+                    p43953.getOrCreateTag().putInt(MPGNBTData.ItemType, type);
                 }
                 return new Ingredient.ItemValue(p43953);
             }
-            throw new JsonParseException("An ingredient entry needs  an item");
+            if (p_289797_.has("tag")) {
+                ResourceLocation tagId = new ResourceLocation(GsonHelper.getAsString(p_289797_, "tag"));
+                return new Ingredient.TagValue(TagKey.create(Registries.ITEM, tagId));
+            }
+            throw new JsonParseException("An ingredient entry needs an item or tag");
         }
     }
 }

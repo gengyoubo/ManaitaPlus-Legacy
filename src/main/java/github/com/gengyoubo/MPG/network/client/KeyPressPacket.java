@@ -1,6 +1,7 @@
 package github.com.gengyoubo.MPG.network.client;
 
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
+import github.com.gengyoubo.MPG.item.ring.MPGCuriosHelper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +33,11 @@ public class KeyPressPacket {
             if (sender == null) return;
             switch (keyCode) {
                 case 0:
+                    if (MPGCuriosHelper.findFirstMatching(sender, stack -> stack.getItem() instanceof IMPGKey).isPresent()) {
+                        MPGCuriosHelper.findFirstMatching(sender, stack -> stack.getItem() instanceof IMPGKey)
+                                .ifPresent(stack -> ((IMPGKey) stack.getItem()).onManaitaKeyPress(stack, sender));
+                        break;
+                    }
                     ItemStack mainHandItem = sender.getMainHandItem();
                     if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPGKey keyItem) {
                         keyItem.onManaitaKeyPress(mainHandItem);

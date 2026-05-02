@@ -61,12 +61,6 @@ public class EventHandler {
                     }
                 }
             }
-            if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
-            }
-            if (!toolTip.isEmpty()) {
-                toolTip.remove(toolTip.size() - 1);
-            }
         }
     }
 

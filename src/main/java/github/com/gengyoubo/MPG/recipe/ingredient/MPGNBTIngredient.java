@@ -58,7 +58,7 @@ public class MPGNBTIngredient extends Ingredient {
 
         public @NotNull MPGNBTIngredient parse(@NotNull JsonObject json)
         {
-            return MPGNBTCraftingRecipe.Serializer.fromValues(Stream.of(Ingredient.valueFromJson(json)));
+            return MPGNBTCraftingRecipe.Serializer.fromValues(Stream.of(MPGNBTCraftingRecipe.Serializer.valueFromJson(json)));
         }
 
         public void write(FriendlyByteBuf buffer, MPGNBTIngredient ingredient)

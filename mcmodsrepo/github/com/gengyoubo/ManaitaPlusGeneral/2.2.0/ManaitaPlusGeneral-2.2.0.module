@@ -1,0 +1,85 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.2.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.20.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.20.1-forge.jar",
+          "size": 465104,
+          "sha512": "dbfa39b47e8066f6bd7121df5a395f172d6451469f281d5182ce81961e6ec5095197fd7c598a9eda63b13b1d8e80e80e894522af77d2c273bc88a421f44a13e8",
+          "sha256": "6d6db28f506ea6dffcf2a937305b95e28dd5c7e36b05809f77ba4d9ce23d87ff",
+          "sha1": "e1bcd984c637bb092b4d3e0a024d9f9b59a247ec",
+          "md5": "3b7d1d28fd9c67bf54e33282864e8622"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.minecraftforge",
+          "module": "forge",
+          "version": {
+            "requires": "1.20.1-47.2.19_mapped_official_1.20.1_at_c4938dc61b17c2dcbc1bd616cfe960b7b16cee3e"
+          }
+        },
+        {
+          "group": "mezz.jei",
+          "module": "jei-1.20.1-forge",
+          "version": {
+            "strictly": "15.8.2.26_mapped_official_1.20.1",
+            "requires": "15.8.2.26_mapped_official_1.20.1"
+          }
+        },
+        {
+          "group": "top.theillusivec4.curios",
+          "module": "curios-forge",
+          "version": {
+            "strictly": "5.14.1+1.20.1_mapped_official_1.20.1",
+            "requires": "5.14.1+1.20.1_mapped_official_1.20.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.20.1-forge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.20.1-forge.jar",
+          "size": 465104,
+          "sha512": "dbfa39b47e8066f6bd7121df5a395f172d6451469f281d5182ce81961e6ec5095197fd7c598a9eda63b13b1d8e80e80e894522af77d2c273bc88a421f44a13e8",
+          "sha256": "6d6db28f506ea6dffcf2a937305b95e28dd5c7e36b05809f77ba4d9ce23d87ff",
+          "sha1": "e1bcd984c637bb092b4d3e0a024d9f9b59a247ec",
+          "md5": "3b7d1d28fd9c67bf54e33282864e8622"
+        }
+      ]
+    }
+  ]
+}

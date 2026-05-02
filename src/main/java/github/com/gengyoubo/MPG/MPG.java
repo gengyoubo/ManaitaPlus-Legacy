@@ -14,6 +14,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -53,7 +54,11 @@ public class MPG {
                 acceptMPGType(MPGItemCore.ManaitaCraftingPortable.get(), output, 8);
                 acceptMPGType(MPGItemCore.ManaitaFurnacePortable.get(), output, 8);
                 acceptMPGType(MPGItemCore.ManaitaBrewingPortable.get(), output, 8);
-
+                if (ModList.get().isLoaded("curios")) {
+                    acceptMPGType(MPGItemCore.ManaitaCraftingRing.get(), output, 8);
+                    acceptMPGType(MPGItemCore.ManaitaFurnaceRing.get(), output, 8);
+                    acceptMPGType(MPGItemCore.ManaitaBrewingRing.get(), output, 8);
+                }
                 output.accept(MPGItemCore.ManaitaSwordGod.get());
                 output.accept(MPGItemCore.ManaitaSword.get());
                 output.accept(MPGItemCore.ManaitaBow.get());
@@ -70,42 +75,6 @@ public class MPG {
                 output.accept(MPGItemCore.ManaitaHook.get());
                 output.accept(MPGItemCore.ManaitaSource.get());
             }).build());
-
-// --注释掉检查 START (2026/4/24 23:35):
-//    public static final RegistryObject<CreativeModeTab> MANAITA_PLUS_TAB = CREATIVE_MODE_TAB_TYPES.register("manaita_plus_tab", () -> CreativeModeTab.builder()
-//            .withTabsBefore(CreativeModeTabs.COMBAT)
-//            .icon(() -> MPGBlockCore.CraftingBlockItem.get().getDefaultInstance())
-//            .title(Component.translatable("itemGroup.ManaitaPlusTab"))
-//            .displayItems((parameters, output) -> {
-//                acceptManaitaPlusLegacyType(MPGBlockCore.CraftingBlockItem.get(), output,8);
-//                acceptManaitaPlusLegacyType(MPGBlockCore.FurnaceBlockItem.get(), output,8);
-//                acceptManaitaPlusLegacyType(MPGBlockCore.BrewingBlockItem.get(), output,8);
-//
-//                output.accept(ManaitaWoodenHook.get());
-//                acceptManaitaPlusLegacyType(MPGBlockCore.HookBlockItem.get(), output,7);
-//
-//                acceptManaitaPlusLegacyType(ManaitaCraftingPortable.get(), output,8);
-//                acceptManaitaPlusLegacyType(ManaitaFurnacePortable.get(), output,8);
-//                acceptManaitaPlusLegacyType(ManaitaBrewingPortable.get(), output,8);
-//
-//                output.accept(ManaitaSwordGod.get());
-//                output.accept(ManaitaSword.get());
-//                output.accept(ManaitaBow.get());
-//                output.accept(ManaitaShovel.get());
-//                output.accept(ManaitaPickaxe.get());
-//                output.accept(ManaitaAxe.get());
-//                output.accept(ManaitaPaxel.get());
-//                output.accept(ManaitaHoe.get());
-//                output.accept(ManaitaShears.get());
-//
-//                output.accept(ManaitaHelmet.get());
-//                output.accept(ManaitaChestplate.get());
-//                output.accept(ManaitaLeggings.get());
-//                output.accept(ManaitaBoots.get());
-//                output.accept(ManaitaSource.get());
-//            }).build());
-// --注释掉检查 STOP (2026/4/24 23:35)
-
 
     public MPG() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();

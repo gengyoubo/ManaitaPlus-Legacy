@@ -15,6 +15,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import github.com.gengyoubo.MPG.gui.BrewingStandScreen;
@@ -47,7 +48,15 @@ public class RegisterEventHandler {
                     MPGItemCore.ManaitaCraftingPortable.get(),
                     MPGItemCore.ManaitaFurnacePortable.get(),
                     MPGItemCore.ManaitaBrewingPortable.get()
+
             );
+            if (ModList.get().isLoaded("curios")) {
+                acceptTypePropertyFunction(
+                        MPGItemCore.ManaitaCraftingRing.get(),
+                        MPGItemCore.ManaitaFurnaceRing.get(),
+                        MPGItemCore.ManaitaBrewingRing.get()
+                );
+            }
         });
     }
 
@@ -73,8 +82,12 @@ public class RegisterEventHandler {
     @SuppressWarnings("deprecation")
     private static void acceptTypePropertyFunction(Item... items) {
         ResourceLocation location = new ResourceLocation(MPG.MODID, MPGNBTData.Type);
-        ItemPropertyFunction typePropertyFunction = (stack, level, entity, seed) ->
-                stack.hasTag() ? stack.getTag().getInt(MPGNBTData.ItemType) : 0.0F;
+        ItemPropertyFunction typePropertyFunction = (stack, level, entity, seed) -> {
+            if (stack.getTag() != null) {
+                return stack.getTag().getInt(MPGNBTData.ItemType);
+            }
+            return 0.0F;
+        };
         for (Item item : items) {
             ItemProperties.register(item, location, typePropertyFunction);
         }

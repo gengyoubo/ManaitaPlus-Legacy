@@ -2,7 +2,6 @@ package github.com.gengyoubo.MPG.item.tool;
 
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
@@ -17,11 +16,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.item.data.IMPGDestroy;
 import github.com.gengyoubo.MPG.item.data.IMPGDoubling;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyToolActionHelper;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
@@ -61,12 +60,9 @@ public class MPGShearsItem extends ShearsItem implements IMPGKey, IMPGDestroy, I
 
     @Override
     public int getRange(ItemStack itemStack) {
-        if (itemStack.getTag() == null) {
-            itemStack.setTag(new CompoundTag());
-        }
-        int range = itemStack.getTag().getInt(MPGNBTData.Range);
+        int range = MPGItemStackData.getInt(itemStack, MPGNBTData.Range);
         if (range == 0) {
-            itemStack.getTag().putInt(MPGNBTData.Range, 1);
+            MPGItemStackData.putInt(itemStack, MPGNBTData.Range, 1);
             return 1;
         }
         return range;
@@ -76,14 +72,14 @@ public class MPGShearsItem extends ShearsItem implements IMPGKey, IMPGDestroy, I
         if (range == 0) {
             range = 1;
         }
-        itemStack.getOrCreateTag().putInt(MPGNBTData.Range, range);
+        MPGItemStackData.putInt(itemStack, MPGNBTData.Range, range);
         if (player != null) {
             MPUtils.chat(player, Component.literal(MPText.manaita_mode.formatting("[" + I18n.get("item.manaita_plus_general.manaita_shears") + "] " + I18n.get("mode.range.name") + ": " + range + "x" + range + "x" + range)));
         }
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         ManaitaPlusLegacyToolActionHelper.appendRangeAndDoublingTooltip(tooltip, getRange(stack), isDoubling(stack));
     }

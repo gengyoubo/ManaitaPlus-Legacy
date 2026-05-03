@@ -14,7 +14,8 @@ import github.com.gengyoubo.MPG.menu.MPGBrewingStandMenu;
 
 @OnlyIn(Dist.CLIENT)
 public class BrewingStandScreen extends AbstractContainerScreen<MPGBrewingStandMenu> {
-    private static final ResourceLocation BREWING_STAND_LOCATION = new ResourceLocation("textures/gui/container/brewing_stand.png");
+    private static final ResourceLocation BREWING_STAND_LOCATION = new ResourceLocation("minecraft", "textures/gui/container/brewing_stand.png");
+    private static final ResourceLocation UNIFORM_FONT = new ResourceLocation("minecraft", "uniform");
     private static final int[] BUBBLELENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
     private final String doubling_text;
 
@@ -38,7 +39,7 @@ public class BrewingStandScreen extends AbstractContainerScreen<MPGBrewingStandM
     protected void renderLabels(GuiGraphics p_281635_, int p_282681_, int p_283686_) {
         p_281635_.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
         p_281635_.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
-        p_281635_.drawString(this.font, doubling_text,titleLabelX + font.width(title), titleLabelY, 4210752);
+        p_281635_.drawString(this.font, Component.literal(doubling_text).withStyle(style -> style.withFont(UNIFORM_FONT)), titleLabelX + font.width(title), titleLabelY, 4210752, false);
     }
 
     protected void renderBg(GuiGraphics p_282963_, float p_282080_, int p_283365_, int p_283150_) {

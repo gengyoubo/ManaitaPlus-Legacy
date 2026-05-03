@@ -18,6 +18,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.block.MPHookBlock;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 import static github.com.gengyoubo.MPG.core.MPGBlockCore.HookBlock;
@@ -28,8 +29,8 @@ public class MPHookBlockItem extends BlockItem {
     }
 
     @Override
-    public @NotNull Component getName(ItemStack p_41458_) {
-        return Component.translatable("tile.fixed_hook." + p_41458_.getOrCreateTag().getInt(MPGNBTData.ItemType) + ".name");
+    public @NotNull Component getName(@NotNull ItemStack p_41458_) {
+        return Component.translatable("tile.fixed_hook." + MPGItemStackData.getInt(p_41458_, MPGNBTData.ItemType) + ".name");
     }
 
     public @NotNull InteractionResult place(BlockPlaceContext p_40577_) {
@@ -84,8 +85,8 @@ public class MPHookBlockItem extends BlockItem {
     }
 
     private BlockState updateBlockStateFromTag(BlockPos pos, Level level, ItemStack p_40605_, BlockState p_40606_) {
-        if (p_40606_.getBlock() instanceof MPHookBlock && p_40605_.getTag() != null) {
-            BlockState manaitaType = p_40606_.setValue(MPGBlockData.TYPES, p_40605_.getTag().getInt(MPGNBTData.ItemType));
+        if (p_40606_.getBlock() instanceof MPHookBlock && MPGItemStackData.hasTag(p_40605_)) {
+            BlockState manaitaType = p_40606_.setValue(MPGBlockData.TYPES, MPGItemStackData.getInt(p_40605_, MPGNBTData.ItemType));
             level.setBlock(pos, manaitaType, 2);
             return manaitaType;
         }

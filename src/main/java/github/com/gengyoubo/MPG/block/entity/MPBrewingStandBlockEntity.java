@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,7 +12,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,6 +34,7 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
     private NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
     int brewTime;
     private boolean[] lastPotionCount;
+    private Item ingredient;
     int fuel;
     protected final ContainerData dataAccess = new ContainerData() {
         public int get(int p_59038_) {
@@ -71,19 +73,39 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return this.items.size();
     }
 
-    public boolean isEmpty() {
-        for(ItemStack itemstack : this.items) {
-            if (!itemstack.isEmpty()) {
-                return false;
-            }
-        }
+    protected @NotNull NonNullList<ItemStack> getItems() {
+        return this.items;
+    }
 
-        return true;
+    protected void setItems(@NotNull NonNullList<ItemStack> items) {
+        this.items = items;
     }
 
     public static void serverTick(Level p_155286_, BlockPos p_155287_, BlockState p_155288_, MPBrewingStandBlockEntity p_155289_) {
-        if (isBrewable(p_155289_.items)) {
-            doBrew(p_155286_, p_155287_, p_155289_.items);
+        ItemStack fuelStack = p_155289_.items.get(4);
+        if (p_155289_.fuel <= 0 && fuelStack.is(Items.BLAZE_POWDER)) {
+            p_155289_.fuel = 20;
+            fuelStack.shrink(1);
+            setChanged(p_155286_, p_155287_, p_155288_);
+        }
+
+        boolean flag = isBrewable(p_155289_.items);
+        boolean brewing = p_155289_.brewTime > 0;
+        ItemStack ingredientStack = p_155289_.items.get(3);
+        if (brewing) {
+            p_155289_.brewTime--;
+            boolean finished = p_155289_.brewTime == 0;
+            if (finished && flag) {
+                doBrew(p_155286_, p_155287_, p_155289_.items);
+            } else if (!flag || !ingredientStack.is(p_155289_.ingredient)) {
+                p_155289_.brewTime = 0;
+            }
+
+            setChanged(p_155286_, p_155287_, p_155288_);
+        } else if (flag && p_155289_.fuel > 0) {
+            p_155289_.fuel--;
+            p_155289_.brewTime = 400;
+            p_155289_.ingredient = ingredientStack.getItem();
             setChanged(p_155286_, p_155287_, p_155288_);
         }
 
@@ -117,54 +139,50 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
 
     private static boolean isBrewable(NonNullList<ItemStack> p_155295_) {
         ItemStack itemstack = p_155295_.get(3);
-        return !itemstack.isEmpty() && net.minecraftforge.common.brewing.BrewingRecipeRegistry.canBrew(p_155295_, itemstack, SLOTS_FOR_SIDES);
+        if (itemstack.isEmpty() || !PotionBrewing.isIngredient(itemstack)) {
+            return false;
+        }
+        for (int slot = 0; slot < 3; slot++) {
+            ItemStack input = p_155295_.get(slot);
+            if (!input.isEmpty() && PotionBrewing.hasMix(input, itemstack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void doBrew(Level p_155291_, BlockPos p_155292_, NonNullList<ItemStack> p_155293_) {
         if (net.minecraftforge.event.ForgeEventFactory.onPotionAttemptBrew(p_155293_)) return;
         ItemStack itemstack = p_155293_.get(3);
-
-        net.minecraftforge.common.brewing.BrewingRecipeRegistry.brewPotions(p_155293_, itemstack, SLOTS_FOR_SIDES);
-        for (int slotsForSide : SLOTS_FOR_SIDES) {
-            ItemStack itemStack = p_155293_.get(slotsForSide);
-            if (itemstack != ItemStack.EMPTY)  itemStack.setCount(itemStack.getCount() * MPGConfig.brewing_doubling_value);
+        for (int i = 0; i < 3; i++) {
+            ItemStack brewed = PotionBrewing.mix(itemstack, p_155293_.get(i));
+            if (!brewed.isEmpty()) {
+                brewed.setCount(Math.max(1, brewed.getCount() * MPGConfig.brewing_doubling_value));
+            }
+            p_155293_.set(i, brewed);
         }
         MPGBrewingLogicHelper.finishBrew(p_155291_, p_155292_.getX(), p_155292_.getY(), p_155292_.getZ(), p_155293_, 3);
         p_155291_.levelEvent(1035, p_155292_, 0);
     }
 
+    @Override
     public void load(@NotNull CompoundTag p_155297_) {
         super.load(p_155297_);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(p_155297_, this.items);
+        this.brewTime = p_155297_.getShort("BrewTime");
+        if (this.brewTime > 0) {
+            this.ingredient = this.items.get(3).getItem();
+        }
+        this.fuel = p_155297_.getByte("Fuel");
     }
 
+    @Override
     protected void saveAdditional(@NotNull CompoundTag p_187484_) {
         super.saveAdditional(p_187484_);
+        p_187484_.putShort("BrewTime", (short) this.brewTime);
         ContainerHelper.saveAllItems(p_187484_, this.items);
-    }
-
-    public @NotNull ItemStack getItem(int p_58985_) {
-        return p_58985_ >= 0 && p_58985_ < this.items.size() ? this.items.get(p_58985_) : ItemStack.EMPTY;
-    }
-
-    public @NotNull ItemStack removeItem(int p_58987_, int p_58988_) {
-        return ContainerHelper.removeItem(this.items, p_58987_, p_58988_);
-    }
-
-    public @NotNull ItemStack removeItemNoUpdate(int p_59015_) {
-        return ContainerHelper.takeItem(this.items, p_59015_);
-    }
-
-    public void setItem(int p_58993_, @NotNull ItemStack p_58994_) {
-        if (p_58993_ >= 0 && p_58993_ < this.items.size()) {
-            this.items.set(p_58993_, p_58994_);
-        }
-
-    }
-
-    public boolean stillValid(@NotNull Player p_59000_) {
-        return Container.stillValidBlockEntity(this, p_59000_);
+        p_187484_.putByte("Fuel", (byte) this.fuel);
     }
 
     public boolean canPlaceItem(int p_59017_, @NotNull ItemStack p_59018_) {
@@ -187,6 +205,42 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return p_59020_ != 3 || p_59021_.is(Items.GLASS_BOTTLE);
     }
 
+    @Override
+    public boolean isEmpty() {
+        for (ItemStack itemStack : this.items) {
+            if (!itemStack.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean stillValid(@NotNull Player player) {
+        return true;
+    }
+
+    @Override
+    public @NotNull ItemStack getItem(int index) {
+        return this.items.get(index);
+    }
+
+    @Override
+    public @NotNull ItemStack removeItem(int index, int count) {
+        return ContainerHelper.removeItem(this.items, index, count);
+    }
+
+    @Override
+    public @NotNull ItemStack removeItemNoUpdate(int index) {
+        return ContainerHelper.takeItem(this.items, index);
+    }
+
+    @Override
+    public void setItem(int index, @NotNull ItemStack stack) {
+        this.items.set(index, stack);
+    }
+
+    @Override
     public void clearContent() {
         this.items.clear();
     }
@@ -195,27 +249,4 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return new MPGBrewingStandMenu(p_58990_, p_58991_, this, this.dataAccess);
     }
 
-    net.minecraftforge.common.util.LazyOptional<? extends net.minecraftforge.items.IItemHandler>[] handlers =
-            MPGItemHandlerHelper.createSidedHandlers(this);
-
-    @Override
-    public <T> net.minecraftforge.common.util.@NotNull LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.@NotNull Capability<T> capability, @Nullable Direction facing) {
-        net.minecraftforge.common.util.LazyOptional<T> itemHandlerCap = MPGItemHandlerHelper.getSidedItemHandlerCapability(this.remove, capability, facing, handlers);
-        if (itemHandlerCap.isPresent()) {
-            return itemHandlerCap;
-        }
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        MPGItemHandlerHelper.invalidateHandlers(handlers);
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        this.handlers = MPGItemHandlerHelper.createSidedHandlers(this);
-    }
 }

@@ -11,9 +11,14 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.core.Holder;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.core.MPGMenuCore;
+
+import java.util.Optional;
 
 public class MPGBrewingStandMenu extends AbstractContainerMenu {
     private final Container brewingStand;
@@ -139,7 +144,7 @@ public class MPGBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public boolean mayPlace(@NotNull ItemStack p_39121_) {
-            return net.minecraftforge.common.brewing.BrewingRecipeRegistry.isValidIngredient(p_39121_);
+            return PotionBrewing.isIngredient(p_39121_);
         }
 
         public int getMaxStackSize() {
@@ -161,17 +166,16 @@ public class MPGBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public void onTake(@NotNull Player p_150499_, @NotNull ItemStack p_150500_) {
-            Potion potion = PotionUtils.getPotion(p_150500_);
-            if (p_150499_ instanceof ServerPlayer) {
+            if (PotionUtils.getPotion(p_150500_) != Potions.EMPTY && p_150499_ instanceof ServerPlayer serverPlayer) {
                 net.minecraftforge.event.ForgeEventFactory.onPlayerBrewedPotion(p_150499_, p_150500_);
-                CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)p_150499_, potion);
+                CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, PotionUtils.getPotion(p_150500_));
             }
 
             super.onTake(p_150499_, p_150500_);
         }
 
         public static boolean mayPlaceItem(ItemStack p_39134_) {
-            return net.minecraftforge.common.brewing.BrewingRecipeRegistry.isValidInput(p_39134_);
+            return PotionUtils.getPotion(p_39134_) != Potions.EMPTY || p_39134_.is(Items.GLASS_BOTTLE);
         }
     }
 }

@@ -15,21 +15,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.item.data.IMPGDestroy;
 import github.com.gengyoubo.MPG.item.data.IMPGDoubling;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import github.com.gengyoubo.MPG.item.tier.MPGToolTier;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
 import java.util.List;
-import java.util.Objects;
-
 public class ManaitaPlusLegacyToolBase extends DiggerItem implements IMPGKey, IMPGDestroy, IMPGDoubling {
     public ManaitaPlusLegacyToolBase(TagKey<Block> tagKey) {
-        super(Float.MAX_VALUE, Float.MAX_VALUE, new MPGToolTier(), tagKey, new Properties().fireResistant());
+        super(1.0F, 1.0F, new MPGToolTier(), tagKey, new Properties().fireResistant());
     }
 
     @Override
@@ -38,7 +36,7 @@ public class ManaitaPlusLegacyToolBase extends DiggerItem implements IMPGKey, IM
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         ManaitaPlusLegacyToolActionHelper.appendRangeAndDoublingTooltip(tooltip, getRange(stack), isDoubling(stack));
     }
 
@@ -56,12 +54,9 @@ public class ManaitaPlusLegacyToolBase extends DiggerItem implements IMPGKey, IM
 
     @Override
     public int getRange(ItemStack itemStack) {
-        if (!itemStack.hasTag()) {
-            return 1;
-        }
-        int range = Objects.requireNonNull(itemStack.getTag()).getInt(MPGNBTData.Range);
+        int range = MPGItemStackData.getInt(itemStack, MPGNBTData.Range);
         if (range == 0) {
-            itemStack.getTag().putInt(MPGNBTData.Range, 1);
+            MPGItemStackData.putInt(itemStack, MPGNBTData.Range, 1);
             return 1;
         }
         return range;
@@ -75,7 +70,7 @@ public class ManaitaPlusLegacyToolBase extends DiggerItem implements IMPGKey, IM
         if (range == 0) {
             range = 1;
         }
-        itemStack.getOrCreateTag().putInt(MPGNBTData.Range, range);
+        MPGItemStackData.putInt(itemStack, MPGNBTData.Range, range);
         if (player != null) {
             MPUtils.chat(player, Component.literal(MPText.manaita_mode.formatting(itemStack.getDisplayName().getString() + " " + I18n.get("mode.range.name") + ": " + range + "x" + range + "x" + range)));
         }

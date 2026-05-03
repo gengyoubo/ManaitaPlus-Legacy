@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -27,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.block.data.MPGBlockData;
 import github.com.gengyoubo.MPG.block.entity.MPBrewingStandBlockEntity;
 import github.com.gengyoubo.MPG.core.MPGBlockEntityCore;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 import javax.annotation.Nullable;
@@ -37,7 +37,11 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
     public static final BooleanProperty[] HAS_BOTTLE = new BooleanProperty[]{BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2};
 
     public MPBrewingStandBlock() {
-        super(Properties.of().noOcclusion());
+        this(Properties.of().noOcclusion());
+    }
+
+    private MPBrewingStandBlock(Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(MPGBlockData.FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(MPGBlockData.TYPES,0).setValue(HAS_BOTTLE[0], Boolean.FALSE).setValue(HAS_BOTTLE[1], Boolean.FALSE).setValue(HAS_BOTTLE[2], Boolean.FALSE));
     }
 
@@ -58,17 +62,18 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
     static @NotNull List<ItemStack> getItemStacks(BlockState p_287732_) {
         List<ItemStack> list = Lists.newArrayList();
         ItemStack itemStack = new ItemStack(p_287732_.getBlock());
-        itemStack.getOrCreateTag().putInt(MPGNBTData.ItemType, p_287732_.getValue(MPGBlockData.TYPES));
+        MPGItemStackData.putInt(itemStack, MPGNBTData.ItemType, p_287732_.getValue(MPGBlockData.TYPES));
         list.add(itemStack);
         int hook = p_287732_.getValue(MPGBlockData.HOOK);
         if (hook != 8) {
             itemStack = new ItemStack(MPGBlockCore.HookBlockItem.get());
-            itemStack.getOrCreateTag().putInt(MPGNBTData.ItemType, hook);
+            MPGItemStackData.putInt(itemStack, MPGNBTData.ItemType, hook);
             list.add(itemStack);
         }
         return list;
     }
 
+    @Override
     public @NotNull InteractionResult use(@NotNull BlockState p_50930_, Level p_50931_, @NotNull BlockPos p_50932_, @NotNull Player p_50933_, @NotNull InteractionHand p_50934_, @NotNull BlockHitResult p_50935_) {
         if (p_50931_.isClientSide) {
             return InteractionResult.SUCCESS;
@@ -129,7 +134,7 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(p_50927_.getBlockEntity(p_50928_));
     }
 
-    public boolean isPathfindable(@NotNull BlockState p_50921_, @NotNull BlockGetter p_50922_, @NotNull BlockPos p_50923_, @NotNull PathComputationType p_50924_) {
+    public boolean isPathfindable() {
         return false;
     }
 }

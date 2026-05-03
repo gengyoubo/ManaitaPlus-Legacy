@@ -1,7 +1,5 @@
 package github.com.gengyoubo.MPG.item;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
@@ -15,9 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -33,23 +28,52 @@ import github.com.gengyoubo.MPG.item.tier.MPGToolTier;
 import github.com.gengyoubo.MPG.network.Networking;
 import github.com.gengyoubo.MPG.network.server.ChangeEntityDataPacket;
 import github.com.gengyoubo.MPG.util.MPGEntityData;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaLightningBolt;
 
 public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
-    private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+    public static final IClientItemExtensions CLIENT_EXTENSIONS = new IClientItemExtensions() {
+        @Nullable
+        @Override
+        public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
+            if (entityLiving.getUsedItemHand() == hand && entityLiving.getUseItemRemainingTicks() > 0) {
+                return HumanoidModel.ArmPose.BLOCK;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack itemInHand, float partialTick, float equipProcess, float swingProcess) {
+            if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == (arm == HumanoidArm.LEFT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) {
+                int side = arm == HumanoidArm.RIGHT ? 1 : -1;
+                double f = Mth.sin(swingProcess * swingProcess * Mth.PI);
+                double f1 = Mth.sin(Mth.sqrt(swingProcess) * Mth.PI);
+                poseStack.translate(side * 0.56, -0.52 + equipProcess * -0.6, -0.72);
+                poseStack.translate(side * -0.1414214, 0.08, 0.1414214);
+                poseStack.mulPose(Axis.XP.rotationDegrees((float) (-102.25F - f1 * 80.0F)));
+                poseStack.mulPose(Axis.YP.rotationDegrees((float) (side * 13.365F - f * 20.0F)));
+                poseStack.mulPose(Axis.ZP.rotationDegrees((float) (side * 78.050003F - f1 * 20.0F)));
+                return true;
+            }
+            return false;
+        }
+    };
+
     public MPGGodSwordItem() {
-        super(new MPGToolTier(), 0, 0, new Item.Properties().fireResistant());
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", Double.POSITIVE_INFINITY, AttributeModifier.Operation.ADDITION));
-        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", Double.POSITIVE_INFINITY, AttributeModifier.Operation.ADDITION));
-        this.defaultModifiers = builder.build();
+        super(new MPGToolTier(), 3, -2.4F, new Item.Properties().fireResistant());
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(CLIENT_EXTENSIONS);
     }
 
 
@@ -58,7 +82,7 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
     @Override
     public boolean onDroppedByPlayer(ItemStack item, Player player) {
         MPGEntityData.manaita.remove(player);
-        Networking.sendToSameLevelPlayers(player.level(), new ChangeEntityDataPacket(player.getId(), -MPGEntityData.death.getFlag()));
+        Networking.sendToSameLevelPlayers(player, new ChangeEntityDataPacket(player.getId(), -MPGEntityData.death.getFlag()));
         return super.onDroppedByPlayer(item, player);
     }
 
@@ -71,8 +95,7 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
         MPGEntityData.manaita.add(p_41406_);
     }
 
-    @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
         if (entity instanceof Player player) {
             MPUtils.godKill(player,isRemove(stack),player.isShiftKeyDown());
         }
@@ -112,46 +135,12 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
     }
 
     @Override
-    public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot p_43274_) {
-        return p_43274_ == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(p_43274_);
-    }
-
-    @Override
-    public void appendHoverText(@NotNull ItemStack p_41421_, @Nullable Level p_41422_, @NotNull List<Component> p_41423_, @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(p_41421_, p_41422_, p_41423_, p_41424_);
+    public void appendHoverText(@NotNull ItemStack p_41421_, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> p_41423_, @NotNull TooltipFlag p_41424_) {
+        super.appendHoverText(p_41421_, level, p_41423_, p_41424_);
         p_41423_.add(Component.literal(MPText.manaita_mode.formatting(I18n.get("mode.doubling") + ":" + (isDoubling(p_41421_) ? I18n.get("info.on") : I18n.get("info.off")))));
         p_41423_.add(Component.literal(MPText.manaita_mode.formatting(I18n.get("mode.remove.name") + ":" + (isRemove(p_41421_) ? I18n.get("info.on") : I18n.get("info.off")))));
         p_41423_.add(Component.empty());
         p_41423_.add(Component.literal(MPText.manaita_enchantment.formatting(I18n.get("info.item.manaita_sword_god.1"))));
-    }
-
-    @Override
-    public @NotNull Object getRenderPropertiesInternal() {
-        return new IClientItemExtensions() {
-            @Nullable
-            @Override
-            public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
-                if (entityLiving.getUsedItemHand() == hand && entityLiving.getUseItemRemainingTicks() > 0)
-                    return HumanoidModel.ArmPose.BLOCK;
-                return null;
-            }
-
-            @Override
-            public boolean applyForgeHandTransform(PoseStack poseStack, LocalPlayer player, HumanoidArm arm, ItemStack itemInHand, float partialTick, float equipProcess, float swingProcess) {
-                if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == (arm == HumanoidArm.LEFT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) {
-                        int side = arm == HumanoidArm.RIGHT ? 1 : -1;
-                        double f = Mth.sin(swingProcess * swingProcess * Mth.PI);
-                        double f1 = Mth.sin(Mth.sqrt(swingProcess) * Mth.PI);
-                        poseStack.translate(side * 0.56, -0.52 + equipProcess * -0.6, -0.72);
-                        poseStack.translate(side * -0.1414214, 0.08, 0.1414214);
-                        poseStack.mulPose(Axis.XP.rotationDegrees((float) (-102.25F - f1 * 80.0F)));
-                        poseStack.mulPose(Axis.YP.rotationDegrees((float) (side * 13.365F - f * 20.0F)));
-                        poseStack.mulPose(Axis.ZP.rotationDegrees((float) (side * 78.050003F - f1 * 20.0F)));
-                        return true;
-                }
-                return false;
-            }
-        };
     }
 
     @Override
@@ -179,7 +168,7 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
         return true;
     }
 
-// --注释掉检查 START (2026/4/24 23:35):
+// --濞夈劑鍣撮幒澶嬵梾閺?START (2026/4/24 23:35):
 //    public void onManaitaKeyPress(ItemStack itemStack, Player player) {
 //        if (player.isShiftKeyDown()) {
 //            boolean remove = !isRemove(itemStack);
@@ -189,7 +178,7 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
 //            setDoubling(itemStack, doubling);
 //        }
 //    }
-// --注释掉检查 STOP (2026/4/24 23:35)
+// --濞夈劑鍣撮幒澶嬵梾閺?STOP (2026/4/24 23:35)
 
     @Override
     public void onManaitaKeyPress(ItemStack itemStack) {
@@ -210,12 +199,10 @@ public class MPGGodSwordItem extends SwordItem implements IMPGKey, IMPGDoubling 
 
 
     public static boolean isRemove(ItemStack itemStack) {
-        if (!itemStack.hasTag()) return false;
-        assert itemStack.getTag() != null;
-        return itemStack.getTag().getBoolean(MPGNBTData.Remove);
+        return MPGItemStackData.getBoolean(itemStack, MPGNBTData.Remove);
     }
 
     public static void setRemove(ItemStack itemStack,boolean remove) {
-        itemStack.getOrCreateTag().putBoolean(MPGNBTData.Remove, remove);
+        MPGItemStackData.putBoolean(itemStack, MPGNBTData.Remove, remove);
     }
 }

@@ -1,6 +1,5 @@
 package github.com.gengyoubo.MPG;
 
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
@@ -10,45 +9,45 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 @Mod.EventBusSubscriber(modid = MPG.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MPGConfig
 {
-    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    private static final net.minecraftforge.common.ForgeConfigSpec.Builder BUILDER = new net.minecraftforge.common.ForgeConfigSpec.Builder();
 
-    private static final ForgeConfigSpec.BooleanValue creative_range_destroy = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.BooleanValue creative_range_destroy = BUILDER
             .comment("This determines whether the creative can use range mining")
             .define("creative_range_destroy", false);
 
-    private static final ForgeConfigSpec.BooleanValue easy_mode = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.BooleanValue easy_mode = BUILDER
             .comment("Easy mode: simplify recipes (for example, use diamond block instead of cobblestone)")
             .define("easy_mode", false);
 
-    private static final ForgeConfigSpec.IntValue experience_drops_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue experience_drops_doubling = BUILDER
             .comment("ExperienceDropsDoubling")
             .defineInRange("experience_drops_doubling_value", 4, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue item_drops_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue item_drops_doubling = BUILDER
             .comment("ItemDropsDoubling")
             .defineInRange("item_drops_doubling_value", 4, 1, Integer.MAX_VALUE);
     
-    private static final ForgeConfigSpec.IntValue crafting_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue crafting_doubling = BUILDER
             .comment("CraftingDoubling")
             .defineInRange("crafting_doubling_value", 64, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue furnace_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue furnace_doubling = BUILDER
             .comment("FurnaceDoubling")
             .defineInRange("furnace_doubling_value", 64, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue brewing_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue brewing_doubling = BUILDER
             .comment("BrewingDoubling")
             .defineInRange("brewing_doubling_value", 64, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue destroy_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue destroy_doubling = BUILDER
             .comment("DestroyDoubling")
             .defineInRange("destroy_doubling_value", 4, 1, Integer.MAX_VALUE);
 
-    private static final ForgeConfigSpec.IntValue source_doubling = BUILDER
+    private static final net.minecraftforge.common.ForgeConfigSpec.IntValue source_doubling = BUILDER
             .comment("SourceDoubling")
             .defineInRange("source_doubling_value", 64, 1, Integer.MAX_VALUE);
 
-    public static final ForgeConfigSpec SPEC = BUILDER.build();
+    public static final net.minecraftforge.common.ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean creative_range_destroy_value = false;
     public static boolean easy_mode_value = false;

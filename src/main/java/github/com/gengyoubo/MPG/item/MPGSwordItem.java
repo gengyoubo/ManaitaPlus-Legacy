@@ -1,30 +1,19 @@
 package github.com.gengyoubo.MPG.item;
 
-import com.google.common.collect.Multimap;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -32,17 +21,16 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ToolAction;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.item.data.IMPGDoubling;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
     public MPGSwordItem() {
-        super(new ItemManaitaSwordTier(), 0, 0, new Item.Properties().fireResistant());
+        super(new ItemManaitaSwordTier(), 3, -2.4F, new Item.Properties().fireResistant());
     }
 
     @Override
@@ -50,8 +38,7 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
         stack.setPopTime(0);
     }
 
-    @Override
-    public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+    public boolean onEntitySwing(@NotNull ItemStack stack, @NotNull LivingEntity entity, @NotNull InteractionHand hand) {
         if (entity instanceof Player player) {
             int sweep = getSweep(stack);
             for (int i1 = 0; i1 < sweep; i1++) {
@@ -89,12 +76,7 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
     }
 
     @Override
-    public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-        return super.getDefaultAttributeModifiers(slot);
-    }
-
-    @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(I18n.get("mode.manaita_sword") + ":" + getSweep(stack))));
         tooltip.add(Component.empty());
@@ -107,21 +89,18 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
     }
 
     @Override
-    public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
+    public boolean onLeftClickEntity(@NotNull ItemStack stack, @NotNull Player player, Entity entity) {
         entity.hurt(entity.damageSources().playerAttack(player), 10000);
         return super.onLeftClickEntity(stack, player, entity);
     }
 
     public static int getSweep(ItemStack itemStack) {
-        if (!itemStack.hasTag()) {
-            return 1;
-        }
-        int sweep = Objects.requireNonNull(itemStack.getTag()).getInt("Sweep");
+        int sweep = MPGItemStackData.getInt(itemStack, "Sweep");
         return Math.max(1, sweep);
     }
 
     public static void setSweep(ItemStack itemStack, int sweep) {
-        itemStack.getOrCreateTag().putInt("Sweep", Math.max(1, sweep));
+        MPGItemStackData.putInt(itemStack, "Sweep", Math.max(1, sweep));
     }
 
     @Override
@@ -133,10 +112,6 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
     public void onManaitaKeyPressOnClient(ItemStack itemStack, Player player) {
         onManaitaKeyPress(itemStack);
         MPUtils.chat(player, Component.literal(MPText.manaita_mode.formatting(String.format("[%s] %s: %d", I18n.get("item.manaita_sword.name"), I18n.get("mode.manaita_sword"), getSweep(itemStack)))));
-    }
-
-    @Override
-    public void onDestroyed(ItemEntity itemEntity, DamageSource damageSource) {
     }
 
     public static final class ItemManaitaSwordTier implements Tier {
@@ -156,11 +131,6 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
         }
 
         @Override
-        public int getLevel() {
-            return Integer.MAX_VALUE;
-        }
-
-        @Override
         public int getEnchantmentValue() {
             return 0;
         }
@@ -171,8 +141,13 @@ public class MPGSwordItem extends SwordItem implements IMPGKey, IMPGDoubling {
         }
 
         @Override
+        public int getLevel() {
+            return 4;
+        }
+
+        @Override
         public @NotNull TagKey<Block> getTag() {
-            return BlockTags.create(new ResourceLocation("forge", "needs_manaita_tool"));
+            return BlockTags.NEEDS_DIAMOND_TOOL;
         }
     }
 }

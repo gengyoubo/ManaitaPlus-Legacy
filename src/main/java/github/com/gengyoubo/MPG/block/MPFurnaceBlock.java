@@ -30,7 +30,11 @@ import static github.com.gengyoubo.MPG.block.MPBrewingStandBlock.getItemStacks;
 @SuppressWarnings("deprecation")
 public class MPFurnaceBlock extends AbstractFurnaceBlock {
     public MPFurnaceBlock() {
-        super(BlockBehaviour.Properties.of().noOcclusion());
+        this(BlockBehaviour.Properties.of().noOcclusion());
+    }
+
+    private MPFurnaceBlock(BlockBehaviour.Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(LIT, Boolean.FALSE).setValue(MPGBlockData.TYPES,0));
     }
 

@@ -1,47 +1,18 @@
 package github.com.gengyoubo.MPG.recipe.condition;
 
-import com.google.gson.JsonObject;
-import github.com.gengyoubo.MPG.MPG;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
 import github.com.gengyoubo.MPG.MPGConfig;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.crafting.conditions.ICondition;
+import org.jetbrains.annotations.NotNull;
 
-public class EasyModeCondition implements ICondition {
-    public static final ResourceLocation ID = new ResourceLocation(MPG.MODID, "easy_mode");
-    private final boolean value;
-
-    public EasyModeCondition(boolean value) {
-        this.value = value;
+public record EasyModeCondition(boolean value) implements ICondition {
+    @Override
+    public @NotNull ResourceLocation getID() {
+        return new ResourceLocation("manaita_plus_general", "easy_mode");
     }
 
     @Override
-    public ResourceLocation getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean test(IContext context) {
+    public boolean test(@NotNull IContext context) {
         return MPGConfig.easy_mode_value == value;
-    }
-
-    public static class Serializer implements IConditionSerializer<EasyModeCondition> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public void write(JsonObject json, EasyModeCondition value) {
-            json.addProperty("value", value.value);
-        }
-
-        @Override
-        public EasyModeCondition read(JsonObject json) {
-            return new EasyModeCondition(GsonHelper.getAsBoolean(json, "value", true));
-        }
-
-        @Override
-        public ResourceLocation getID() {
-            return ID;
-        }
     }
 }

@@ -1,21 +1,23 @@
 package github.com.gengyoubo.MPG.block.entity;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -25,14 +27,14 @@ import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.core.MPGBlockEntityCore;
 import github.com.gengyoubo.MPG.menu.MPGFurnaceMenu;
-
 import javax.annotation.Nullable;
+
 public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
     private static final int[] SLOTS_FOR_UP = new int[]{0};
     private static final int[] SLOTS_FOR_DOWN = new int[]{2, 1};
     private static final int[] SLOTS_FOR_SIDES = new int[]{1};
     private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
-    private final RecipeManager.CachedCheck<Container, ? extends AbstractCookingRecipe> quickCheck;
+    private final RecipeManager.CachedCheck<net.minecraft.world.Container, ? extends AbstractCookingRecipe> quickCheck;
 
     public MPFurnaceBlockEntity(BlockPos p_155545_, BlockState p_155546_) {
         super(MPGBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), p_155545_, p_155546_, RecipeType.SMELTING);
@@ -52,6 +54,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         return Integer.MAX_VALUE;
     }
 
+    @Override
     public void load(@NotNull CompoundTag p_155025_) {
         super.load(p_155025_);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
@@ -64,6 +67,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
 
     }
 
+    @Override
     protected void saveAdditional(@NotNull CompoundTag p_187452_) {
         super.saveAdditional(p_187452_);
         ContainerHelper.saveAllItems(p_187452_, this.items);
@@ -77,7 +81,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         boolean flag1 = false;
 
         if (!entity.items.get(0).isEmpty()) {
-            Recipe<?> recipe = entity.quickCheck.getRecipeFor(entity, p_155014_).orElse(null);
+            AbstractCookingRecipe recipe = entity.quickCheck.getRecipeFor(entity, p_155014_).orElse(null);
             while (entity.canBurn(p_155014_.registryAccess(), recipe, entity.items)) {
                 if (entity.burn(p_155014_.registryAccess(), recipe, entity.items)) {
                     entity.setRecipeUsed(recipe);
@@ -92,11 +96,11 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         }
     }
 
-    private boolean canBurn(RegistryAccess p_266924_, @Nullable Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_) {
-        return MPGLogicHelper.canBurn(p_266924_, p_155006_, p_155007_, this);
+    private boolean canBurn(RegistryAccess p_266924_, Recipe<?> p_155006_, NonNullList<ItemStack> p_155007_) {
+        return MPGLogicHelper.canBurn(p_266924_, p_155006_, p_155007_, this.getMaxStackSize(), this);
     }
 
-    private boolean burn(RegistryAccess p_266740_, @Nullable Recipe<?> p_266780_, NonNullList<ItemStack> p_267073_) {
+    private boolean burn(RegistryAccess p_266740_, Recipe<?> p_266780_, NonNullList<ItemStack> p_267073_) {
         if (p_266780_ != null && this.canBurn(p_266740_, p_266780_, p_267073_)) {
             ItemStack itemstack = p_267073_.get(0);
             ItemStack itemstack1 = MPGLogicHelper.assembleResult(p_266780_, this, p_266740_);
@@ -105,7 +109,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
                 ItemStack copy = itemstack1.copy();
                 copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
                 p_267073_.set(2, copy);
-            } else if (itemstack2.is(itemstack1.getItem())) {
+            } else if (ItemStack.isSameItemSameTags(itemstack2, itemstack1)) {
                 itemstack2.grow(itemstack1.getCount() * MPGConfig.furnace_doubling_value);
             }
 
@@ -151,7 +155,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         return p_58389_ != 2;
     }
 
-    public void setRecipeUsed(@Nullable Recipe<?> p_58345_) {
+    public void setRecipeUsed(Recipe<?> p_58345_) {
         if (p_58345_ != null) {
             ResourceLocation resourcelocation = p_58345_.getId();
             this.recipesUsed.addTo(resourcelocation, 1);
@@ -167,27 +171,4 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         return MPGLogicHelper.getRecipesToAwardAndPopExperience(p_154996_, p_154997_, this.recipesUsed);
     }
 
-    net.minecraftforge.common.util.LazyOptional<? extends net.minecraftforge.items.IItemHandler>[] handlers =
-            MPGItemHandlerHelper.createSidedHandlers(this);
-
-    @Override
-    public <T> net.minecraftforge.common.util.@NotNull LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.@NotNull Capability<T> capability, @Nullable Direction facing) {
-        net.minecraftforge.common.util.LazyOptional<T> itemHandlerCap = MPGItemHandlerHelper.getSidedItemHandlerCapability(this.remove, capability, facing, handlers);
-        if (itemHandlerCap.isPresent()) {
-            return itemHandlerCap;
-        }
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        MPGItemHandlerHelper.invalidateHandlers(handlers);
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        this.handlers = MPGItemHandlerHelper.createSidedHandlers(this);
-    }
 }

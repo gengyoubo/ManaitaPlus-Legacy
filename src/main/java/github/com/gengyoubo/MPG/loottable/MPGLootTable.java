@@ -22,11 +22,14 @@ import static net.minecraft.world.level.storage.loot.BuiltInLootTables.END_CITY_
 public class MPGLootTable extends LootTableProvider {
     public MPGLootTable(PackOutput packOutput) {
         super(packOutput, Set.of(), List.of(
-                new LootTableProvider.SubProviderEntry(ManaitaPlusLoot::new, LootContextParamSets.CHEST)
+                new LootTableProvider.SubProviderEntry(() -> new ManaitaPlusLoot(), LootContextParamSets.CHEST)
         ));
     }
 
     public static class ManaitaPlusLoot implements LootTableSubProvider {
+        public ManaitaPlusLoot() {
+        }
+
         @Override
         public void generate(BiConsumer<ResourceLocation, LootTable.Builder> p_249643_) {
             p_249643_.accept(

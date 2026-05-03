@@ -6,5 +6,7 @@
   "ingredient": {
     "tag": "manaita_plus_general:manaita_block_eq"
   },
-  "result": "manaita_plus_general:manaita_source"
+  "result": {
+    "item": "manaita_plus_general:manaita_source"
+  }
 }

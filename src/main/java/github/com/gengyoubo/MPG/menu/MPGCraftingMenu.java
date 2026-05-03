@@ -8,11 +8,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +19,7 @@ import github.com.gengyoubo.MPG.core.MPGMenuCore;
 
 import java.util.Optional;
 
-public class MPGCraftingMenu extends RecipeBookMenu<CraftingContainer> {
+public class MPGCraftingMenu extends AbstractContainerMenu {
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
     private final ResultContainer resultSlots = new ResultContainer();
     private final ContainerLevelAccess access;
@@ -90,19 +88,6 @@ public class MPGCraftingMenu extends RecipeBookMenu<CraftingContainer> {
         this.access.execute((p_39386_, p_39387_) -> slotChangedCraftingGrid(this, p_39386_, this.player, this.craftSlots, this.resultSlots));
     }
 
-    public void fillCraftSlotsStackedContents(@NotNull StackedContents p_39374_) {
-        this.craftSlots.fillStackedContents(p_39374_);
-    }
-
-    public void clearCraftingContent() {
-        this.craftSlots.clearContent();
-        this.resultSlots.clearContent();
-    }
-
-    public boolean recipeMatches(Recipe<? super CraftingContainer> p_39384_) {
-        return p_39384_.matches(this.craftSlots, this.player.level());
-    }
-
     public void removed(@NotNull Player p_39389_) {
         super.removed(p_39389_);
         this.access.execute((p_39371_, p_39372_) -> this.clearContainer(p_39389_, this.craftSlots));
@@ -162,29 +147,5 @@ public class MPGCraftingMenu extends RecipeBookMenu<CraftingContainer> {
 
     public boolean canTakeItemForPickAll(@NotNull ItemStack p_39381_, Slot p_39382_) {
         return p_39382_.container != this.resultSlots && super.canTakeItemForPickAll(p_39381_, p_39382_);
-    }
-
-    public int getResultSlotIndex() {
-        return 0;
-    }
-
-    public int getGridWidth() {
-        return this.craftSlots.getWidth();
-    }
-
-    public int getGridHeight() {
-        return this.craftSlots.getHeight();
-    }
-
-    public int getSize() {
-        return 10;
-    }
-
-    public @NotNull RecipeBookType getRecipeBookType() {
-        return RecipeBookType.CRAFTING;
-    }
-
-    public boolean shouldMoveToInventory(int p_150553_) {
-        return p_150553_ != this.getResultSlotIndex();
     }
 }

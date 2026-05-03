@@ -15,3 +15,4 @@ public class RenderBrewingManaitaBlockEntity extends AbstractRenderManaitaBlockE
         Objects.requireNonNull(context);
     }
 }
+

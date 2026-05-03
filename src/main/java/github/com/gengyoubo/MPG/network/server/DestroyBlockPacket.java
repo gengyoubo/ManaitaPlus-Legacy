@@ -2,60 +2,40 @@ package github.com.gengyoubo.MPG.network.server;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import github.com.gengyoubo.MPG.network.ClientPacketHandlers;
+import github.com.gengyoubo.MPG.MPG;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.function.Supplier;
 
-public class DestroyBlockPacket {
-    private final BlockPos blockPos;
-    private final int range;
-    private final Item item;
-
-    public DestroyBlockPacket(FriendlyByteBuf buffer) {
-        blockPos = buffer.readBlockPos();
-        range = buffer.readInt();
+public record DestroyBlockPacket(BlockPos blockPos, int range, Item item) {
+    public static DestroyBlockPacket decode(@NotNull FriendlyByteBuf buffer) {
+        BlockPos blockPos = buffer.readBlockPos();
+        int range = buffer.readInt();
         ResourceLocation itemId = buffer.readResourceLocation();
-        Item resolved = ForgeRegistries.ITEMS.getValue(itemId);
-        item = resolved == null ? Items.AIR : resolved;
+        Item item = BuiltInRegistries.ITEM.get(itemId);
+        return new DestroyBlockPacket(blockPos, range, item);
     }
 
-
-    public DestroyBlockPacket(BlockPos blockPos, int range, Item item) {
-        this.blockPos = blockPos;
-        this.range = range;
-        this.item = item;
+    public static void encode(@NotNull DestroyBlockPacket payload, @NotNull FriendlyByteBuf buffer) {
+        buffer.writeBlockPos(payload.blockPos);
+        buffer.writeInt(payload.range);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(payload.item);
+        buffer.writeResourceLocation(itemId);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(blockPos);
-        buf.writeInt(range);
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
-        buf.writeResourceLocation(itemId == null ? Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(Items.AIR)) : itemId);
-    }
-
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (!ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ClientPacketHandlers.handleDestroyBlock(this);
+    public static void handle(DestroyBlockPacket payload, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        ctx.enqueueWork(() -> {
+            if (ctx.getDirection().getReceptionSide().isServer()) {
+                return;
+            }
+            ClientPacketHandlers.handleDestroyBlock(payload);
         });
-        ctx.get().setPacketHandled(true);
-    }
-
-    public BlockPos getBlockPos() {
-        return blockPos;
-    }
-
-    public int getRange() {
-        return range;
-    }
-
-    public Item getItem() {
-        return item;
+        ctx.setPacketHandled(true);
     }
 }

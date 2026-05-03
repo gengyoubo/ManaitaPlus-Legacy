@@ -40,7 +40,6 @@ public class MPGEntityArrow extends AbstractArrow {
         if (!entity.level().isClientSide) {
             while (entity instanceof PartEntity<?> part) entity = part.getParent();
 
-            if (entity == null) return;
             Entity owner = this.getOwner();
             if (owner instanceof Player living) {
                 DamageSource source = entity.damageSources().playerAttack(living);

@@ -1,9 +1,7 @@
 package github.com.gengyoubo.MPG.util;
 
 import github.com.gengyoubo.MPG.item.armor.MPGArmor;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.server.level.ServerLevel;
@@ -16,13 +14,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.entity.*;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.item.data.IMPGDestroy;
@@ -32,8 +28,6 @@ import github.com.gengyoubo.MPG.util.wrapper.EntitiesWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 public class MPUtils {
@@ -116,49 +110,10 @@ public class MPUtils {
 
     public static void removeOnServer(Entity target) {
         if (target.level() instanceof ServerLevel serverLevel) {
-            Int2ObjectMap<Entity> byId = serverLevel.entityManager.visibleEntityStorage.byId;
-            byId.remove(target.getId());
-            byId.int2ObjectEntrySet().removeIf(next -> next.getValue() == target);
-
-            Map<UUID, Entity> byUuid = serverLevel.entityManager.visibleEntityStorage.byUuid;
-            byUuid.remove(target.getUUID());
-            byUuid.entrySet().removeIf(next -> next.getValue() == target);
-            serverLevel.entityManager.knownUuids.remove(target.getUUID());
-
-            LevelEntityGetter<Entity> getter = serverLevel.entityManager.entityGetter;
-
-            if (getter instanceof LevelEntityGetterAdapter<Entity> adapter) {
-                adapter.visibleEntities.byId.remove(target.getId());
-                adapter.visibleEntities.byUuid.remove(target.getUUID());
-            }
-            serverLevel.entityTickList.remove(target);
-
-            long sectionPos = SectionPos.asLong(target.blockPosition());
-            EntitySectionStorage<Entity> sectionStorage = serverLevel.entityManager.sectionStorage;
-            sectionStorage.getExistingSectionPositionsInChunk(sectionPos).forEach(sectionPos1 -> {
-                EntitySection<Entity> section = sectionStorage.sections.get(sectionPos1);
-                if (section == null) return;
-                section.storage.remove(target);
-                section.storage.allInstances.remove(target);
-            });
-            EntitySection<Entity> entitySection = sectionStorage.getOrCreateSection(sectionPos);
-            target.setLevelCallback(new EntityInLevelCallback() {
-                public void onMove() {
-                }
-
-                public void onRemove(Entity.@NotNull RemovalReason removalReason) {
-                    if (!entitySection.remove(target)) {
-                        serverLevel.entityManager.stopTicking(target);
-                        serverLevel.entityManager.stopTracking(target);
-                        serverLevel.entityManager.callbacks.onDestroyed(target);
-                    }
-                }
-            });
-            target.setRemoved(Entity.RemovalReason.DISCARDED);
-            entitySection.remove(target);
-            entitySection.storage.allInstances.remove(target);
-
-            serverLevel.getChunkSource().removeEntity(target);
+            target.unRide();
+            target.stopRiding();
+            target.remove(Entity.RemovalReason.DISCARDED);
+            serverLevel.getChunkSource().broadcastAndSend(target, new net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket(target.getId()));
         }
     }
 
@@ -204,7 +159,7 @@ public class MPUtils {
     public static void destroyBlocks(ItemStack stack, Level level, BlockPos blockPos, Player player) {
         if (stack.getItem() instanceof IMPGDestroy des) {
             int range = des.getRange(stack) >> 1;
-            boolean doubling = stack.getTag() != null && stack.getTag().getBoolean("Doubling");
+            boolean doubling = MPGItemStackData.getBoolean(stack, "Doubling");
             if (range == 0) {
                 destroyBlock(stack, level, blockPos, player,doubling);
                 return;
@@ -244,7 +199,7 @@ public class MPUtils {
                                             p_49859_.setCount(p_49859_.getCount() * MPGConfig.destroy_doubling_value);
                                         popResource(serverLevel, mutableBlockPos, p_49859_);
                                     });
-                                int exp = blockState.getExpDrop(serverLevel, serverLevel.random, mutableBlockPos, stack.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE), stack.getEnchantmentLevel(Enchantments.SILK_TOUCH));
+                                int exp = blockState.getExpDrop(serverLevel, serverLevel.random, mutableBlockPos, 0, 0);
                                 if (doubling)
                                     exp *= MPGConfig.destroy_doubling_value;
                                 block.popExperience(serverLevel, mutableBlockPos, exp);
@@ -317,7 +272,7 @@ public class MPUtils {
                                 p_49859_.setCount(p_49859_.getCount() * 4);
                             popResource(serverLevel, pos, p_49859_);
                         });
-                    int exp = blockState.getExpDrop(serverLevel, serverLevel.random, pos, stack.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE), stack.getEnchantmentLevel(Enchantments.SILK_TOUCH));
+                    int exp = blockState.getExpDrop(serverLevel, serverLevel.random, pos, 0, 0);
                     if (doubling)
                         exp *= 4;
                     block.popExperience(serverLevel, pos, exp);

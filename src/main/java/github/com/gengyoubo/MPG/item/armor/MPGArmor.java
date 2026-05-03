@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -22,32 +21,27 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import org.jetbrains.annotations.Nullable;
+
 public class MPGArmor extends ArmorItem {
-    protected MPGArmor(Type type) {
-        super(new ManaitaArmorMaterial(), type, new Item.Properties().fireResistant());
-    }
-
-    @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
-        tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.armor"))));
-    }
-
-    static class ManaitaArmorMaterial implements ArmorMaterial {
+    private static final ArmorMaterial MANAITA_ARMOR_MATERIAL = new ArmorMaterial() {
         @Override
-        public int getDurabilityForType(@NotNull Type type) {
-            return -1;
+        public int getDurabilityForType(Type type) {
+            return 0;
         }
 
         @Override
-        public int getDefenseForType(@NotNull Type type) {
+        public int getDefenseForType(Type type) {
             return 0;
         }
 
@@ -57,29 +51,38 @@ public class MPGArmor extends ArmorItem {
         }
 
         @Override
-        public @NotNull SoundEvent getEquipSound() {
+        public SoundEvent getEquipSound() {
             return SoundEvents.ARMOR_EQUIP_TURTLE;
         }
 
         @Override
-        public @NotNull Ingredient getRepairIngredient() {
+        public Ingredient getRepairIngredient() {
             return Ingredient.EMPTY;
         }
 
         @Override
-        public @NotNull String getName() {
+        public String getName() {
             return "manaita_armor";
         }
 
         @Override
         public float getToughness() {
-            return 0;
+            return 0.0F;
         }
 
         @Override
         public float getKnockbackResistance() {
-            return 0;
+            return 0.0F;
         }
+    };
+
+    protected MPGArmor(Type type) {
+        super(MANAITA_ARMOR_MATERIAL, type, new Item.Properties().fireResistant());
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+        tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.armor"))));
     }
 
     public static class Helmet extends MPGArmor implements IMPGKey {
@@ -100,7 +103,7 @@ public class MPGArmor extends ArmorItem {
             return Component.literal(I18n.get("item.helmet.name"));
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        public String getArmorTexture() {
             return "manaita_plus_general:textures/models/armor/manaita_armor_layer_1.png";
         }
 
@@ -123,12 +126,12 @@ public class MPGArmor extends ArmorItem {
         }
 
         public static boolean getNightVision(ItemStack itemStack) {
-            return itemStack.getOrCreateTag().getBoolean("NightVision");
+            return MPGItemStackData.getBoolean(itemStack, "NightVision");
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            itemStack.getOrCreateTag().putBoolean("NightVision", !getNightVision(itemStack));
+            MPGItemStackData.putBoolean(itemStack, "NightVision", !getNightVision(itemStack));
         }
 
         @Override
@@ -151,7 +154,7 @@ public class MPGArmor extends ArmorItem {
             return Component.literal(I18n.get("item.chestplate.name"));
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        public String getArmorTexture() {
             return "manaita_plus_general:textures/models/armor/manaita_armor_layer_1.png";
         }
 
@@ -181,7 +184,7 @@ public class MPGArmor extends ArmorItem {
             return Component.literal(I18n.get("item.leggings.name"));
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        public String getArmorTexture() {
             return "manaita_plus_general:textures/models/armor/manaita_armor_layer_2.png";
         }
 
@@ -207,12 +210,12 @@ public class MPGArmor extends ArmorItem {
         }
 
         public static boolean getInvisibility(ItemStack itemStack) {
-            return itemStack.getOrCreateTag().getBoolean("Invisibility");
+            return MPGItemStackData.getBoolean(itemStack, "Invisibility");
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            itemStack.getOrCreateTag().putBoolean("Invisibility", !getInvisibility(itemStack));
+            MPGItemStackData.putBoolean(itemStack, "Invisibility", !getInvisibility(itemStack));
         }
 
         @Override
@@ -235,14 +238,18 @@ public class MPGArmor extends ArmorItem {
             return Component.literal(I18n.get("item.boots.name"));
         }
 
-        public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        public String getArmorTexture() {
             return "manaita_plus_general:textures/models/armor/manaita_armor_layer_2.png";
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean selected) {
             if (slot == 0 && entity instanceof Player player) {
-                player.getAbilities().mayfly = true;
+                if (!player.getAbilities().mayfly) {
+                    player.getAbilities().mayfly = true;
+                    player.onUpdateAbilities();
+                }
                 int speed = getSpeed(stack);
                 float baseSpeed = 0.1F * speed;
                 Objects.requireNonNull(player.getAttribute(Attributes.MOVEMENT_SPEED)).setBaseValue(baseSpeed);
@@ -252,13 +259,13 @@ public class MPGArmor extends ArmorItem {
         }
 
         public static int getSpeed(ItemStack itemStack) {
-            return Math.max(itemStack.getOrCreateTag().getInt("Speed"), 1);
+            return Math.max(MPGItemStackData.getInt(itemStack, "Speed"), 1);
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            int next = Math.max(1, itemStack.getOrCreateTag().getInt("Speed") + 1) % 10;
-            itemStack.getOrCreateTag().putInt("Speed", next == 0 ? 1 : next);
+            int next = Math.max(1, MPGItemStackData.getInt(itemStack, "Speed") + 1) % 10;
+            MPGItemStackData.putInt(itemStack, "Speed", next == 0 ? 1 : next);
         }
 
         @Override

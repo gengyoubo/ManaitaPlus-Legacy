@@ -9,9 +9,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -19,12 +19,12 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraftforge.common.ToolActions;
 import github.com.gengyoubo.MPG.util.MPText;
 import github.com.gengyoubo.MPG.util.MPUtils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.IntConsumer;
 
@@ -60,7 +60,7 @@ public final class ManaitaPlusLegacyToolActionHelper {
     public static boolean applyHoeTillAction(UseOnContext context, BlockPos pos, BlockState blockState) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        BlockState tillState = blockState.getToolModifiedState(context, net.minecraftforge.common.ToolActions.HOE_TILL, false);
+        BlockState tillState = blockState.getToolModifiedState(context, ToolActions.HOE_TILL, false);
         if (tillState == null) {
             return false;
         }
@@ -83,14 +83,17 @@ public final class ManaitaPlusLegacyToolActionHelper {
             return;
         }
 
-        Map<Enchantment, Integer> enchantmentMap = new HashMap<>();
-        enchantmentMap.put(Enchantments.BLOCK_FORTUNE, 10);
+        boolean hasSilkTouch = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, itemInHand) > 0;
         String enchantName = I18n.get("enchantments.fortune");
-        if (!EnchantmentHelper.hasSilkTouch(itemInHand)) {
-            enchantmentMap.put(Enchantments.SILK_TOUCH, 1);
+        HashMap<net.minecraft.world.item.enchantment.Enchantment, Integer> enchantments = new HashMap<>(EnchantmentHelper.getEnchantments(itemInHand));
+        enchantments.put(Enchantments.BLOCK_FORTUNE, 10);
+        if (!hasSilkTouch) {
+            enchantments.put(Enchantments.SILK_TOUCH, 1);
+        }
+        EnchantmentHelper.setEnchantments(enchantments, itemInHand);
+        if (!hasSilkTouch) {
             enchantName = I18n.get("enchantments.silktouch");
         }
-        EnchantmentHelper.setEnchantments(enchantmentMap, itemInHand);
         MPUtils.chat(player, Component.literal(MPText.manaita_enchantment.formatting(itemInHand.getDisplayName().getString() + I18n.get("info.enchantment") + ": " + enchantName)));
     }
 
@@ -105,9 +108,9 @@ public final class ManaitaPlusLegacyToolActionHelper {
         Player player = context.getPlayer();
         ItemStack itemStack = context.getItemInHand();
 
-        Optional<BlockState> stripped = Optional.ofNullable(blockState.getToolModifiedState(context, net.minecraftforge.common.ToolActions.AXE_STRIP, false));
-        Optional<BlockState> scraped = stripped.isPresent() ? Optional.empty() : Optional.ofNullable(blockState.getToolModifiedState(context, net.minecraftforge.common.ToolActions.AXE_SCRAPE, false));
-        Optional<BlockState> waxOff = stripped.isPresent() || scraped.isPresent() ? Optional.empty() : Optional.ofNullable(blockState.getToolModifiedState(context, net.minecraftforge.common.ToolActions.AXE_WAX_OFF, false));
+        Optional<BlockState> stripped = Optional.ofNullable(blockState.getToolModifiedState(context, ToolActions.AXE_STRIP, false));
+        Optional<BlockState> scraped = stripped.isPresent() ? Optional.empty() : Optional.ofNullable(blockState.getToolModifiedState(context, ToolActions.AXE_SCRAPE, false));
+        Optional<BlockState> waxOff = stripped.isPresent() || scraped.isPresent() ? Optional.empty() : Optional.ofNullable(blockState.getToolModifiedState(context, ToolActions.AXE_WAX_OFF, false));
         Optional<BlockState> targetState = Optional.empty();
 
         if (stripped.isPresent()) {
@@ -164,7 +167,7 @@ public final class ManaitaPlusLegacyToolActionHelper {
         Level level = context.getLevel();
         Player player = context.getPlayer();
 
-        BlockState flattenState = blockState.getToolModifiedState(context, net.minecraftforge.common.ToolActions.SHOVEL_FLATTEN, false);
+        BlockState flattenState = blockState.getToolModifiedState(context, ToolActions.SHOVEL_FLATTEN, false);
         BlockState targetState = null;
         if (flattenState != null && level.isEmptyBlock(pos.above())) {
             level.playSound(player, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -191,7 +194,10 @@ public final class ManaitaPlusLegacyToolActionHelper {
 
     private static void damageHeldItem(UseOnContext context, Player player, ItemStack itemStack) {
         if (player != null) {
-            itemStack.hurtAndBreak(1, player, brokenPlayer -> brokenPlayer.broadcastBreakEvent(context.getHand()));
+            EquipmentSlot slot = context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                    ? EquipmentSlot.MAINHAND
+                    : EquipmentSlot.OFFHAND;
+            itemStack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(slot));
         }
     }
 }

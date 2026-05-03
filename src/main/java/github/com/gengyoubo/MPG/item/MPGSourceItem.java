@@ -12,9 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.menu.MPGCraftingMenu;
 import github.com.gengyoubo.MPG.util.MPText;
 
@@ -31,7 +29,7 @@ public class MPGSourceItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.source.1"))));
     }
@@ -46,8 +44,7 @@ public class MPGSourceItem extends Item {
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack heldItem = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(
-                    serverPlayer,
+            serverPlayer.openMenu(
                     new SimpleMenuProvider(
                             (windowId, inventory, menuPlayer) -> new MPGCraftingMenu(windowId, inventory, level),
                             Component.translatable("container.crafting"))

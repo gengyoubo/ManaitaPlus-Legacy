@@ -1,44 +1,30 @@
 package github.com.gengyoubo.MPG.network.server;
 
+import github.com.gengyoubo.MPG.MPG;
+import github.com.gengyoubo.MPG.network.ClientPacketHandlers;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import github.com.gengyoubo.MPG.network.ClientPacketHandlers;
 
 import java.util.function.Supplier;
 
-public class ChangeEntityDataPacket {
-    private final int id;
-    private final int flag;
-
-    public ChangeEntityDataPacket(FriendlyByteBuf buffer) {
-        this.id = buffer.readInt();
-        this.flag = buffer.readInt();
+public record ChangeEntityDataPacket(int id, int flag) {
+    public static ChangeEntityDataPacket decode(FriendlyByteBuf buffer) {
+        return new ChangeEntityDataPacket(buffer.readInt(), buffer.readInt());
     }
 
-
-    public ChangeEntityDataPacket(int id, int flag) {
-       this.id = id;
-       this.flag = flag;
+    public static void encode(ChangeEntityDataPacket payload, FriendlyByteBuf buffer) {
+        buffer.writeInt(payload.id);
+        buffer.writeInt(payload.flag);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(id);
-        buf.writeInt(flag);
-    }
-
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (!ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ClientPacketHandlers.handleChangeEntityData(this);
+    public static void handle(ChangeEntityDataPacket payload, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        ctx.enqueueWork(() -> {
+            if (ctx.getDirection().getReceptionSide().isServer()) {
+                return;
+            }
+            ClientPacketHandlers.handleChangeEntityData(payload);
         });
-        ctx.get().setPacketHandled(true);
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getFlag() {
-        return flag;
+        ctx.setPacketHandled(true);
     }
 }

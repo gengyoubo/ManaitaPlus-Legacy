@@ -1,6 +1,7 @@
 package github.com.gengyoubo.MPG.event;
 
 import github.com.gengyoubo.MPG.MPG;
+import github.com.gengyoubo.MPG.baubles.common.capability.BaublesCapability;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -8,16 +9,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import github.com.gengyoubo.MPG.core.MPGKeyBoardCore;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
 import github.com.gengyoubo.MPG.network.Networking;
 import github.com.gengyoubo.MPG.network.client.KeyPressPacket;
+import github.com.gengyoubo.MPG.network.client.OpenBaublesPacket;
 
 import java.util.List;
 
@@ -55,15 +56,18 @@ public class ClientEventHandler {
             }
             Networking.sendToServer(new KeyPressPacket((byte) 1));
         }
+        if (BaublesCapability.isEnabled() && MPGKeyBoardCore.BAUBLES_KEY.isDown()) {
+            Networking.sendToServer(new OpenBaublesPacket());
+        }
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
+        if (FMLEnvironment.production) {
             return;
         }
-        if (FMLEnvironment.production) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
         if (MC.level != null || !(MC.screen instanceof TitleScreen)) {
@@ -106,6 +110,6 @@ public class ClientEventHandler {
 
         LevelSummary firstWorld = summaries.get(0);
         MPG.LOGGER.info("Dev auto-loading first world: {}", firstWorld.getLevelId());
-        MC.createWorldOpenFlows().loadLevel(MC.screen, firstWorld.getLevelId());
+        MPG.LOGGER.info("Skipping dev auto-load on 1.21.1 until WorldOpenFlows migration is finished");
     }
 }

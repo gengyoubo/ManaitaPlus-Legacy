@@ -5,6 +5,7 @@ import github.com.gengyoubo.MPG.MPG;
 import github.com.gengyoubo.MPG.core.*;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
@@ -18,19 +19,22 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import github.com.gengyoubo.MPG.gui.BrewingStandScreen;
+import github.com.gengyoubo.MPG.gui.BaublesScreen;
 import github.com.gengyoubo.MPG.gui.CraftingManaitaScreen;
 import github.com.gengyoubo.MPG.gui.FurnaceManaitaScreen;
 import github.com.gengyoubo.MPG.blockEntity.RenderBrewingManaitaBlockEntity;
 import github.com.gengyoubo.MPG.blockEntity.RenderCraftingManaitaBlockEntity;
 import github.com.gengyoubo.MPG.blockEntity.RenderFurnaceManaitaBlockEntity;
 import github.com.gengyoubo.MPG.entity.MPLightningBoltRenderer;
+import github.com.gengyoubo.MPG.item.MPGGodSwordItem;
 import github.com.gengyoubo.MPG.entity.RenderManaitaArrow;
+import github.com.gengyoubo.MPG.util.MPGItemStackData;
 import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaArrow;
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaLightningBolt;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = MPG.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = MPG.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class RegisterEventHandler {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -39,7 +43,7 @@ public class RegisterEventHandler {
             MenuScreens.register(MPGMenuCore.CraftingManaita.get(), CraftingManaitaScreen::new);
             MenuScreens.register(MPGMenuCore.FurnaceManaita.get(), FurnaceManaitaScreen::new);
             MenuScreens.register(MPGMenuCore.BrewingStandManaita.get(), BrewingStandScreen::new);
-
+            MenuScreens.register(MPGMenuCore.Baubles.get(), BaublesScreen::new);
             acceptTypePropertyFunction(
                     MPGBlockCore.CraftingBlockItem.get(),
                     MPGBlockCore.FurnaceBlockItem.get(),
@@ -47,7 +51,10 @@ public class RegisterEventHandler {
                     MPGBlockCore.HookBlockItem.get(),
                     MPGItemCore.ManaitaCraftingPortable.get(),
                     MPGItemCore.ManaitaFurnacePortable.get(),
-                    MPGItemCore.ManaitaBrewingPortable.get()
+                    MPGItemCore.ManaitaBrewingPortable.get(),
+                    MPGItemCore.ManaitaCraftingRing.get(),
+                    MPGItemCore.ManaitaFurnaceRing.get(),
+                    MPGItemCore.ManaitaBrewingRing.get()
             );
         });
     }
@@ -67,15 +74,17 @@ public class RegisterEventHandler {
     {
         MPGKeyBoardCore.MESSAGE_KEY = new KeyMapping("key.manaita", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 88, "key.categories.misc");
         MPGKeyBoardCore.MESSAGE_ARMOR_KEY = new KeyMapping("key.manaita.armor", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 89, "key.categories.misc");
+        MPGKeyBoardCore.BAUBLES_KEY = new KeyMapping("key.manaita.baubles", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 66, "key.categories.inventory");
         event.register(MPGKeyBoardCore.MESSAGE_KEY);
         event.register(MPGKeyBoardCore.MESSAGE_ARMOR_KEY);
+        event.register(MPGKeyBoardCore.BAUBLES_KEY);
     }
 
     @SuppressWarnings("deprecation")
     private static void acceptTypePropertyFunction(Item... items) {
         ResourceLocation location = new ResourceLocation(MPG.MODID, MPGNBTData.Type);
         ItemPropertyFunction typePropertyFunction = (stack, level, entity, seed) ->
-                stack.hasTag() ? stack.getTag().getInt(MPGNBTData.ItemType) : 0.0F;
+                MPGItemStackData.getInt(stack, MPGNBTData.ItemType);
         for (Item item : items) {
             ItemProperties.register(item, location, typePropertyFunction);
         }

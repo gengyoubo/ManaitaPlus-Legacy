@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.entity.MPGEntityArrow;
 import github.com.gengyoubo.MPG.item.data.IMPGDoubling;
 import github.com.gengyoubo.MPG.item.data.IMPGKey;
@@ -22,7 +21,7 @@ import java.util.List;
 
 public class MPGBowItem extends Item implements IMPGKey, IMPGDoubling {
     public MPGBowItem() {
-        super(new Properties().defaultDurability(-1).fireResistant());
+        super(new Properties().durability(-1).fireResistant());
     }
 
     @Override
@@ -37,7 +36,7 @@ public class MPGBowItem extends Item implements IMPGKey, IMPGDoubling {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(I18n.get("mode.doubling") + ":" + (isDoubling(stack) ? I18n.get("info.on") : I18n.get("info.off")))));
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.attack"))));
     }

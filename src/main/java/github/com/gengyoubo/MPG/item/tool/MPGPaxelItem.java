@@ -15,8 +15,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.ToolAction;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyToolActionHelper;
 import github.com.gengyoubo.MPG.item.tool.base.ManaitaPlusLegacyToolBase;
 import github.com.gengyoubo.MPG.util.MPGEntityData;
@@ -25,14 +25,14 @@ import github.com.gengyoubo.MPG.util.MPText;
 import java.util.List;
 
 public class MPGPaxelItem extends ManaitaPlusLegacyToolBase {
-    public static final TagKey<Block> MINEABLE = BlockTags.create(new ResourceLocation("mineable"));
-
+    public static final TagKey<Block> MINEABLE =
+            BlockTags.create(new ResourceLocation("minecraft", "mineable"));
     public MPGPaxelItem() {
         super(MINEABLE);
     }
 
     @Override
-    public boolean canPerformAction(ItemStack stack, net.minecraftforge.common.ToolAction toolAction) {
+    public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
         return true;
     }
 
@@ -52,7 +52,7 @@ public class MPGPaxelItem extends ManaitaPlusLegacyToolBase {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @org.jetbrains.annotations.Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.empty());
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(I18n.get("info.attack"))));

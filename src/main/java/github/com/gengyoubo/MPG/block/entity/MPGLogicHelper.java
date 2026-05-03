@@ -8,11 +8,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -22,7 +23,7 @@ public final class MPGLogicHelper {
     private MPGLogicHelper() {
     }
 
-    public static boolean canBurn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, WorldlyContainer container) {
+    public static boolean canBurn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, int maxStackSize, Container container) {
         if (items.get(0).isEmpty() || recipe == null) {
             return false;
         }
@@ -31,12 +32,20 @@ public final class MPGLogicHelper {
             return false;
         }
         ItemStack output = items.get(2);
-        return output.isEmpty() || ItemStack.isSameItem(output, assembled);
+        if (output.isEmpty()) {
+            return true;
+        }
+        if (!ItemStack.isSameItemSameTags(output, assembled)) {
+            return false;
+        }
+        return output.getCount() + assembled.getCount() <= maxStackSize && output.getCount() + assembled.getCount() <= output.getMaxStackSize();
     }
 
-    @SuppressWarnings("unchecked")
-    public static ItemStack assembleResult(Recipe<?> recipe, WorldlyContainer container, RegistryAccess registryAccess) {
-        return ((Recipe<WorldlyContainer>) recipe).assemble(container, registryAccess);
+    public static ItemStack assembleResult(Recipe<?> recipe, Container container, RegistryAccess registryAccess) {
+        if (!(recipe instanceof AbstractCookingRecipe cookingRecipe)) {
+            return ItemStack.EMPTY;
+        }
+        return cookingRecipe.assemble(container, registryAccess);
     }
 
     public static void awardUsedRecipesAndPopExperience(ServerPlayer player, NonNullList<ItemStack> items, Object2IntMap<ResourceLocation> recipesUsed) {

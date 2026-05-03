@@ -30,15 +30,17 @@ import static github.com.gengyoubo.MPG.block.MPBrewingStandBlock.getItemStacks;
 
 @SuppressWarnings("deprecation")
 public class MPCraftingBlock extends BaseEntityBlock {
-
     private static final Component CONTAINER_TITLE = Component.translatable("container.crafting_manaita");
 
 
     public MPCraftingBlock() {
-        super(BlockBehaviour.Properties.of().noOcclusion());
-        this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(MPGBlockData.FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(MPGBlockData.TYPES,0));
+        this(BlockBehaviour.Properties.of().noOcclusion());
     }
 
+    private MPCraftingBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(MPGBlockData.HOOK, 8).setValue(MPGBlockData.FACING, Direction.NORTH).setValue(MPGBlockData.WALL,Direction.DOWN).setValue(MPGBlockData.TYPES,0));
+    }
 
     @Override
     public @NotNull VoxelShape getShape(BlockState p_60555_, @NotNull BlockGetter p_60556_, @NotNull BlockPos p_60557_, @NotNull CollisionContext p_60558_) {
@@ -54,6 +56,7 @@ public class MPCraftingBlock extends BaseEntityBlock {
     }
 
 
+    @Override
     public @NotNull InteractionResult use(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull InteractionHand p_52237_, @NotNull BlockHitResult p_52238_) {
         if (p_52234_.isClientSide) {
             return InteractionResult.SUCCESS;

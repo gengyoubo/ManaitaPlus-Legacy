@@ -15,3 +15,4 @@ public class RenderFurnaceManaitaBlockEntity extends AbstractRenderManaitaBlockE
         Objects.requireNonNull(context);
     }
 }
+

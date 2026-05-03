@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderManaitaArrow extends ArrowRenderer<MPGEntityArrow> {
-    public static final ResourceLocation NORMAL_ARROW_LOCATION = new ResourceLocation("textures/entity/projectiles/arrow.png");
-
+    public static final ResourceLocation NORMAL_ARROW_LOCATION =
+            new ResourceLocation("minecraft", "textures/entity/projectiles/arrow.png");
     public RenderManaitaArrow(EntityRendererProvider.Context p_174422_) {
         super(p_174422_);
     }

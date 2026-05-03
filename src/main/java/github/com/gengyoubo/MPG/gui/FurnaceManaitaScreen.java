@@ -13,7 +13,10 @@ import github.com.gengyoubo.MPG.menu.MPGFurnaceMenu;
 
 @OnlyIn(Dist.CLIENT)
 public class FurnaceManaitaScreen extends AbstractFurnaceScreen<MPGFurnaceMenu> {
-    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/container/furnace.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/gui/container/furnace.png");
+    private static final ResourceLocation LIT_PROGRESS_SPRITE = new ResourceLocation("minecraft", "container/furnace/lit_progress");
+    private static final ResourceLocation BURN_PROGRESS_SPRITE = new ResourceLocation("minecraft", "container/furnace/burn_progress");
+    private static final ResourceLocation UNIFORM_FONT = new ResourceLocation("minecraft", "uniform");
     private final String doubling_text;
 
     public FurnaceManaitaScreen(MPGFurnaceMenu p_98776_, Inventory p_98777_, Component p_98778_) {
@@ -25,7 +28,7 @@ public class FurnaceManaitaScreen extends AbstractFurnaceScreen<MPGFurnaceMenu> 
     protected void renderLabels(GuiGraphics p_281635_, int p_282681_, int p_283686_) {
         p_281635_.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
         p_281635_.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
-        p_281635_.drawString(this.font, doubling_text,118, 22, 4210752);
+        p_281635_.drawString(this.font, Component.literal(doubling_text).withStyle(style -> style.withFont(UNIFORM_FONT)), 118, 22, 4210752, false);
     }
 
 }

@@ -17,6 +17,7 @@ A faithful port of the popular ManaitaPlus mod from Minecraft 1.7.10 to modern M
 **RealSenPhent** - Developer of this port
 - GitHub: [RealSenPhent](https://github.com/RealSenPhent)<br>
 - Repository: [ManaitaPlus-Legacy](https://github.com/RealSenPhent/ManaitaPlus-Legacy)<br>
+- 
 **gengyoubo** - Developer of this port
 - GitHub: [gengyoubo](https://github.com/gengyoubo)<br>
 - Repository:[ManaitaPlusGeneral](https://github.com/gengyoubo/ManaitaPlusGeneral)<br>
@@ -27,6 +28,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Note:** While this port is licensed under MIT, the original concept and design belong to Rikuto. This is a fan-made port created to bring the beloved mod to modern Minecraft versions.
 
+All textures, models, and artwork are licensed under  
+CC BY-NC-SA 4.0.  
+
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+## Usage
+
+- You are allowed to use this mod in modpacks
+- You must give proper credit
+- You may NOT sell or monetize the assets
 ## ⚠️ Disclaimer
 
 This is an unofficial fan port of the original ManaitaPlus mod. All credit for the original concept, design, and gameplay elements goes to Rikuto. This project is not affiliated with or endorsed by the original creator.

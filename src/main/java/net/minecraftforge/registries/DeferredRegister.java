@@ -1,7 +1,7 @@
 package net.minecraftforge.registries;
 
 import net.minecraft.core.Registry;
-import github.com.gengyoubo.util.MPResource;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public final class DeferredRegister<T> {
     public void registerAll() {
         for (Entry<T> entry : entries) {
             entry.object.initialize();
-            Registry.register(registry, MPResource.id(modId, entry.path), entry.object.get());
+            Registry.register(registry, new ResourceLocation(modId, entry.path), entry.object.get());
         }
     }
 

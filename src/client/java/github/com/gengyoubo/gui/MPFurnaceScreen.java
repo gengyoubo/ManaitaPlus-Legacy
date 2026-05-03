@@ -10,11 +10,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class MPFurnaceScreen extends AbstractFurnaceScreen<MPFurnaceMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/container/furnace.png");
     private final String doublingText;
 
     public MPFurnaceScreen(MPFurnaceMenu menu, Inventory inventory, Component title) {
-        super(menu, new SmeltingRecipeBookComponent(), inventory, title, TEXTURE, TEXTURE, TEXTURE);
+        super(menu, new SmeltingRecipeBookComponent(), inventory, title, TEXTURE);
         doublingText = MPGConfig.furnace_doubling_value + "x";
     }
 

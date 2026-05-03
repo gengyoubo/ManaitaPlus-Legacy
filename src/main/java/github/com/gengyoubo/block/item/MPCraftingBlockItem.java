@@ -1,13 +1,12 @@
 package github.com.gengyoubo.block.item;
 
-import net.minecraft.world.item.Item;
 import github.com.gengyoubo.block.MPCraftingBlock;
-import github.com.gengyoubo.core.MPBlockCore;
+import net.minecraft.world.item.Item;
+
+import static github.com.gengyoubo.core.MPBlockCore.CraftingBlock;
 
 public class MPCraftingBlockItem extends MPTypedBlockItem {
     public MPCraftingBlockItem() {
-        super(MPBlockCore.CraftingBlock.get(), new Item.Properties().fireResistant(), "block.crafting.", MPCraftingBlock.class);
+        super(CraftingBlock.get(), new Item.Properties().fireResistant(), "block.crafting.", MPCraftingBlock.class);
     }
 }
-
-

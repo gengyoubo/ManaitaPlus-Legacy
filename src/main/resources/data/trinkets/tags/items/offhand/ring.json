@@ -1,0 +1,13 @@
+{
+    "fabric:load_conditions":  [
+                                   {
+                                       "condition":  "manaita_plus_general:trinkets_loaded"
+                                   }
+                               ],
+    "replace":  false,
+    "values":  [
+                   "manaita_plus_general:manaita_crafting_ring",
+                   "manaita_plus_general:manaita_furnace_ring",
+                   "manaita_plus_general:manaita_brewing_ring"
+               ]
+}

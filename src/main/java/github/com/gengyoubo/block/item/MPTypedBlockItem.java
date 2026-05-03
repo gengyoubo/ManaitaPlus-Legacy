@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -42,12 +41,12 @@ public abstract class MPTypedBlockItem extends BlockItem {
     @Override
     public @NotNull Component getName(ItemStack stack) {
         return Component.translatable(
-                translationPrefix + MPTypeHelper.getTypes(github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(stack).getInt(MPNBTData.ItemType)) + "name");
+                translationPrefix + MPTypeHelper.getTypes(stack.getOrCreateTag().getInt(MPNBTData.ItemType)) + "name");
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     @Override
@@ -121,8 +120,8 @@ public abstract class MPTypedBlockItem extends BlockItem {
     }
 
     private BlockState updateBlockStateFromTag(BlockPos pos, Level level, ItemStack stack, BlockState state) {
-        if (typedBlockClass.isInstance(state.getBlock()) && github.com.gengyoubo.util.MPItemStackData.getTag(stack) != null) {
-            BlockState typedState = state.setValue(MPBlockData.TYPES, github.com.gengyoubo.util.MPItemStackData.getTag(stack).getInt(MPNBTData.ItemType));
+        if (typedBlockClass.isInstance(state.getBlock()) && stack.getTag() != null) {
+            BlockState typedState = state.setValue(MPBlockData.TYPES, stack.getTag().getInt(MPNBTData.ItemType));
             level.setBlock(pos, typedState, 2);
             return typedState;
         }
@@ -130,5 +129,4 @@ public abstract class MPTypedBlockItem extends BlockItem {
         return state;
     }
 }
-
 

@@ -8,7 +8,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -28,7 +27,7 @@ import java.util.Objects;
 
 public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDoubling {
     public MPToolBase(TagKey<Block> tagKey) {
-        super(new MPToolTier(), tagKey, new Properties().fireResistant());
+        super(Float.MAX_VALUE, Float.MAX_VALUE, new MPToolTier(), tagKey, new Properties().fireResistant());
     }
 
     @Override
@@ -37,7 +36,7 @@ public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDou
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         MPToolActionHelper.appendRangeAndDoublingTooltip(tooltip, getRange(stack), isDoubling(stack));
     }
 
@@ -53,14 +52,13 @@ public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDou
         return true;
     }
 
-    @Override
     public int getRange(ItemStack itemStack) {
-        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(itemStack)) {
+        if (!itemStack.hasTag()) {
             return 1;
         }
-        int range = Objects.requireNonNull(github.com.gengyoubo.util.MPItemStackData.getTag(itemStack)).getInt(MPNBTData.Range);
+        int range = Objects.requireNonNull(itemStack.getTag()).getInt(MPNBTData.Range);
         if (range == 0) {
-            github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.Range, 1);
+            itemStack.getTag().putInt(MPNBTData.Range, 1);
             return 1;
         }
         return range;
@@ -74,7 +72,7 @@ public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDou
         if (range == 0) {
             range = 1;
         }
-        github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.Range, range);
+        itemStack.getOrCreateTag().putInt(MPNBTData.Range, range);
         if (player != null) {
             player.displayClientMessage(Component.literal(MPText.manaita_mode.formatting(itemStack.getDisplayName().getString() + " " + Component.translatable("mode.range.name").getString() + ": " + range + "x" + range + "x" + range)), true);
         }
@@ -92,5 +90,4 @@ public class MPToolBase extends DiggerItem implements IMPKey, IMPDestroy, IMPDou
     }
 
 }
-
 

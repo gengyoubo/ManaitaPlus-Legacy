@@ -25,4 +25,3 @@ public class MPShovelItem extends MPTaggedToolItem {
         return InteractionResult.PASS;
     }
 }
-

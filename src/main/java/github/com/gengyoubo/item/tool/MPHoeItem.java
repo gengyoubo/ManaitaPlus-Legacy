@@ -19,3 +19,4 @@ public class MPHoeItem extends MPTaggedToolItem {
         return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
     }
 }
+

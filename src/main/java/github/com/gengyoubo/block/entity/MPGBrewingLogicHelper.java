@@ -25,3 +25,4 @@ public final class MPGBrewingLogicHelper {
         return !stack.isEmpty() && currentSlotItem.isEmpty();
     }
 }
+

@@ -12,3 +12,4 @@ public class MPRecipeSerializerCore {
     public static final RegistryObject<RecipeSerializer<?>> NBTCraftingRecipe = RECIPE_SERIALIZER_DEFERRED_REGISTER.register("manaita_crafting_type", MPNBTCraftingRecipe.Serializer::new);
 }
 
+

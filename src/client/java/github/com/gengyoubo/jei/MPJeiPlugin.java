@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 
 @JeiPlugin
 public class MPJeiPlugin implements IModPlugin {
-    private static final ResourceLocation UID = new ResourceLocation("manaita_plus_general", "jei_plugin");
+    private static final ResourceLocation UID = github.com.gengyoubo.util.MPResource.id("manaita_plus_general", "jei_plugin");
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {

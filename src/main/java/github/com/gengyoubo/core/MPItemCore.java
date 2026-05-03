@@ -48,3 +48,4 @@ public class MPItemCore {
     public static final RegistryObject<Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPFurnacePortable::new);
     public static final RegistryObject<Item> ManaitaBrewingPortable = ITEMS.register("manaita_brewing_portable", MPBrewingPortable::new);
 }
+

@@ -29,3 +29,4 @@ public class MPBlockCore {
     public static final RegistryObject<Item> HookBlockItem = ITEMS.register("block_hook_manaita", MPHookBlockItem::new);
 }
 
+

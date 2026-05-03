@@ -1,9 +1,12 @@
 package github.com.gengyoubo.item.armor;
 
 import com.google.common.collect.Lists;
+import github.com.gengyoubo.item.data.IMPKey;
+import github.com.gengyoubo.util.MPItemStackData;
+import github.com.gengyoubo.util.MPText;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -13,17 +16,12 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import github.com.gengyoubo.item.data.IMPKey;
-import github.com.gengyoubo.util.MPText;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,11 +31,11 @@ public class MPArmor extends ArmorItem {
     private static final float DEFAULT_FLYING_SPEED = 0.05F;
 
     protected MPArmor(Type type) {
-        super(new ManaitaArmorMaterial(), type, new Item.Properties().fireResistant());
+        super(ArmorMaterials.NETHERITE, type, new Item.Properties().fireResistant());
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(Component.translatable("info.armor").getString())));
     }
 
@@ -77,59 +75,17 @@ public class MPArmor extends ArmorItem {
         }
     }
 
-    static class ManaitaArmorMaterial implements ArmorMaterial {
-        @Override
-        public int getDurabilityForType(@NotNull Type type) {
-            return -1;
-        }
-
-        @Override
-        public int getDefenseForType(@NotNull Type type) {
-            return 0;
-        }
-
-        @Override
-        public int getEnchantmentValue() {
-            return 0;
-        }
-
-        @Override
-        public @NotNull SoundEvent getEquipSound() {
-            return SoundEvents.ARMOR_EQUIP_TURTLE;
-        }
-
-        @Override
-        public @NotNull Ingredient getRepairIngredient() {
-            return Ingredient.EMPTY;
-        }
-
-        @Override
-        public @NotNull String getName() {
-            return "manaita_armor";
-        }
-
-        @Override
-        public float getToughness() {
-            return 0;
-        }
-
-        @Override
-        public float getKnockbackResistance() {
-            return 0;
-        }
-    }
-
     public static class Helmet extends MPArmor implements IMPKey {
         public Helmet() {
             super(Type.HELMET);
         }
 
         @Override
-        public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+        public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
             tooltip.add(Component.literal(
                     MPText.manaita_mode.formatting(
                             Component.translatable("mode.nightvision").getString() + ": " + (getNightVision(stack) ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
-            super.appendHoverText(stack, level, tooltip, flag);
+            super.appendHoverText(stack, context, tooltip, flag);
         }
 
         @Override
@@ -156,12 +112,12 @@ public class MPArmor extends ArmorItem {
         }
 
         public static boolean getNightVision(ItemStack itemStack) {
-            return itemStack.getOrCreateTag().getBoolean("NightVision");
+            return MPItemStackData.getBoolean(itemStack, "NightVision");
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            itemStack.getOrCreateTag().putBoolean("NightVision", !getNightVision(itemStack));
+            MPItemStackData.putBoolean(itemStack, "NightVision", !getNightVision(itemStack));
         }
 
         @Override
@@ -187,13 +143,13 @@ public class MPArmor extends ArmorItem {
         @Override
         public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean selected) {
             if (slot == 2 && entity instanceof Player player) {
-                List<MobEffect> badEffects = Lists.newArrayList();
+                List<Holder<MobEffect>> badEffects = Lists.newArrayList();
                 for (MobEffectInstance effect : player.getActiveEffects()) {
-                    if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
+                    if (effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL) {
                         badEffects.add(effect.getEffect());
                     }
                 }
-                for (MobEffect effect : badEffects) {
+                for (Holder<MobEffect> effect : badEffects) {
                     player.removeEffect(effect);
                 }
             }
@@ -224,20 +180,20 @@ public class MPArmor extends ArmorItem {
         }
 
         @Override
-        public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
+        public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
             tooltip.add(Component.literal(
                     MPText.manaita_mode.formatting(
                             Component.translatable("mode.invisibility").getString() + ": " + (getInvisibility(stack) ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
-            super.appendHoverText(stack, level, tooltip, flag);
+            super.appendHoverText(stack, context, tooltip, flag);
         }
 
         public static boolean getInvisibility(ItemStack itemStack) {
-            return itemStack.getOrCreateTag().getBoolean("Invisibility");
+            return MPItemStackData.getBoolean(itemStack, "Invisibility");
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            itemStack.getOrCreateTag().putBoolean("Invisibility", !getInvisibility(itemStack));
+            MPItemStackData.putBoolean(itemStack, "Invisibility", !getInvisibility(itemStack));
         }
 
         @Override
@@ -273,13 +229,13 @@ public class MPArmor extends ArmorItem {
         }
 
         public static int getSpeed(ItemStack itemStack) {
-            return Math.max(itemStack.getOrCreateTag().getInt("Speed"), 1);
+            return Math.max(MPItemStackData.getInt(itemStack, "Speed"), 1);
         }
 
         @Override
         public void onManaitaKeyPress(ItemStack itemStack) {
-            int next = Math.max(1, itemStack.getOrCreateTag().getInt("Speed") + 1) % 10;
-            itemStack.getOrCreateTag().putInt("Speed", next == 0 ? 1 : next);
+            int next = Math.max(1, MPItemStackData.getInt(itemStack, "Speed") + 1) % 10;
+            MPItemStackData.putInt(itemStack, "Speed", next == 0 ? 1 : next);
         }
 
         @Override
@@ -291,4 +247,3 @@ public class MPArmor extends ArmorItem {
         }
     }
 }
-

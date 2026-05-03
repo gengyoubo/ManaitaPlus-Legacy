@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class RenderMPGArrow extends ArrowRenderer<MPGEntityArrow> {
-    private static final ResourceLocation NORMAL_ARROW_LOCATION = new ResourceLocation("textures/entity/projectiles/arrow.png");
+    private static final ResourceLocation NORMAL_ARROW_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
 
     public RenderMPGArrow(EntityRendererProvider.Context context) {
         super(context);

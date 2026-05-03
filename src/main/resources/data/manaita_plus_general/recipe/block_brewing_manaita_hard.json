@@ -8,20 +8,22 @@
   ],
   "key": {
     "0": {
-      "item": "minecraft:cobblestone"
+      "item": "minecraft:diamond_block"
     },
     "1": {
       "item": "minecraft:brewing_stand"
     }
   },
   "result": {
-    "item": "manaita_plus_general:block_brewing_manaita",
+    "id": "manaita_plus_general:block_brewing_manaita",
     "count": 1
   },
   "fabric:load_conditions": [
     {
-      "condition": "manaita_plus_general:easy_mode",
-      "value": true
+      "condition": "fabric:not",
+      "value": {
+        "condition": "manaita_plus_general:easy_mode"
+      }
     }
   ]
 }

@@ -26,7 +26,7 @@ public abstract class AbstractRenderMPBlockEntity<T extends BlockEntity> impleme
     protected AbstractRenderMPBlockEntity(ItemStack displayStack) {
         this.displayStack = displayStack;
         this.hookBlockTemplate = MPBlockCore.HookBlock.get().defaultBlockState();
-        this.displayStack.setTag(new CompoundTag());
+        github.com.gengyoubo.util.MPItemStackData.setTag(this.displayStack, new net.minecraft.nbt.CompoundTag());
     }
 
     @Override

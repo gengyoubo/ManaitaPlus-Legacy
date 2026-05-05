@@ -48,7 +48,7 @@
     },
     {
       "predicate": {
-        "manaita_plus_general:manaita_plus_general_type": 1
+        "manaita_plus_general:manaita_plus_general_type": 1.0
       },
       "model": "manaita_plus_general:item/furnace/portable_furnace_manaita.8"
     }

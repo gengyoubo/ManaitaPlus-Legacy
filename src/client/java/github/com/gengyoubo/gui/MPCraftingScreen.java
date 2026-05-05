@@ -3,7 +3,7 @@ package github.com.gengyoubo.gui;
 import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.menu.MPCraftingMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
@@ -29,17 +29,14 @@ public class MPCraftingScreen extends AbstractContainerScreen<MPCraftingMenu> im
     protected void init() {
         super.init();
         this.widthTooNarrow = this.width < 379;
-        if (this.minecraft != null) {
-            this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
-        }
+        this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
         this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-        this.addRenderableWidget(Button.builder(Component.literal("R"), button -> {
+        this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, button -> {
             this.recipeBookComponent.toggleVisibility();
             this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
             button.setPosition(this.leftPos + 5, this.height / 2 - 49);
-        }).bounds(this.leftPos + 5, this.height / 2 - 49, 20, 18).build());
+        }));
         this.addWidget(this.recipeBookComponent);
-        this.setInitialFocus(this.recipeBookComponent);
         this.titleLabelX = 29;
     }
 
@@ -51,13 +48,12 @@ public class MPCraftingScreen extends AbstractContainerScreen<MPCraftingMenu> im
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-            this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
+            this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
             this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, partialTick);
         } else {
-            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, partialTick);
             super.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, partialTick);
             this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, partialTick);
         }
 
@@ -77,6 +73,22 @@ public class MPCraftingScreen extends AbstractContainerScreen<MPCraftingMenu> im
         int left = this.leftPos;
         int top = (this.height - this.imageHeight) / 2;
         guiGraphics.blit(CRAFTING_TABLE_LOCATION, left, top, 0, 0, this.imageWidth, this.imageHeight);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.recipeBookComponent.keyPressed(keyCode, scanCode, modifiers)) {
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if (this.recipeBookComponent.charTyped(codePoint, modifiers)) {
+            return true;
+        }
+        return super.charTyped(codePoint, modifiers);
     }
 
     @Override

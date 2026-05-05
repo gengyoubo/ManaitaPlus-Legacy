@@ -9,6 +9,14 @@ group = project.maven_group
 
 repositories {
 	maven { url "https://cursemaven.com/" }
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
+	}
+	maven {
+		name = "Ladysnake Libs"
+		url = 'https://maven.ladysnake.org/releases'
+	}
 }
 
 loom {
@@ -42,6 +50,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}+${project.minecraft_version}"
 	modImplementation "curse.maven:jei-238222:7420583"
+	modImplementation "dev.emi:trinkets:${trinkets_version}"
 }
 
 processResources {

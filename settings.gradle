@@ -16,6 +16,14 @@ pluginManagement {
 			name = "ModMaven"
 			url = "https://modmaven.dev"
 		}
+		maven {
+			name = "TerraformersMC"
+			url = "https://maven.terraformersmc.com/"
+		}
+		maven {
+			name = "Ladysnake Libs"
+			url = 'https://maven.ladysnake.org/releases'
+		}
 		maven { url "https://cursemaven.com/" }
 	}
 }

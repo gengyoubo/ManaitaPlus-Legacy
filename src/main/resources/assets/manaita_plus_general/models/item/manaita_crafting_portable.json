@@ -48,7 +48,7 @@
     },
     {
       "predicate": {
-        "manaita_plus_general:manaita_plus_general_type": 1
+        "manaita_plus_general:manaita_plus_general_type": 1.0
       },
       "model": "manaita_plus_general:item/crafting/portable_crafting_manaita.8"
     }

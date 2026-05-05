@@ -12,11 +12,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import github.com.gengyoubo.core.MPRecipeSerializerCore;
+import github.com.gengyoubo.MPG;
 import github.com.gengyoubo.util.MPNBTData;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
@@ -122,6 +126,15 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
     @Override
     public @NotNull ItemStack assemble(@NotNull CraftingInput container, @NotNull HolderLookup.Provider provider) {
         return result.copy();
+    }
+
+    @Override
+    public @NotNull NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> displayIngredients = NonNullList.createWithCapacity(this.ingredients.length);
+        for (IngredientSpec ingredient : this.ingredients) {
+            displayIngredients.add(ingredient.toDisplayIngredient());
+        }
+        return displayIngredients;
     }
 
     public static class Serializer implements RecipeSerializer<MPNBTCraftingRecipe> {
@@ -239,6 +252,18 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
         private static ItemStack resultFromJson(JsonObject json) {
             JsonObject stackJson = json.deepCopy();
             JsonObject nbt = stackJson.has("nbt") ? GsonHelper.getAsJsonObject(stackJson, "nbt") : null;
+            if (stackJson.has("item") && !stackJson.has("id")) {
+                stackJson.add("id", stackJson.get("item"));
+                stackJson.remove("item");
+            }
+            String itemId = GsonHelper.getAsString(stackJson, "id", null);
+            if (itemId != null) {
+                ResourceLocation resultId = ResourceLocation.tryParse(itemId);
+                if (resultId == null || !BuiltInRegistries.ITEM.containsKey(resultId)) {
+                    MPG.LOGGER.warn("Skipping custom recipe result for missing item {}", itemId);
+                    return ItemStack.EMPTY;
+                }
+            }
             stackJson.remove("nbt");
             ItemStack stack = ItemStack.STRICT_CODEC.parse(JsonOps.INSTANCE, stackJson).getOrThrow(JsonSyntaxException::new);
             if (nbt != null) {
@@ -427,6 +452,18 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
                 requiredType = GsonHelper.getAsInt(json, "type");
             }
             return new IngredientSpec(ingredient, requiredType);
+        }
+
+        private Ingredient toDisplayIngredient() {
+            if (this == EMPTY || ingredient.isEmpty() || requiredType == Integer.MIN_VALUE) {
+                return ingredient;
+            }
+
+            ItemStack[] stacks = Arrays.stream(ingredient.getItems())
+                    .map(ItemStack::copy)
+                    .peek(stack -> github.com.gengyoubo.util.MPItemStackData.putInt(stack, MPNBTData.ItemType, requiredType))
+                    .toArray(ItemStack[]::new);
+            return stacks.length == 0 ? ingredient : Ingredient.of(stacks);
         }
     }
 }

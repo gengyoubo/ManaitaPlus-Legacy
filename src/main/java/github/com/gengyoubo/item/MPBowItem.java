@@ -1,6 +1,5 @@
 package github.com.gengyoubo.item;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -26,7 +25,7 @@ public class MPBowItem extends Item implements IMPKey, IMPDoubling {
     private static final int RAPID_FIRE_INTERVAL = 2;
 
     public MPBowItem() {
-        super(new Properties().durability(Integer.MAX_VALUE).fireResistant());
+        super(new Properties().defaultDurability(-1).fireResistant());
     }
 
     @Override
@@ -53,16 +52,18 @@ public class MPBowItem extends Item implements IMPKey, IMPDoubling {
         shootArrow(level, player, stack, player.getUsedItemHand());
     }
 
+    @Override
     public int getUseDuration(@NotNull ItemStack stack) {
         return 72000;
     }
 
+    @Override
     public @NotNull UseAnim getUseAnimation(@NotNull ItemStack stack) {
         return UseAnim.BOW;
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltip, @NotNull TooltipFlag flag) {
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.doubling").getString() + ":" + (isDoubling(stack) ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(Component.translatable("info.attack").getString())));
     }
@@ -77,12 +78,6 @@ public class MPBowItem extends Item implements IMPKey, IMPDoubling {
         toggleDoubling(itemStack);
     }
 
-    @Override
-    public void onManaitaKeyPressOnClient(ItemStack itemStack, Player player) {
-        boolean doubling = toggleDoubling(itemStack);
-        player.displayClientMessage(Component.literal(String.format("[%s%s] %s%s: %s", MPText.manaita_mode.formatting(Component.translatable("item.manaita_bow.name").getString()), ChatFormatting.RESET, ChatFormatting.RESET, Component.translatable("mode.doubling").getString(), (doubling ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))), true);
-    }
-
     private void shootArrow(Level level, Player player, ItemStack stack, InteractionHand hand) {
         AbstractArrow abstractArrow = MPGEntityArrow.create(level, player);
         abstractArrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 10.0F, 1.0F);
@@ -90,7 +85,6 @@ public class MPBowItem extends Item implements IMPKey, IMPDoubling {
         abstractArrow.setBaseDamage(isDoubling(stack) ? 40.0D : 20.0D);
         abstractArrow.setSilent(true);
         level.addFreshEntity(abstractArrow);
-        stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
     }
 }
-

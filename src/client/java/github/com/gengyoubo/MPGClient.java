@@ -28,7 +28,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class MPGClient implements ClientModInitializer {
-    private static final ResourceLocation TYPE_PREDICATE = github.com.gengyoubo.util.MPResource.id(MPG.MODID, MPNBTData.Type);
+    private static final ResourceLocation TYPE_PREDICATE = new ResourceLocation(MPG.MODID, MPNBTData.Type);
     private static final String[] TYPE_ITEMS = {
             "block_crafting_manaita",
             "block_furnace_manaita",
@@ -36,13 +36,15 @@ public class MPGClient implements ClientModInitializer {
             "block_hook_manaita",
             "manaita_crafting_portable",
             "manaita_furnace_portable",
-            "manaita_brewing_portable"
+            "manaita_brewing_portable",
+            "manaita_crafting_ring",
+            "manaita_furnace_ring",
+            "manaita_brewing_ring"
     };
     private static boolean predicatesRegistered;
 
     @Override
     public void onInitializeClient() {
-        MPNetworking.initCommon();
         registerTypePredicates();
         MPGKeyBindings.init();
         MenuScreens.register(MPMenuCore.CraftingManaita.get(), MPCraftingScreen::new);
@@ -52,11 +54,13 @@ public class MPGClient implements ClientModInitializer {
         BlockEntityRenderers.register(MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), RenderMPFurnaceBlockEntity::new);
         BlockEntityRenderers.register(MPBlockEntityCore.BREWING_BLOCK_ENTITY.get(), RenderMPBrewingBlockEntity::new);
         registerEntityRenderers();
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK.type(), (payload, context) -> {
-            context.client().execute(() -> MPClientPacketHandlers.handleDestroyBlock(payload));
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK, (client, handler, buf, responseSender) -> {
+            MPDestroyBlockPacket packet = new MPDestroyBlockPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleDestroyBlock(packet));
         });
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA.type(), (payload, context) -> {
-            context.client().execute(() -> MPClientPacketHandlers.handleChangeEntityData(payload));
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA, (client, handler, buf, responseSender) -> {
+            MPChangeEntityDataPacket packet = new MPChangeEntityDataPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleChangeEntityData(packet));
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> registerTypePredicates());
     }
@@ -67,7 +71,7 @@ public class MPGClient implements ClientModInitializer {
         }
 
         for (String itemPath : TYPE_ITEMS) {
-            ResourceLocation id = github.com.gengyoubo.util.MPResource.id(MPG.MODID, itemPath);
+            ResourceLocation id = new ResourceLocation(MPG.MODID, itemPath);
             Item item = BuiltInRegistries.ITEM.get(id);
             if (item == net.minecraft.world.item.Items.AIR) {
                 MPG.LOGGER.warn("Skipped predicate registration for missing item {}", id);
@@ -82,7 +86,7 @@ public class MPGClient implements ClientModInitializer {
 
     @SuppressWarnings("unchecked")
     private static void registerEntityRenderers() {
-        ResourceLocation arrowId = github.com.gengyoubo.util.MPResource.id(MPG.MODID, "manaita_arrow");
+        ResourceLocation arrowId = new ResourceLocation(MPG.MODID, "manaita_arrow");
         if (!BuiltInRegistries.ENTITY_TYPE.containsKey(arrowId)) {
             MPG.LOGGER.warn("Skipped renderer registration for missing entity {}", arrowId);
             return;
@@ -92,10 +96,10 @@ public class MPGClient implements ClientModInitializer {
     }
 
     private static float readTypeValue(ItemStack stack, net.minecraft.client.multiplayer.ClientLevel level, net.minecraft.world.entity.LivingEntity entity, int seed) {
-        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(stack) || github.com.gengyoubo.util.MPItemStackData.getTag(stack) == null) {
+        if (!stack.hasTag() || stack.getTag() == null) {
             return 0.0F;
         }
-        return normalizeTypeValue(github.com.gengyoubo.util.MPItemStackData.getTag(stack).getInt(MPNBTData.ItemType));
+        return normalizeTypeValue(stack.getTag().getInt(MPNBTData.ItemType));
     }
 
     private static float normalizeTypeValue(int type) {

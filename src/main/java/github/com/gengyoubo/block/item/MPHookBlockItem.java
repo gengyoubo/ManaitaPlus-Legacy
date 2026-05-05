@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -34,12 +33,12 @@ public class MPHookBlockItem extends BlockItem {
 
     @Override
     public @NotNull Component getName(ItemStack p_41458_) {
-        return Component.translatable("tile.fixed_hook." + github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(p_41458_).getInt(MPNBTData.ItemType) + ".name");
+        return Component.translatable("tile.fixed_hook." + p_41458_.getOrCreateTag().getInt(MPNBTData.ItemType) + ".name");
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     public @NotNull InteractionResult place(BlockPlaceContext p_40577_) {
@@ -94,8 +93,8 @@ public class MPHookBlockItem extends BlockItem {
     }
 
     private BlockState updateBlockStateFromTag(BlockPos pos, Level level, ItemStack p_40605_, BlockState p_40606_) {
-        if (p_40606_.getBlock() instanceof MPHookBlock && github.com.gengyoubo.util.MPItemStackData.getTag(p_40605_) != null) {
-            BlockState manaitaType = p_40606_.setValue(MPBlockData.TYPES, github.com.gengyoubo.util.MPItemStackData.getTag(p_40605_).getInt(MPNBTData.ItemType));
+        if (p_40606_.getBlock() instanceof MPHookBlock && p_40605_.getTag() != null) {
+            BlockState manaitaType = p_40606_.setValue(MPBlockData.TYPES, p_40605_.getTag().getInt(MPNBTData.ItemType));
             level.setBlock(pos, manaitaType, 2);
             return manaitaType;
         }
@@ -103,5 +102,4 @@ public class MPHookBlockItem extends BlockItem {
         return p_40606_;
     }
 }
-
 

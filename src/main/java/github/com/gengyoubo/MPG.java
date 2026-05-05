@@ -3,7 +3,9 @@ package github.com.gengyoubo;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import github.com.gengyoubo.compat.MPTrinketsCompat;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.CreativeModeTab;
@@ -21,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import github.com.gengyoubo.core.*;
 import github.com.gengyoubo.network.MPNetworking;
-import github.com.gengyoubo.resource.EasyModeResourceCondition;
 import github.com.gengyoubo.util.MPNBTData;
 
 public class MPG implements ModInitializer {
@@ -44,16 +45,9 @@ public class MPG implements ModInitializer {
     public static void initFabric() {
         MPGConfig.load();
 
-        // Force-load all registry holder classes before registration.
-        MPBlockCore.init();
-        MPItemCore.init();
-        MPBlockEntityCore.init();
-        MPMenuCore.init();
-        MPAttributeCore.init();
-        MPRecipeSerializerCore.init();
+        forceLoadRegistryHolders();
         MPSynchedDataCore.init();
         registerResourceConditions();
-        MPNetworking.initCommon();
         MPNetworking.initServer();
 
         BLOCKS.registerAll();
@@ -64,11 +58,11 @@ public class MPG implements ModInitializer {
         BLOCK_ENTITY_TYPES.registerAll();
         RECIPE_SERIALIZER_DEFERRED_REGISTER.registerAll();
 
-        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, github.com.gengyoubo.util.MPResource.id(MODID, "manaita_plus_tab"), FabricItemGroup.builder()
+        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation(MODID, "manaita_plus_tab"), FabricItemGroup.builder()
             .icon(() -> MPBlockCore.CraftingBlockItem.get().getDefaultInstance())
             .title(Component.translatable("itemGroup.MPTab"))
             .displayItems((context, entries) -> {
-                acceptMPGType(MPBlockCore.CraftingBlockItem.get(), entries, 8);
+                acceptMPGType(MPBlockCore.CraftingBlockItem.get(),entries,8);
                 acceptMPGType(MPBlockCore.FurnaceBlockItem.get(), entries, 8);
                 acceptMPGType(MPBlockCore.BrewingBlockItem.get(), entries, 8);
                 acceptMPGType(MPBlockCore.HookBlockItem.get(), entries, 7);
@@ -91,19 +85,42 @@ public class MPG implements ModInitializer {
                 entries.accept(MPItemCore.ManaitaLeggings.get());
                 entries.accept(MPItemCore.ManaitaBoots.get());
                 entries.accept(MPItemCore.ManaitaSource.get());
+                if (MPTrinketsCompat.isLoaded()) {
+                    acceptMPGType(MPItemCore.ManaitaCraftingRing.get(), entries, 8);
+                    acceptMPGType(MPItemCore.ManaitaFurnaceRing.get(), entries, 8);
+                    acceptMPGType(MPItemCore.ManaitaBrewingRing.get(), entries, 8);
+                }
             }).build());
     }
 
     private static void registerResourceConditions() {
-        ResourceConditions.register(EasyModeResourceCondition.TYPE);
+        ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), json ->
+                GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value);
+        ResourceConditions.register(new ResourceLocation(MODID, "trinkets_loaded"), json ->
+                MPTrinketsCompat.isLoaded());
+    }
+
+    private static void forceLoadRegistryHolders() {
+        forceInit(MPBlockCore.class);
+        forceInit(MPItemCore.class);
+        forceInit(MPBlockEntityCore.class);
+        forceInit(MPMenuCore.class);
+        forceInit(MPRecipeSerializerCore.class);
+    }
+
+    private static void forceInit(Class<?> type) {
+        try {
+            Class.forName(type.getName(), true, type.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Failed to initialize registry holder: " + type.getName(), e);
+        }
     }
 
     private static void acceptMPGType(Item item, CreativeModeTab.Output entries, int maxType) {
         for (int type = 0; type <= maxType; type++) {
             ItemStack stack = new ItemStack(item);
-            github.com.gengyoubo.util.MPItemStackData.putInt(stack, MPNBTData.ItemType, type);
+            stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
             entries.accept(stack);
         }
     }
 }
-

@@ -24,12 +24,12 @@ public final class MPClientPacketHandlers {
         if (level == null || mc.player == null) {
             return;
         }
-        if (!(packet.item() instanceof IMPDestroy destroyItem)) {
+        if (!(packet.getItem() instanceof IMPDestroy destroyItem)) {
             return;
         }
 
-        BlockPos blockPos = packet.blockPos();
-        int range = packet.range();
+        BlockPos blockPos = packet.getBlockPos();
+        int range = packet.getRange();
         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
         for (int x = blockPos.getX() - range; x <= blockPos.getX() + range; x++) {
             for (int y = blockPos.getY() - range; y <= blockPos.getY() + range; y++) {
@@ -55,13 +55,13 @@ public final class MPClientPacketHandlers {
         if (level == null) {
             return;
         }
-        Entity entity = level.getEntity(packet.id());
+        Entity entity = level.getEntity(packet.getId());
         if (entity == null) {
             return;
         }
 
-        boolean remove = packet.flag() < 0;
-        int flags = remove ? -packet.flag() : packet.flag();
+        boolean remove = packet.getFlag() < 0;
+        int flags = remove ? -packet.getFlag() : packet.getFlag();
         for (MPEntityData entityData : MPEntityData.values()) {
             if ((entityData.getFlag() & flags) != 0) {
                 if (remove) {

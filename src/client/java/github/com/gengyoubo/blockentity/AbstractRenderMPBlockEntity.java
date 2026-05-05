@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -43,7 +44,7 @@ public abstract class AbstractRenderMPBlockEntity<T extends BlockEntity> impleme
     }
 
     private void renderMainBlockItem(T blockEntity, BlockState blockState, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        github.com.gengyoubo.util.MPItemStackData.putInt(displayStack, MPNBTData.ItemType, blockState.getValue(MPBlockData.TYPES));
+        displayStack.getOrCreateTag().putInt(MPNBTData.ItemType, blockState.getValue(MPBlockData.TYPES));
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         BakedModel bakedModel = itemRenderer.getModel(displayStack, blockEntity.getLevel(), null, 0);
         itemRenderer.render(displayStack, ItemDisplayContext.FIXED, true, poseStack, bufferSource, packedLight, packedOverlay, bakedModel);

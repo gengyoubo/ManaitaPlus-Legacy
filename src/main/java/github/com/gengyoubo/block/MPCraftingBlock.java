@@ -1,13 +1,14 @@
 package github.com.gengyoubo.block;
 
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -28,11 +29,8 @@ import github.com.gengyoubo.menu.MPCraftingMenu;
 
 import java.util.List;
 
-import static github.com.gengyoubo.block.MPBrewingStandBlock.getItemStacks;
-
 @SuppressWarnings("deprecation")
 public class MPCraftingBlock extends BaseEntityBlock {
-    private static final MapCodec<MPCraftingBlock> CODEC = MapCodec.unit(MPCraftingBlock::new);
 
     private static final Component CONTAINER_TITLE = Component.translatable("container.crafting_manaita");
 
@@ -40,11 +38,6 @@ public class MPCraftingBlock extends BaseEntityBlock {
     public MPCraftingBlock() {
         super(BlockBehaviour.Properties.of().noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(MPBlockData.HOOK, 8).setValue(MPBlockData.FACING, Direction.NORTH).setValue(MPBlockData.WALL,Direction.DOWN).setValue(MPBlockData.TYPES,0));
-    }
-
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
 
@@ -57,52 +50,45 @@ public class MPCraftingBlock extends BaseEntityBlock {
     }
 
     @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.INVISIBLE;
-    }
-
-    @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
         List<ItemStack> list = com.google.common.collect.Lists.newArrayList();
-        ItemStack mainBlock = new ItemStack(this);
-        github.com.gengyoubo.util.MPItemStackData.putInt(mainBlock, github.com.gengyoubo.util.MPNBTData.ItemType, p_287732_.getValue(MPBlockData.TYPES));
-        list.add(mainBlock);
+        list.add(new ItemStack(this));
         int hook = p_287732_.getValue(MPBlockData.HOOK);
         if (hook != 8) {
             ItemStack itemStack = new ItemStack(github.com.gengyoubo.core.MPBlockCore.HookBlockItem.get());
-            github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, github.com.gengyoubo.util.MPNBTData.ItemType, hook);
+            itemStack.getOrCreateTag().putInt(github.com.gengyoubo.util.MPNBTData.ItemType, hook);
             list.add(itemStack);
         }
         return list;
     }
 
 
-    @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull BlockHitResult p_52238_) {
+    public @NotNull InteractionResult use(@NotNull BlockState p_52233_, @NotNull Level p_52234_, @NotNull BlockPos p_52235_, @NotNull Player p_52236_, @NotNull InteractionHand p_52237_, @NotNull BlockHitResult p_52238_) {
         if (p_52234_.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
             p_52236_.openMenu(p_52233_.getMenuProvider(p_52234_, p_52235_));
+//            p_52236_.awardStat(((ResourceLocation) ManaitaPlusStarCore.INTERACT_WITH_CRAFTING_MANAITA_TABLE.get()));
             return InteractionResult.CONSUME;
         }
-    }
 
-    @Override
+    }
+//
     public MenuProvider getMenuProvider(@NotNull BlockState p_52240_, @NotNull Level p_52241_, @NotNull BlockPos p_52242_) {
-        return new ExtendedScreenHandlerFactory<BlockPos>() {
+        return new ExtendedScreenHandlerFactory() {
             @Override
             public @NotNull Component getDisplayName() {
                 return CONTAINER_TITLE;
             }
 
             @Override
-            public BlockPos getScreenOpeningData(net.minecraft.server.level.ServerPlayer player) {
-                return p_52242_;
+            public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer player, FriendlyByteBuf buf) {
+                buf.writeBlockPos(p_52242_);
             }
 
             @Override
             public @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull net.minecraft.world.entity.player.Inventory inventory, @NotNull Player player) {
-                return new MPCraftingMenu(containerId, inventory, p_52242_);
+                return new MPCraftingMenu(containerId, inventory, ContainerLevelAccess.create(p_52241_, p_52242_));
             }
         };
     }
@@ -128,5 +114,4 @@ public class MPCraftingBlock extends BaseEntityBlock {
         return new MPCraftingBlockEntity(p_153277_, p_153278_);
     }
 }
-
 

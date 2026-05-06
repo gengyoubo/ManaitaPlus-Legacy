@@ -51,6 +51,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}+${project.minecraft_version}"
 	modImplementation "curse.maven:jei-238222:7420583"
 	modImplementation "dev.emi:trinkets:${trinkets_version}"
+	modRuntimeOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -88,7 +89,7 @@ java {
 tasks.named('remapJar').configure {
 	archiveBaseName.set(mod_name)
 	archiveVersion.set(mod_version)
-	archiveClassifier.set(mod_loader)
+	archiveClassifier.set("${minecraft_version}-${mod_loader}")
 
 	manifest {
 		attributes([

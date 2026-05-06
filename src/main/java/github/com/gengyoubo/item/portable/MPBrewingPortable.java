@@ -88,9 +88,8 @@ public class MPBrewingPortable extends MPGPortableItem {
             return bits;
         }
 
-        private static boolean isBrewable(NonNullList<ItemStack> items) {
-            ItemStack ingredient = items.get(3);
-            return !ingredient.isEmpty();
+        private boolean isBrewable(NonNullList<ItemStack> items) {
+            return MPGBrewingLogicHelper.isBrewable(this.player.level(), items, 3);
         }
 
         private void doBrew(Level level, NonNullList<ItemStack> items) {

@@ -15,13 +15,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
-import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.block.MPBrewingStandBlock;
 import github.com.gengyoubo.menu.MPBrewingStandMenu;
 import github.com.gengyoubo.core.MPBlockEntityCore;
@@ -29,11 +29,14 @@ import github.com.gengyoubo.core.MPBlockEntityCore;
 import java.util.Arrays;
 
 public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ExtendedScreenHandlerFactory<BlockPos> {
+    private static final int BREW_TIME = 1;
     private static final int[] SLOTS_FOR_UP = new int[]{3};
     private static final int[] SLOTS_FOR_DOWN = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
     private NonNullList<ItemStack> items = NonNullList.withSize(5, ItemStack.EMPTY);
     int brewTime;
+    @Nullable
+    private Item ingredient;
     private boolean[] lastPotionCount;
     int fuel;
     protected final ContainerData dataAccess = new ContainerData() {
@@ -83,17 +86,39 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return true;
     }
 
-    public static void serverTick(Level p_155286_, BlockPos p_155287_, BlockState p_155288_, MPBrewingStandBlockEntity p_155289_) {
-        if (isBrewable(p_155289_.items)) {
-            doBrew(p_155286_, p_155287_, p_155289_.items);
-            setChanged(p_155286_, p_155287_, p_155288_);
+    public static void serverTick(Level world, BlockPos pos, BlockState state, MPBrewingStandBlockEntity block_entity) {
+        ItemStack fuelStack = block_entity.items.get(4);
+        if (block_entity.fuel <= 0 && fuelStack.is(Items.BLAZE_POWDER)) {
+            block_entity.fuel = 20;
+            fuelStack.shrink(1);
+            setChanged(world, pos, state);
         }
 
-        boolean[] aboolean = p_155289_.getPotionBits();
-        if (!Arrays.equals(aboolean, p_155289_.lastPotionCount)) {
-            p_155289_.lastPotionCount = aboolean;
-            BlockState blockstate = p_155288_;
-            if (!(p_155288_.getBlock() instanceof MPBrewingStandBlock)) {
+        boolean brewable = isBrewable(world, block_entity.items);
+        ItemStack ingredientStack = block_entity.items.get(3);
+
+        if (block_entity.brewTime > 0) {
+            --block_entity.brewTime;
+            boolean finished = block_entity.brewTime == 0;
+            if (finished && brewable) {
+                doBrew(world, pos, block_entity.items);
+                setChanged(world, pos, state);
+            } else if (!brewable || block_entity.ingredient != ingredientStack.getItem()) {
+                block_entity.brewTime = 0;
+                setChanged(world, pos, state);
+            }
+        } else if (brewable && block_entity.fuel > 0) {
+            --block_entity.fuel;
+            block_entity.brewTime = BREW_TIME;
+            block_entity.ingredient = ingredientStack.getItem();
+            setChanged(world, pos, state);
+        }
+
+        boolean[] aboolean = block_entity.getPotionBits();
+        if (!Arrays.equals(aboolean, block_entity.lastPotionCount)) {
+            block_entity.lastPotionCount = aboolean;
+            BlockState blockstate = state;
+            if (!(state.getBlock() instanceof MPBrewingStandBlock)) {
                 return;
             }
 
@@ -101,7 +126,7 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
                 blockstate = blockstate.setValue(MPBrewingStandBlock.HAS_BOTTLE[i], aboolean[i]);
             }
 
-            p_155286_.setBlock(p_155287_, blockstate, 2);
+            world.setBlock(pos, blockstate, 2);
         }
     }
 
@@ -117,20 +142,11 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return aboolean;
     }
 
-    private static boolean isBrewable(NonNullList<ItemStack> p_155295_) {
-        ItemStack itemstack = p_155295_.get(3);
-        return !itemstack.isEmpty()
-                && (!p_155295_.get(0).isEmpty() || !p_155295_.get(1).isEmpty() || !p_155295_.get(2).isEmpty());
+    private static boolean isBrewable(Level level, NonNullList<ItemStack> p_155295_) {
+        return MPGBrewingLogicHelper.isBrewable(level, p_155295_, 3);
     }
 
     private static void doBrew(Level p_155291_, BlockPos p_155292_, NonNullList<ItemStack> p_155293_) {
-        ItemStack itemstack = p_155293_.get(3);
-        for (int slotsForSide : SLOTS_FOR_SIDES) {
-            ItemStack itemStack = p_155293_.get(slotsForSide);
-            if (!itemStack.isEmpty()) {
-                itemStack.setCount(itemStack.getCount() * MPGConfig.brewing_doubling_value);
-            }
-        }
         MPGBrewingLogicHelper.finishBrew(p_155291_, p_155292_.getX(), p_155292_.getY(), p_155292_.getZ(), p_155293_, 3);
         p_155291_.levelEvent(1035, p_155292_, 0);
     }

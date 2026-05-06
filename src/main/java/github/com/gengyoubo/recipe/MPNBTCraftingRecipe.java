@@ -429,8 +429,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
             if (requiredType == Integer.MIN_VALUE) {
                 return true;
             }
-            return github.com.gengyoubo.util.MPItemStackData.hasTag(stack)
-                    && github.com.gengyoubo.util.MPItemStackData.getTag(stack).getInt(MPNBTData.ItemType) == requiredType;
+            return github.com.gengyoubo.util.MPItemStackData.getInt(stack, MPNBTData.ItemType) == requiredType;
         }
 
         private JsonObject toJson() {

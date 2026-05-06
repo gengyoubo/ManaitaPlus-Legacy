@@ -8,6 +8,7 @@ import github.com.gengyoubo.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.block.item.MPHookBlockItem;
 import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.core.MPItemCore;
+import github.com.gengyoubo.core.MPRecipeSerializerCore;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
@@ -118,6 +119,7 @@ public class MPJeiPlugin implements IModPlugin {
         return minecraft.level.getRecipeManager().getRecipes().stream()
                 .filter(recipeHolder -> MPG.MODID.equals(recipeHolder.id().getNamespace()))
                 .filter(recipeHolder -> recipeHolder.value() instanceof net.minecraft.world.item.crafting.CraftingRecipe)
+                .filter(recipeHolder -> recipeHolder.value().getSerializer() == MPRecipeSerializerCore.NBTCraftingRecipe.get())
                 .map(recipeHolder -> (RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>) recipeHolder)
                 .toList();
     }

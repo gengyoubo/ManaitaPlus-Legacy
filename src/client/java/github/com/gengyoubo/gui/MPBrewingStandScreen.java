@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class MPBrewingStandScreen extends AbstractContainerScreen<MPBrewingStandMenu> {
     private static final ResourceLocation BREWING_STAND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/brewing_stand.png");
+    private static final int BREW_TIME = 1;
     private static final int[] BUBBLE_LENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
     private final String doublingText;
 
@@ -53,12 +54,12 @@ public class MPBrewingStandScreen extends AbstractContainerScreen<MPBrewingStand
 
         int brewingTicks = this.menu.getBrewingTicks();
         if (brewingTicks > 0) {
-            int progress = (int) (28.0F * (1.0F - (float) brewingTicks / 400.0F));
+            int progress = (int) (28.0F * (1.0F - (float) brewingTicks / BREW_TIME));
             if (progress > 0) {
                 guiGraphics.blit(BREWING_STAND_LOCATION, left + 97, top + 16, 176, 0, 9, progress);
             }
 
-            progress = BUBBLE_LENGTHS[brewingTicks / 2 % 7];
+            progress = BUBBLE_LENGTHS[Math.max(0, brewingTicks - 1) % 7];
             if (progress > 0) {
                 guiGraphics.blit(BREWING_STAND_LOCATION, left + 63, top + 14 + 29 - progress, 185, 29 - progress, 12, progress);
             }

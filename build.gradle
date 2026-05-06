@@ -45,17 +45,18 @@ dependencies {
 }
 
 processResources {
-    inputs.property "mod_version", project.mod_version
+	inputs.property "mod_version", project.mod_version
 
-    filesMatching("fabric.mod.json") {
-        expand(
-            mod_version: project.mod_version,
-            mod_id: project.mod_id,
-            mod_name: project.mod_name,
-            mod_description: project.mod_description,
-            mod_authors: project.mod_authors
-        )
-    }
+	filesMatching("fabric.mod.json") {
+		expand(
+				mod_version: project.mod_version,
+				mod_id: project.mod_id,
+				mod_name: project.mod_name,
+				mod_description: project.mod_description,
+				mod_authors: project.mod_authors,
+				mod_license: project.mod_license
+		)
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {

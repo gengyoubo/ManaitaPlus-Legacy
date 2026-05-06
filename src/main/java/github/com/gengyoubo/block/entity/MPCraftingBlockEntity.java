@@ -10,3 +10,4 @@ public class MPCraftingBlockEntity extends BlockEntity {
         super(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY.get(), p_155545_, p_155546_);
     }
 }
+

@@ -1,7 +1,7 @@
 package github.com.gengyoubo.menu;
 
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.core.MPMenuCore;
 
@@ -21,7 +21,7 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
     private final Slot ingredientSlot;
 
     @SuppressWarnings("unused")
-    public MPBrewingStandMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
+    public MPBrewingStandMenu(int id, Inventory inv, BlockPos blockPos) {
         this(id, inv, new SimpleContainer(5), new SimpleContainerData(2));
     }
 
@@ -161,9 +161,9 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public void onTake(@NotNull Player p_150499_, @NotNull ItemStack p_150500_) {
-            Potion potion = PotionUtils.getPotion(p_150500_);
-            if (p_150499_ instanceof ServerPlayer) {
-                CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)p_150499_, potion);
+            java.util.Optional<net.minecraft.core.Holder<Potion>> potion = p_150500_.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
+            if (p_150499_ instanceof ServerPlayer serverPlayer && potion.isPresent()) {
+                CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, potion.get());
             }
 
             super.onTake(p_150499_, p_150500_);
@@ -174,4 +174,5 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         }
     }
 }
+
 

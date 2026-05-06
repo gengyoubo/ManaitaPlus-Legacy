@@ -8,3 +8,4 @@ public class MPPickaxeItem extends MPTaggedToolItem {
         super(BlockTags.MINEABLE_WITH_PICKAXE);
     }
 }
+

@@ -5,6 +5,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -34,8 +35,8 @@ public class MPPaxelItem extends MPToolBase {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Component.empty());
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(Component.translatable("info.attack").getString())));
     }
@@ -49,9 +50,11 @@ public class MPPaxelItem extends MPToolBase {
     public @NotNull InteractionResult useOn(UseOnContext context) {
         int range = getRange(context.getItemInHand()) >> 1;
         boolean changed = MPToolActionHelper.applyInRange(context, range, (pos, state) ->
-                MPToolActionHelper.applyGrowPlantAction(context, pos, state)
+                MPToolActionHelper.applyAxeActions(context, pos, state)
+                        | MPToolActionHelper.applyGrowPlantAction(context, pos, state)
                         | MPToolActionHelper.applyShovelAction(context, pos, state));
         return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
     }
 }
+
 

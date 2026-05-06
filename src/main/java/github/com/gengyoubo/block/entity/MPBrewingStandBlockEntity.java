@@ -3,9 +3,9 @@ package github.com.gengyoubo.block.entity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -28,7 +28,7 @@ import github.com.gengyoubo.core.MPBlockEntityCore;
 
 import java.util.Arrays;
 
-public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ExtendedScreenHandlerFactory {
+public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ExtendedScreenHandlerFactory<BlockPos> {
     private static final int[] SLOTS_FOR_UP = new int[]{3};
     private static final int[] SLOTS_FOR_DOWN = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
@@ -124,6 +124,7 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     private static void doBrew(Level p_155291_, BlockPos p_155292_, NonNullList<ItemStack> p_155293_) {
+        ItemStack itemstack = p_155293_.get(3);
         for (int slotsForSide : SLOTS_FOR_SIDES) {
             ItemStack itemStack = p_155293_.get(slotsForSide);
             if (!itemStack.isEmpty()) {
@@ -134,15 +135,17 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         p_155291_.levelEvent(1035, p_155292_, 0);
     }
 
-    public void load(@NotNull CompoundTag p_155297_) {
-        super.load(p_155297_);
+    @Override
+    protected void loadAdditional(@NotNull CompoundTag p_155297_, HolderLookup.@NotNull Provider provider) {
+        super.loadAdditional(p_155297_, provider);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(p_155297_, this.items);
+        ContainerHelper.loadAllItems(p_155297_, this.items, provider);
     }
 
-    protected void saveAdditional(@NotNull CompoundTag p_187484_) {
-        super.saveAdditional(p_187484_);
-        ContainerHelper.saveAllItems(p_187484_, this.items);
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag p_187484_, HolderLookup.@NotNull Provider provider) {
+        super.saveAdditional(p_187484_, provider);
+        ContainerHelper.saveAllItems(p_187484_, this.items, provider);
     }
 
     public @NotNull ItemStack getItem(int p_58985_) {
@@ -192,15 +195,26 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         this.items.clear();
     }
 
+    @Override
+    protected @NotNull NonNullList<ItemStack> getItems() {
+        return this.items;
+    }
+
+    @Override
+    protected void setItems(@NotNull NonNullList<ItemStack> items) {
+        this.items = items;
+    }
+
     protected @NotNull AbstractContainerMenu createMenu(int p_58990_, @NotNull Inventory p_58991_) {
         return new MPBrewingStandMenu(p_58990_, p_58991_, this, this.dataAccess);
     }
 
     @Override
-    public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer player, FriendlyByteBuf buf) {
-        buf.writeBlockPos(this.worldPosition);
+    public BlockPos getScreenOpeningData(net.minecraft.server.level.ServerPlayer player) {
+        return this.worldPosition;
     }
 
 }
+
 
 

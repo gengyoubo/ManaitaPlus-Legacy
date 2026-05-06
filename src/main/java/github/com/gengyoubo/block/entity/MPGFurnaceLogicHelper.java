@@ -2,7 +2,6 @@ package github.com.gengyoubo.block.entity;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import github.com.gengyoubo.MPGConfig;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +12,8 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +23,7 @@ public final class MPGFurnaceLogicHelper {
     private MPGFurnaceLogicHelper() {
     }
 
-    public static boolean canBurn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, WorldlyContainer container) {
+    public static boolean canBurn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipe, NonNullList<ItemStack> items, WorldlyContainer container) {
         if (items.get(0).isEmpty() || recipe == null) {
             return false;
         }
@@ -35,35 +35,14 @@ public final class MPGFurnaceLogicHelper {
         return output.isEmpty() || ItemStack.isSameItem(output, assembled);
     }
 
-    @SuppressWarnings("unchecked")
-    public static ItemStack assembleResult(Recipe<?> recipe, WorldlyContainer container, RegistryAccess registryAccess) {
-        return ((Recipe<WorldlyContainer>) recipe).assemble(container, registryAccess);
-    }
-
-    public static boolean burn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items, WorldlyContainer container) {
-        if (recipe == null || !canBurn(registryAccess, recipe, items, container)) {
-            return false;
-        }
-
-        ItemStack input = items.get(0);
-        ItemStack assembled = assembleResult(recipe, container, registryAccess);
-        ItemStack output = items.get(2);
-        if (output.isEmpty()) {
-            ItemStack copy = assembled.copy();
-            copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
-            items.set(2, copy);
-        } else if (output.is(assembled.getItem())) {
-            output.grow(assembled.getCount() * MPGConfig.furnace_doubling_value);
-        }
-
-        input.shrink(1);
-        return true;
+    public static ItemStack assembleResult(RecipeHolder<?> recipe, WorldlyContainer container, RegistryAccess registryAccess) {
+        return ((AbstractCookingRecipe) recipe.value()).assemble(new SingleRecipeInput(container.getItem(0)), registryAccess);
     }
 
     public static void awardUsedRecipesAndPopExperience(ServerPlayer player, NonNullList<ItemStack> items, Object2IntMap<ResourceLocation> recipesUsed) {
-        List<Recipe<?>> recipes = getRecipesToAwardAndPopExperience(player.serverLevel(), player.position(), recipesUsed);
+        List<RecipeHolder<?>> recipes = getRecipesToAwardAndPopExperience(player.serverLevel(), player.position(), recipesUsed);
         player.awardRecipes(recipes);
-        for (Recipe<?> recipe : recipes) {
+        for (RecipeHolder<?> recipe : recipes) {
             if (recipe != null) {
                 player.triggerRecipeCrafted(recipe, items);
             }
@@ -71,12 +50,12 @@ public final class MPGFurnaceLogicHelper {
         recipesUsed.clear();
     }
 
-    public static List<Recipe<?>> getRecipesToAwardAndPopExperience(ServerLevel level, Vec3 pos, Object2IntMap<ResourceLocation> recipesUsed) {
-        List<Recipe<?>> recipes = Lists.newArrayList();
+    public static List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(ServerLevel level, Vec3 pos, Object2IntMap<ResourceLocation> recipesUsed) {
+        List<RecipeHolder<?>> recipes = Lists.newArrayList();
         for (Object2IntMap.Entry<ResourceLocation> entry : recipesUsed.object2IntEntrySet()) {
             level.getRecipeManager().byKey(entry.getKey()).ifPresent(recipe -> {
                 recipes.add(recipe);
-                createExperience(level, pos, entry.getIntValue(), ((AbstractCookingRecipe) recipe).getExperience());
+                createExperience(level, pos, entry.getIntValue(), ((AbstractCookingRecipe) recipe.value()).getExperience());
             });
         }
         return recipes;
@@ -91,4 +70,5 @@ public final class MPGFurnaceLogicHelper {
         ExperienceOrb.award(level, pos, totalXp * 64);
     }
 }
+
 

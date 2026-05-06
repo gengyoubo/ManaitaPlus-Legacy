@@ -16,6 +16,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -30,7 +31,7 @@ import java.util.Objects;
 
 public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     public MPSwordItem() {
-        super(new ItemManaitaSwordTier(), 0, 0, new Item.Properties().fireResistant());
+        super(new ItemManaitaSwordTier(), new Item.Properties().fireResistant());
     }
 
     @Override
@@ -72,8 +73,8 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.manaita_sword").getString() + ":" + getSweep(stack))));
         tooltip.add(Component.empty());
         tooltip.add(Component.literal(MPText.manaita_infinity.formatting(Component.translatable("info.attack").getString())));
@@ -85,15 +86,15 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     }
 
     public static int getSweep(ItemStack itemStack) {
-        if (!itemStack.hasTag()) {
+        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(itemStack)) {
             return 1;
         }
-        int sweep = Objects.requireNonNull(itemStack.getTag()).getInt("Sweep");
+        int sweep = Objects.requireNonNull(github.com.gengyoubo.util.MPItemStackData.getTag(itemStack)).getInt("Sweep");
         return Math.max(1, sweep);
     }
 
     public static void setSweep(ItemStack itemStack, int sweep) {
-        itemStack.getOrCreateTag().putInt("Sweep", Math.max(1, sweep));
+        github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, "Sweep", Math.max(1, sweep));
     }
 
     @Override
@@ -127,11 +128,6 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
         }
 
         @Override
-        public int getLevel() {
-            return Integer.MAX_VALUE;
-        }
-
-        @Override
         public int getEnchantmentValue() {
             return 0;
         }
@@ -141,6 +137,11 @@ public class MPSwordItem extends SwordItem implements IMPKey, IMPDoubling {
             return Ingredient.of(Items.NETHERITE_INGOT);
         }
 
+        @Override
+        public @NotNull net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> getIncorrectBlocksForDrops() {
+            return BlockTags.INCORRECT_FOR_NETHERITE_TOOL;
+        }
     }
 }
+
 

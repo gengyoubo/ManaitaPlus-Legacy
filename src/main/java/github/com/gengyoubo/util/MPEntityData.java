@@ -1,7 +1,5 @@
 package github.com.gengyoubo.util;
 
-import github.com.gengyoubo.core.MPSynchedDataCore;
-import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Entity;
 
 public enum MPEntityData {
@@ -9,7 +7,7 @@ public enum MPEntityData {
     death,
     remove;
 
-    public static final EntityDataAccessor<Integer> TYPE = MPSynchedDataCore.get();
+    public static final String KEY = "manaita_plus_general_type";
 
     private final String tagName;
     private final int flag;
@@ -25,9 +23,6 @@ public enum MPEntityData {
         }
 
         entity.addTag(tagName);
-        if (entity.getEntityData().hasItem(TYPE)) {
-            entity.getEntityData().set(TYPE, entity.getEntityData().get(TYPE) | flag);
-        }
     }
 
     public void remove(Entity entity) {
@@ -36,12 +31,18 @@ public enum MPEntityData {
         }
 
         entity.removeTag(tagName);
-        if (entity.getEntityData().hasItem(TYPE)) {
-            entity.getEntityData().set(TYPE, entity.getEntityData().get(TYPE) & ~flag);
+    }
+
+    public boolean accept(Entity entity) {
+        if (entity == null) {
+            return false;
         }
+
+        return entity.getTags().contains(tagName);
     }
 
     public int getFlag() {
         return flag;
     }
 }
+

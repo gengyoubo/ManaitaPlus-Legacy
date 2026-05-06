@@ -2,6 +2,7 @@ package github.com.gengyoubo.item.portable;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -16,13 +17,15 @@ import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.block.entity.MPGFurnaceLogicHelper;
 import github.com.gengyoubo.core.MPBlockEntityCore;
 import github.com.gengyoubo.core.MPBlockCore;
@@ -37,13 +40,17 @@ public class MPFurnacePortable extends MPGPortableItem {
 
     @Override
     protected void openPortableMenu(ServerPlayer serverPlayer, ItemStack itemInHand, Level level) {
-        MPPortableMenuOpener.openFurnace(serverPlayer, itemInHand, level);
+        openPortableScreen(serverPlayer, itemInHand, level, "container.furnace_manaita",
+                (containerId, inventory, player, heldStack, world) -> {
+                    MPFurnaceBlockEntity block = new MPFurnaceBlockEntity(player, heldStack);
+                    return block.createMenu(containerId, inventory, player);
+                });
     }
 
 
     public static class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
-        private final RecipeManager.CachedCheck<Container, ? extends AbstractCookingRecipe> quickCheck;
+        private final RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> quickCheck;
         private final Player player;
         private final ItemStack stack;
         protected final NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
@@ -53,7 +60,7 @@ public class MPFurnacePortable extends MPGPortableItem {
             this.quickCheck = RecipeManager.createCheck(RecipeType.SMELTING);
             this.player = player;
             this.stack = stack;
-            load(stack.getOrCreateTag());
+            loadAdditional(github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(stack), player.registryAccess());
         }
 
         protected @NotNull Component getDefaultName() {
@@ -69,19 +76,22 @@ public class MPFurnacePortable extends MPGPortableItem {
             return Integer.MAX_VALUE;
         }
 
-        public void load(@NotNull CompoundTag p_155025_) {
-            super.load(p_155025_);
-            ContainerHelper.loadAllItems(p_155025_, this.items);
+        @Override
+        protected void loadAdditional(@NotNull CompoundTag p_155025_, HolderLookup.@NotNull Provider provider) {
+            super.loadAdditional(p_155025_, provider);
+            ContainerHelper.loadAllItems(p_155025_, this.items, provider);
             CompoundTag compoundtag = p_155025_.getCompound("RecipesUsed");
 
             for(String s : compoundtag.getAllKeys()) {
-                this.recipesUsed.put(new ResourceLocation(s), compoundtag.getInt(s));
+                this.recipesUsed.put(github.com.gengyoubo.util.MPResource.parse(s), compoundtag.getInt(s));
             }
 
         }
 
-        protected void saveAdditional(@NotNull CompoundTag p_187452_) {
-            ContainerHelper.saveAllItems(p_187452_, this.items);
+        @Override
+        protected void saveAdditional(@NotNull CompoundTag p_187452_, HolderLookup.@NotNull Provider provider) {
+            super.saveAdditional(p_187452_, provider);
+            ContainerHelper.saveAllItems(p_187452_, this.items, provider);
             CompoundTag compoundtag = new CompoundTag();
             this.recipesUsed.forEach((p_187449_, p_187450_) -> compoundtag.putInt(p_187449_.toString(), p_187450_));
             p_187452_.put("RecipesUsed", compoundtag);
@@ -89,12 +99,28 @@ public class MPFurnacePortable extends MPGPortableItem {
 
 
 
-        private boolean canBurn(RegistryAccess registryAccess, @Nullable Recipe<?> recipe, NonNullList<ItemStack> items) {
+        private boolean canBurn(RegistryAccess registryAccess, @Nullable RecipeHolder<?> recipe, NonNullList<ItemStack> items) {
             return MPGFurnaceLogicHelper.canBurn(registryAccess, recipe, items, this);
         }
 
-        private boolean burn(RegistryAccess p_266740_, @Nullable Recipe<?> p_266780_, NonNullList<ItemStack> p_267073_) {
-            return MPGFurnaceLogicHelper.burn(p_266740_, p_266780_, p_267073_, this);
+        private boolean burn(RegistryAccess p_266740_, @Nullable RecipeHolder<?> p_266780_, NonNullList<ItemStack> p_267073_) {
+            if (p_266780_ != null && this.canBurn(p_266740_, p_266780_, p_267073_)) {
+                ItemStack itemstack = p_267073_.get(0);
+                ItemStack itemstack1 = MPGFurnaceLogicHelper.assembleResult(p_266780_, this, p_266740_);
+                ItemStack itemstack2 = p_267073_.get(2);
+                if (itemstack2.isEmpty()) {
+                    ItemStack copy = itemstack1.copy();
+                    copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
+                    p_267073_.set(2, copy);
+                } else if (itemstack2.is(itemstack1.getItem())) {
+                    itemstack2.grow(itemstack1.getCount() * MPGConfig.furnace_doubling_value);
+                }
+
+                itemstack.shrink(1);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         protected int getBurnDuration(@NotNull ItemStack p_58343_) {
@@ -137,15 +163,14 @@ public class MPFurnacePortable extends MPGPortableItem {
             this.items.set(p_58333_, p_58334_);
             if (!this.items.get(0).isEmpty()) {
                 Level level = player.level();
-                Recipe<?> recipe = this.quickCheck.getRecipeFor(this, level).orElse(null);
+                RecipeHolder<? extends AbstractCookingRecipe> recipe = this.quickCheck.getRecipeFor(new SingleRecipeInput(this.items.get(0)), level).orElse(null);
                 while (this.canBurn(level.registryAccess(), recipe, this.items)) {
                     if (this.burn(level.registryAccess(), recipe, this.items)) {
                         this.setRecipeUsed(recipe);
                     }
                 }
             }
-//            save
-            saveAdditional(stack.getOrCreateTag());
+            saveAdditional(github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(stack), this.player.registryAccess());
         }
 
         public boolean stillValid(@NotNull Player p_58340_) {
@@ -160,9 +185,10 @@ public class MPFurnacePortable extends MPGPortableItem {
             this.items.clear();
         }
 
-        public void setRecipeUsed(@Nullable Recipe<?> p_58345_) {
+        @Override
+        public void setRecipeUsed(@Nullable RecipeHolder<?> p_58345_) {
             if (p_58345_ != null) {
-                ResourceLocation resourcelocation = p_58345_.getId();
+                ResourceLocation resourcelocation = p_58345_.id();
                 this.recipesUsed.addTo(resourcelocation, 1);
             }
         }
@@ -171,7 +197,8 @@ public class MPFurnacePortable extends MPGPortableItem {
             MPGFurnaceLogicHelper.awardUsedRecipesAndPopExperience(p_155004_, this.items, this.recipesUsed);
         }
 
-        public @NotNull java.util.List<Recipe<?>> getRecipesToAwardAndPopExperience(@NotNull ServerLevel p_154996_, @NotNull Vec3 p_154997_) {
+        @Override
+        public @NotNull java.util.List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(@NotNull ServerLevel p_154996_, @NotNull Vec3 p_154997_) {
             return MPGFurnaceLogicHelper.getRecipesToAwardAndPopExperience(p_154996_, p_154997_, this.recipesUsed);
         }
 
@@ -183,6 +210,7 @@ public class MPFurnacePortable extends MPGPortableItem {
         }
     }
 }
+
 
 
 

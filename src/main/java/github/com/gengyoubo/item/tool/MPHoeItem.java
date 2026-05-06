@@ -15,7 +15,8 @@ public class MPHoeItem extends MPTaggedToolItem {
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         int range = getRange(context.getItemInHand()) >> 1;
-        boolean changed = MPToolActionHelper.applyInRange(context, range, (pos, state) -> true);
+        boolean changed = MPToolActionHelper.applyInRange(context, range, (pos, state) -> MPToolActionHelper.applyHoeTillAction(context, pos, state));
         return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
     }
 }
+

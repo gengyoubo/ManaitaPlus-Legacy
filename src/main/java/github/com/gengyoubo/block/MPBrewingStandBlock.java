@@ -1,6 +1,7 @@
 package github.com.gengyoubo.block;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
@@ -34,11 +35,17 @@ import java.util.List;
 
 @SuppressWarnings("deprecation")
 public class MPBrewingStandBlock extends BaseEntityBlock {
+    private static final MapCodec<MPBrewingStandBlock> CODEC = MapCodec.unit(MPBrewingStandBlock::new);
     public static final BooleanProperty[] HAS_BOTTLE = new BooleanProperty[]{BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2};
 
     public MPBrewingStandBlock() {
         super(Properties.of().noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(MPBlockData.HOOK, 8).setValue(MPBlockData.FACING, Direction.NORTH).setValue(MPBlockData.WALL,Direction.DOWN).setValue(MPBlockData.TYPES,0).setValue(HAS_BOTTLE[0], Boolean.FALSE).setValue(HAS_BOTTLE[1], Boolean.FALSE).setValue(HAS_BOTTLE[2], Boolean.FALSE));
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Deprecated
@@ -51,6 +58,11 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
     }
 
     @Override
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
+
+    @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
         return getItemStacks(p_287732_);
     }
@@ -58,18 +70,19 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
     static @NotNull List<ItemStack> getItemStacks(BlockState p_287732_) {
         List<ItemStack> list = Lists.newArrayList();
         ItemStack itemStack = new ItemStack(p_287732_.getBlock());
-        itemStack.getOrCreateTag().putInt(MPNBTData.ItemType, p_287732_.getValue(MPBlockData.TYPES));
+        github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.ItemType, p_287732_.getValue(MPBlockData.TYPES));
         list.add(itemStack);
         int hook = p_287732_.getValue(MPBlockData.HOOK);
         if (hook != 8) {
             itemStack = new ItemStack(MPBlockCore.HookBlockItem.get());
-            itemStack.getOrCreateTag().putInt(MPNBTData.ItemType, hook);
+            github.com.gengyoubo.util.MPItemStackData.putInt(itemStack, MPNBTData.ItemType, hook);
             list.add(itemStack);
         }
         return list;
     }
 
-    public @NotNull InteractionResult use(@NotNull BlockState p_50930_, Level p_50931_, @NotNull BlockPos p_50932_, @NotNull Player p_50933_, @NotNull InteractionHand p_50934_, @NotNull BlockHitResult p_50935_) {
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState p_50930_, Level p_50931_, @NotNull BlockPos p_50932_, @NotNull Player p_50933_, @NotNull BlockHitResult p_50935_) {
         if (p_50931_.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
@@ -133,5 +146,6 @@ public class MPBrewingStandBlock extends BaseEntityBlock {
         return false;
     }
 }
+
 
 

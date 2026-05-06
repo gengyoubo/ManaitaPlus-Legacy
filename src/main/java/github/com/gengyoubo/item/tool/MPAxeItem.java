@@ -15,7 +15,8 @@ public class MPAxeItem extends MPTaggedToolItem {
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         int range = getRange(context.getItemInHand()) >> 1;
-        boolean changed = MPToolActionHelper.applyInRange(context, range, (pos, state) -> false);
+        boolean changed = MPToolActionHelper.applyInRange(context, range, (pos, state) -> MPToolActionHelper.applyAxeActions(context, pos, state));
         return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
     }
 }
+

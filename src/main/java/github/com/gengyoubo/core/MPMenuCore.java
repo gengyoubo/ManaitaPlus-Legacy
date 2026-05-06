@@ -17,5 +17,10 @@ public class MPMenuCore {
     private static <T> RegistryObject<T> cast(RegistryObject<?> value) {
         return (RegistryObject<T>) value;
     }
+
+    public static void init() {
+    }
+
 }
+
 

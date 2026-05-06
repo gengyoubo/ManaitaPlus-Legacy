@@ -38,10 +38,10 @@ public class MPHookBlock extends Block {
     @Override
     public @NotNull List<ItemStack> getDrops(BlockState p_287732_, LootParams.@NotNull Builder p_287596_) {
         ItemStack itemStack = new ItemStack(p_287732_.getBlock());
-        itemStack.setTag(new CompoundTag());
+        github.com.gengyoubo.util.MPItemStackData.setTag(itemStack, new CompoundTag());
         int type = p_287732_.getValue(MPBlockData.TYPES);
-        if (itemStack.getTag() != null) {
-            itemStack.getTag().putInt(MPNBTData.ItemType,type);
+        if (github.com.gengyoubo.util.MPItemStackData.getTag(itemStack) != null) {
+            github.com.gengyoubo.util.MPItemStackData.getTag(itemStack).putInt(MPNBTData.ItemType,type);
         }
         return Lists.newArrayList(itemStack);
     }
@@ -67,4 +67,5 @@ public class MPHookBlock extends Block {
         p_48725_.add(MPBlockData.FACING, MPBlockData.TYPES);
     }
 }
+
 

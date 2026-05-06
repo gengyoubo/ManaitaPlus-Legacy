@@ -58,7 +58,8 @@ def replaceProperties = [
         mod_license             : mod_license,
         mod_version             : mod_version,
         mod_authors             : mod_authors,
-        mod_description         : mod_description
+        mod_description         : mod_description,
+        displayURL: displayURL,
 ].collectEntries { key, value ->
     [(key): value.toString()]
 }

@@ -4,6 +4,7 @@
   "container.crafting_manaita": "Crafting Cutting Board",
   "container.furnace_manaita": "Furnace Cutting Board",
   "container.brewing_manaita": "Brewing Cutting Board",
+  "container.manaita_baubles": "Cutting Board Accessories",
 
   "block.crafting.name": "Crafting Cutting Board",
   "block.crafting.wooden.name": "Wooden Crafting Cutting Board",
@@ -95,6 +96,36 @@
   "item.portableBrewing.7.name": "Redstone Portable Brewing Cutting Board",
   "item.portableBrewing.8.name": "Netherite Portable Brewing Cutting Board",
 
+  "item.ringCrafting.0.name": "Crafting Cutting Board Ring",
+  "item.ringCrafting.1.name": "Wooden Crafting Cutting Board Ring",
+  "item.ringCrafting.2.name": "Stone Crafting Cutting Board Ring",
+  "item.ringCrafting.3.name": "Iron Crafting Cutting Board Ring",
+  "item.ringCrafting.4.name": "Gold Crafting Cutting Board Ring",
+  "item.ringCrafting.5.name": "Diamond Crafting Cutting Board Ring",
+  "item.ringCrafting.6.name": "Emerald Crafting Cutting Board Ring",
+  "item.ringCrafting.7.name": "Redstone Crafting Cutting Board Ring",
+  "item.ringCrafting.8.name": "Netherite Crafting Cutting Board Ring",
+
+  "item.ringFurnace.0.name": "Furnace Cutting Board Ring",
+  "item.ringFurnace.1.name": "Wooden Furnace Cutting Board Ring",
+  "item.ringFurnace.2.name": "Stone Furnace Cutting Board Ring",
+  "item.ringFurnace.3.name": "Iron Furnace Cutting Board Ring",
+  "item.ringFurnace.4.name": "Gold Furnace Cutting Board Ring",
+  "item.ringFurnace.5.name": "Diamond Furnace Cutting Board Ring",
+  "item.ringFurnace.6.name": "Emerald Furnace Cutting Board Ring",
+  "item.ringFurnace.7.name": "Redstone Furnace Cutting Board Ring",
+  "item.ringFurnace.8.name": "Netherite Furnace Cutting Board Ring",
+
+  "item.ringBrewing.0.name": "Brewing Cutting Board Ring",
+  "item.ringBrewing.1.name": "Wooden Brewing Cutting Board Ring",
+  "item.ringBrewing.2.name": "Stone Brewing Cutting Board Ring",
+  "item.ringBrewing.3.name": "Iron Brewing Cutting Board Ring",
+  "item.ringBrewing.4.name": "Gold Brewing Cutting Board Ring",
+  "item.ringBrewing.5.name": "Diamond Brewing Cutting Board Ring",
+  "item.ringBrewing.6.name": "Emerald Brewing Cutting Board Ring",
+  "item.ringBrewing.7.name": "Redstone Brewing Cutting Board Ring",
+  "item.ringBrewing.8.name": "Netherite Brewing Cutting Board Ring",
+
   "item.manaita_plus_general.manaita_hook": "Cutting Board Hook",
 
   "info.item.manaita_sword_god.1": "The Power of God -God's Judgment and God's Levy-",
@@ -116,6 +147,7 @@
 
   "key.manaita":"Cutting Board",
   "key.manaita.armor":"Cutting Board Armor",
+  "key.manaita.baubles":"Cutting Board Accessories",
 
   "enchantments.fortune": "Fortune",
   "enchantments.silktouch": "Silktouch"

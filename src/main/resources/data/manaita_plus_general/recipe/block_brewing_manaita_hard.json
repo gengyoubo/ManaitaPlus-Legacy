@@ -1,8 +1,11 @@
-﻿{
+{
   "neoforge:conditions": [
     {
-      "type": "manaita_plus_general:easy_mode",
-      "value": false
+      "type": "neoforge:not",
+      "value": {
+        "type": "manaita_plus_general:easy_mode",
+        "value": true
+      }
     }
   ],
   "type": "minecraft:crafting_shaped",
@@ -21,8 +24,7 @@
     }
   },
   "result": {
-    "id": "manaita_plus_general:block_brewing_manaita",
-    "count": 1
+    "count": 1,
+    "id": "manaita_plus_general:block_brewing_manaita"
   }
 }
-

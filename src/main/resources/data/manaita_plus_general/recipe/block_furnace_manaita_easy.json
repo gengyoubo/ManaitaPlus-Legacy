@@ -1,4 +1,4 @@
-﻿{
+{
   "neoforge:conditions": [
     {
       "type": "manaita_plus_general:easy_mode",
@@ -21,8 +21,7 @@
     }
   },
   "result": {
-    "id": "manaita_plus_general:block_furnace_manaita",
-    "count": 1
+    "count": 1,
+    "id": "manaita_plus_general:block_furnace_manaita"
   }
 }
-

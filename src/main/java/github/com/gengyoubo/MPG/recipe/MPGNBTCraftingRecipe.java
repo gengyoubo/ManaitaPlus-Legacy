@@ -27,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -430,8 +431,11 @@ public class MPGNBTCraftingRecipe implements CraftingRecipe {
     private static Item itemFromJson(JsonObject json) {
         String itemId = GsonHelper.getAsString(json, json.has("id") ? "id" : "item");
         ResourceLocation resourceLocation = ResourceLocation.parse(itemId);
+        if (!BuiltInRegistries.ITEM.containsKey(resourceLocation)) {
+            throw new JsonSyntaxException("Unknown item '" + itemId + "'");
+        }
         Item item = BuiltInRegistries.ITEM.get(resourceLocation);
-        if (item == null) {
+        if (item == null || item == Items.AIR) {
             throw new JsonSyntaxException("Unknown item '" + itemId + "'");
         }
         return item;
@@ -439,6 +443,9 @@ public class MPGNBTCraftingRecipe implements CraftingRecipe {
 
     private static ItemStack itemStackFromJson(JsonObject json) {
         Item item = itemFromJson(json);
+        if (item == Items.AIR) {
+            throw new JsonSyntaxException("Recipe result cannot be air");
+        }
         int count = GsonHelper.getAsInt(json, "count", 1);
         ItemStack stack = new ItemStack(item, count);
         if (json.has("nbt")) {

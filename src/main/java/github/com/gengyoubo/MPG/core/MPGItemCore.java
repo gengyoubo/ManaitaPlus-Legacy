@@ -7,6 +7,9 @@ import github.com.gengyoubo.MPG.item.armor.MPGArmor;
 import github.com.gengyoubo.MPG.item.portable.MPGBrewingPortable;
 import github.com.gengyoubo.MPG.item.portable.MPGCraftingPortable;
 import github.com.gengyoubo.MPG.item.portable.MPGFurnacePortable;
+import github.com.gengyoubo.MPG.item.ring.MPGBrewingRing;
+import github.com.gengyoubo.MPG.item.ring.MPGCraftingRing;
+import github.com.gengyoubo.MPG.item.ring.MPGFurnaceRing;
 import github.com.gengyoubo.MPG.item.tool.*;
 
 import static github.com.gengyoubo.MPG.MPG.ITEMS;
@@ -30,6 +33,9 @@ public class MPGItemCore {
     public static final DeferredItem<? extends Item> ManaitaCraftingPortable = ITEMS.register("manaita_crafting_portable", MPGCraftingPortable::new);
     public static final DeferredItem<? extends Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPGFurnacePortable::new);
     public static final DeferredItem<? extends Item> ManaitaBrewingPortable = ITEMS.register("manaita_brewing_portable", MPGBrewingPortable::new);
+    public static final DeferredItem<? extends Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", MPGCraftingRing::new);
+    public static final DeferredItem<? extends Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", MPGFurnaceRing::new);
+    public static final DeferredItem<? extends Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", MPGBrewingRing::new);
 
     public static void init() {
     }

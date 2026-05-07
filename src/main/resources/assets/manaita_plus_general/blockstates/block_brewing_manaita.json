@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "manaita_plus_general:block/block_brewing_manaita"
+      }
+    }
+  ]
+}

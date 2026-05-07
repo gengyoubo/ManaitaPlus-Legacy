@@ -1,4 +1,4 @@
-﻿{
+{
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "$$$",
@@ -10,7 +10,7 @@
     }
   },
   "result": {
-    "id": "manaita_plus_general:manaita_helmet",
-    "count": 1
+    "count": 1,
+    "id": "manaita_plus_general:manaita_helmet"
   }
 }

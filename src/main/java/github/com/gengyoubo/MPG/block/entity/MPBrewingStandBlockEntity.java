@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+    private static final int BREW_TIME = 1;
     private static final int[] SLOTS_FOR_UP = new int[]{3};
     private static final int[] SLOTS_FOR_DOWN = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
@@ -107,7 +108,7 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
             setChanged(p_155286_, p_155287_, p_155288_);
         } else if (flag && p_155289_.fuel > 0) {
             p_155289_.fuel--;
-            p_155289_.brewTime = 400;
+            p_155289_.brewTime = BREW_TIME;
             p_155289_.ingredient = ingredientStack.getItem();
             setChanged(p_155286_, p_155287_, p_155288_);
         }

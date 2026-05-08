@@ -45,6 +45,12 @@
         "manaita_plus_general:manaita_plus_general_type": 7
       },
       "model": "manaita_plus_general:block/hook/fixed_hook_netherite"
+    },
+    {
+      "predicate": {
+        "manaita_plus_general:manaita_plus_general_type": 8
+      },
+      "model": "manaita_plus_general:block/hook/fixed_hook_netherite"
     }
   ]
 }

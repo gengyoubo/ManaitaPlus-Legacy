@@ -11,10 +11,13 @@ import github.com.gengyoubo.MPG.item.ring.MPGBrewingRing;
 import github.com.gengyoubo.MPG.item.ring.MPGCraftingRing;
 import github.com.gengyoubo.MPG.item.ring.MPGFurnaceRing;
 import github.com.gengyoubo.MPG.item.tool.*;
+import net.neoforged.fml.ModList;
 
 import static github.com.gengyoubo.MPG.MPG.ITEMS;
 
 public class MPGItemCore {
+    private static final boolean CURIOS_LOADED = ModList.get().isLoaded("curios");
+
     public static final DeferredItem<? extends Item> ManaitaSwordGod = ITEMS.register("manaita_sword_god", MPGGodSwordItem::new);
     public static final DeferredItem<? extends Item> ManaitaSword = ITEMS.register("manaita_sword", MPGSwordItem::new);
     public static final DeferredItem<? extends Item> ManaitaBow = ITEMS.register("manaita_bow", MPGBowItem::new);
@@ -33,9 +36,13 @@ public class MPGItemCore {
     public static final DeferredItem<? extends Item> ManaitaCraftingPortable = ITEMS.register("manaita_crafting_portable", MPGCraftingPortable::new);
     public static final DeferredItem<? extends Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPGFurnacePortable::new);
     public static final DeferredItem<? extends Item> ManaitaBrewingPortable = ITEMS.register("manaita_brewing_portable", MPGBrewingPortable::new);
-    public static final DeferredItem<? extends Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", MPGCraftingRing::new);
-    public static final DeferredItem<? extends Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", MPGFurnaceRing::new);
-    public static final DeferredItem<? extends Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", MPGBrewingRing::new);
+    public static final DeferredItem<? extends Item> ManaitaCraftingRing = CURIOS_LOADED ? ITEMS.register("manaita_crafting_ring", MPGCraftingRing::new) : null;
+    public static final DeferredItem<? extends Item> ManaitaFurnaceRing = CURIOS_LOADED ? ITEMS.register("manaita_furnace_ring", MPGFurnaceRing::new) : null;
+    public static final DeferredItem<? extends Item> ManaitaBrewingRing = CURIOS_LOADED ? ITEMS.register("manaita_brewing_ring", MPGBrewingRing::new) : null;
+
+    public static boolean isCuriosLoaded() {
+        return CURIOS_LOADED;
+    }
 
     public static void init() {
     }

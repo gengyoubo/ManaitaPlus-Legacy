@@ -119,7 +119,7 @@ tasks.named('processResources', ProcessResources).configure {
 tasks.named('jar', Jar).configure {
     archiveBaseName.set(mod_name)
     archiveVersion.set(mod_version)
-    archiveClassifier.set(mod_loader)
+    archiveClassifier.set("${minecraft_version}-${mod_loader}")
 
     manifest {
         attributes([

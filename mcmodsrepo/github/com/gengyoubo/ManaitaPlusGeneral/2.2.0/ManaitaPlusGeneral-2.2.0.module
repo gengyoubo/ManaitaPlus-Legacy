@@ -1,0 +1,96 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "github.com.gengyoubo",
+    "module": "ManaitaPlusGeneral",
+    "version": "2.2.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.21.1-neoforge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.21.1-neoforge.jar",
+          "size": 434266,
+          "sha512": "5652bd9635e267adaa5349a240c8f149bc111d82226dc333007182a49c39af0a8cfd6e0415140422d22b852f2959b77fc44faae363ce2995cd64aca28d161492",
+          "sha256": "dbf3adf59d88fede5d9f7db17ff3008c10a237bf09d51eb44d4a6884dc3cfb6e",
+          "sha1": "d680466dffaacca798a1933f644d097292beee53",
+          "md5": "fbfa3f76920731953c77e5efc358a329"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "mezz.jei",
+          "module": "jei-1.21.1-neoforge",
+          "version": {
+            "requires": "19.27.0.340"
+          }
+        },
+        {
+          "group": "top.theillusivec4.curios",
+          "module": "curios-neoforge",
+          "version": {
+            "requires": "9.5.1+1.21.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-1.21.1-neoforge.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-1.21.1-neoforge.jar",
+          "size": 434266,
+          "sha512": "5652bd9635e267adaa5349a240c8f149bc111d82226dc333007182a49c39af0a8cfd6e0415140422d22b852f2959b77fc44faae363ce2995cd64aca28d161492",
+          "sha256": "dbf3adf59d88fede5d9f7db17ff3008c10a237bf09d51eb44d4a6884dc3cfb6e",
+          "sha1": "d680466dffaacca798a1933f644d097292beee53",
+          "md5": "fbfa3f76920731953c77e5efc358a329"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ManaitaPlusGeneral-2.2.0-sources.jar",
+          "url": "ManaitaPlusGeneral-2.2.0-sources.jar",
+          "size": 280997,
+          "sha512": "cffe14f33887c4e473e5f1dfb939d37c92ccdf89bdf2622e7379083851ae650267f6834abf963203c5502a8b49687732c64285e1589a76f311c849f4b6a6d7ac",
+          "sha256": "69cb08fb3216545532e7e9e7bf094033149f8856f8afe89beaa15b654346413f",
+          "sha1": "31bd1e6870842241a57ee681ce23f23bb0e3a79e",
+          "md5": "fd769eb21e038f3a7f06910738f29ce3"
+        }
+      ]
+    }
+  ]
+}

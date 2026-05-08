@@ -46,11 +46,15 @@ public class RegisterEventHandler {
                     MPGBlockCore.HookBlockItem.get(),
                     MPGItemCore.ManaitaCraftingPortable.get(),
                     MPGItemCore.ManaitaFurnacePortable.get(),
-                    MPGItemCore.ManaitaBrewingPortable.get(),
-                    MPGItemCore.ManaitaCraftingRing.get(),
-                    MPGItemCore.ManaitaFurnaceRing.get(),
-                    MPGItemCore.ManaitaBrewingRing.get()
+                    MPGItemCore.ManaitaBrewingPortable.get()
             );
+            if (MPGItemCore.isCuriosLoaded()) {
+                acceptTypePropertyFunction(
+                        MPGItemCore.ManaitaCraftingRing.get(),
+                        MPGItemCore.ManaitaFurnaceRing.get(),
+                        MPGItemCore.ManaitaBrewingRing.get()
+                );
+            }
         });
     }
 

@@ -82,9 +82,11 @@ public class JEIPlugin implements IModPlugin {
         registration.registerSubtypeInterpreter(MPGItemCore.ManaitaCraftingPortable.get(), TYPE_INTERPRETER);
         registration.registerSubtypeInterpreter(MPGItemCore.ManaitaFurnacePortable.get(), TYPE_INTERPRETER);
         registration.registerSubtypeInterpreter(MPGItemCore.ManaitaBrewingPortable.get(), TYPE_INTERPRETER);
-        registration.registerSubtypeInterpreter(MPGItemCore.ManaitaCraftingRing.get(), TYPE_INTERPRETER);
-        registration.registerSubtypeInterpreter(MPGItemCore.ManaitaFurnaceRing.get(), TYPE_INTERPRETER);
-        registration.registerSubtypeInterpreter(MPGItemCore.ManaitaBrewingRing.get(), TYPE_INTERPRETER);
+        if (MPGItemCore.isCuriosLoaded()) {
+            registration.registerSubtypeInterpreter(MPGItemCore.ManaitaCraftingRing.get(), TYPE_INTERPRETER);
+            registration.registerSubtypeInterpreter(MPGItemCore.ManaitaFurnaceRing.get(), TYPE_INTERPRETER);
+            registration.registerSubtypeInterpreter(MPGItemCore.ManaitaBrewingRing.get(), TYPE_INTERPRETER);
+        }
     }
 
     @Override
@@ -96,9 +98,11 @@ public class JEIPlugin implements IModPlugin {
         registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaCraftingPortable.get(), 8));
         registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaFurnacePortable.get(), 8));
         registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaBrewingPortable.get(), 8));
-        registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaCraftingRing.get(), 8));
-        registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaFurnaceRing.get(), 8));
-        registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaBrewingRing.get(), 8));
+        if (MPGItemCore.isCuriosLoaded()) {
+            registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaCraftingRing.get(), 8));
+            registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaFurnaceRing.get(), 8));
+            registration.addExtraItemStacks(createTypedStacks(MPGItemCore.ManaitaBrewingRing.get(), 8));
+        }
     }
 
     @Override

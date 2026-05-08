@@ -1,6 +1,3 @@
 {
-  "parent": "item/handheld",
-  "textures": {
-    "layer0": "manaita_plus_general:item/manaita_shears"
-  }
+  "parent": "manaita_plus_general:item/tool/manaita_shears"
 }

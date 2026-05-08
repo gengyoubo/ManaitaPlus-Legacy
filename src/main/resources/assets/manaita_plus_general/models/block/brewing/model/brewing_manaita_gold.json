@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "particle": "manaita_plus_general:block/brewing/brewing_manaita_gold",
-    "all": "manaita_plus_general:block/brewing/brewing_manaita_gold"
-  }
-}

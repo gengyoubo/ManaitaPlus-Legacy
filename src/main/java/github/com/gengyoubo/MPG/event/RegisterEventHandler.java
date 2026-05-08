@@ -33,7 +33,7 @@ import github.com.gengyoubo.MPG.util.MPGNBTData;
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaArrow;
 import static github.com.gengyoubo.MPG.core.MPGEntityCore.ManaitaLightningBolt;
 
-@EventBusSubscriber(modid = MPG.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MPG.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class RegisterEventHandler {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {

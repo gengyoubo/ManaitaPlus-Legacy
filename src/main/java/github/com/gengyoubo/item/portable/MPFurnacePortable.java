@@ -49,7 +49,7 @@ public class MPFurnacePortable extends MPGPortableItem {
         protected final NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
 
         public MPFurnaceBlockEntity(Player player,ItemStack stack) {
-            super(MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), player.blockPosition(), MPBlockCore.FurnaceBlock.get().defaultBlockState(), RecipeType.SMELTING);
+            super(MPBlockEntityCore.FURNACE_BLOCK_ENTITY, player.blockPosition(), MPBlockCore.FurnaceBlock.defaultBlockState(), RecipeType.SMELTING);
             this.quickCheck = RecipeManager.createCheck(RecipeType.SMELTING);
             this.player = player;
             this.stack = stack;

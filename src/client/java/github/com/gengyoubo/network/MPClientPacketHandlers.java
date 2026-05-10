@@ -21,33 +21,75 @@ public final class MPClientPacketHandlers {
     public static void handleDestroyBlock(MPDestroyBlockPacket packet) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
+
         if (level == null || mc.player == null) {
             return;
         }
-        if (!(packet.item() instanceof IMPDestroy destroyItem)) {
+
+        if (!(packet.getItem() instanceof IMPDestroy destroyItem)) {
             return;
         }
 
-        BlockPos blockPos = packet.blockPos();
-        int range = packet.range();
-        BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
-        for (int x = blockPos.getX() - range; x <= blockPos.getX() + range; x++) {
-            for (int y = blockPos.getY() - range; y <= blockPos.getY() + range; y++) {
-                for (int z = blockPos.getZ() - range; z <= blockPos.getZ() + range; z++) {
-                    mutableBlockPos.set(x, y, z);
-                    BlockState blockState = level.getBlockState(mutableBlockPos);
-                    if (destroyItem.accept(blockState)) {
+        BlockPos center = packet.getBlockPos();
+        int range = packet.getRange();
+
+        int minX = center.getX() - range;
+        int maxX = center.getX() + range;
+        int minY = center.getY() - range;
+        int maxY = center.getY() + range;
+        int minZ = center.getZ() - range;
+        int maxZ = center.getZ() + range;
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    pos.set(x, y, z);
+
+                    if (!level.isLoaded(pos)) {
                         continue;
                     }
 
-                    level.setBlock(mutableBlockPos, level.getFluidState(mutableBlockPos).createLegacyBlock(), 10);
-                    SoundType soundType = blockState.getSoundType();
-                    mc.getSoundManager().play(new SimpleSoundInstance(soundType.getHitSound(), SoundSource.BLOCKS,
-                            (soundType.getVolume() + 1.0F) / 8.0F, soundType.getPitch() * 0.5F,
-                            SoundInstance.createUnseededRandom(), mutableBlockPos));
+                    BlockState state = level.getBlockState(pos);
+
+                    if (state.isAir()) {
+                        continue;
+                    }
+
+                    if (destroyItem.accept(state)) {
+                        continue;
+                    }
+
+                    destroyClientBlock(mc, level, pos, destroyItem);
                 }
             }
         }
+    }
+
+    private static void destroyClientBlock(
+            Minecraft mc,
+            ClientLevel level,
+            BlockPos pos,
+            IMPDestroy destroyItem
+    ) {
+        BlockState state = level.getBlockState(pos);
+
+        if (destroyItem.accept(state)) {
+            return;
+        }
+
+        level.setBlock(pos, level.getFluidState(pos).createLegacyBlock(), 10);
+
+        SoundType soundType = state.getSoundType();
+        mc.getSoundManager().play(new SimpleSoundInstance(
+                soundType.getHitSound(),
+                SoundSource.BLOCKS,
+                (soundType.getVolume() + 1.0F) / 8.0F,
+                soundType.getPitch() * 0.5F,
+                SoundInstance.createUnseededRandom(),
+                pos
+        ));
     }
 
     public static void handleChangeEntityData(MPChangeEntityDataPacket packet) {
@@ -55,13 +97,13 @@ public final class MPClientPacketHandlers {
         if (level == null) {
             return;
         }
-        Entity entity = level.getEntity(packet.id());
+        Entity entity = level.getEntity(packet.getId());
         if (entity == null) {
             return;
         }
 
-        boolean remove = packet.flag() < 0;
-        int flags = remove ? -packet.flag() : packet.flag();
+        boolean remove = packet.getFlag() < 0;
+        int flags = remove ? -packet.getFlag() : packet.getFlag();
         for (MPEntityData entityData : MPEntityData.values()) {
             if ((entityData.getFlag() & flags) != 0) {
                 if (remove) {

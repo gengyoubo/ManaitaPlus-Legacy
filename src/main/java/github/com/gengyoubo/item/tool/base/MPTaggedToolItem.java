@@ -22,4 +22,3 @@ public abstract class MPTaggedToolItem extends MPToolBase {
         return !state.is(mineableTag);
     }
 }
-

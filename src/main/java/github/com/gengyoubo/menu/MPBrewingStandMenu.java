@@ -1,7 +1,7 @@
 package github.com.gengyoubo.menu;
 
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -11,7 +11,8 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.alchemy.PotionUtils;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.core.MPMenuCore;
 
@@ -19,14 +20,21 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
     private final Container brewingStand;
     private final ContainerData brewingStandData;
     private final Slot ingredientSlot;
-
+    private static final int POTION_START = 0;
+    private static final int POTION_END = 3;
+    private static final int INGREDIENT_SLOT = 3;
+    private static final int FUEL_SLOT = 4;
+    private static final int PLAYER_INV_START = 5;
+    private static final int PLAYER_INV_END = 32;
+    private static final int HOTBAR_START = 32;
+    private static final int HOTBAR_END = 41;
     @SuppressWarnings("unused")
-    public MPBrewingStandMenu(int id, Inventory inv, BlockPos blockPos) {
+    public MPBrewingStandMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
         this(id, inv, new SimpleContainer(5), new SimpleContainerData(2));
     }
 
     public MPBrewingStandMenu(int p_39093_, Inventory p_39094_, Container p_39095_, ContainerData p_39096_) {
-        super(MPMenuCore.BrewingStandManaita.get(), p_39093_);
+        super(MPMenuCore.BrewingStandManaita, p_39093_);
         checkContainerSize(p_39095_, 5);
         checkContainerDataCount(p_39096_, 2);
         this.brewingStand = p_39095_;
@@ -53,58 +61,93 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         return this.brewingStand.stillValid(p_39098_);
     }
 
-    public @NotNull ItemStack quickMoveStack(@NotNull Player p_39100_, int p_39101_) {
-        ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = this.slots.get(p_39101_);
-        if (slot.hasItem()) {
-            ItemStack itemstack1 = slot.getItem();
-            itemstack = itemstack1.copy();
-            if ((p_39101_ < 0 || p_39101_ > 2) && p_39101_ != 3 && p_39101_ != 4) {
-                if (FuelSlot.mayPlaceItem(itemstack)) {
-                    if (this.moveItemStackTo(itemstack1, 4, 5, false) || this.ingredientSlot.mayPlace(itemstack1) && !this.moveItemStackTo(itemstack1, 3, 4, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (this.ingredientSlot.mayPlace(itemstack1)) {
-                    if (!this.moveItemStackTo(itemstack1, 3, 4, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (PotionSlot.mayPlaceItem(itemstack)) {
-                    if (!this.moveItemStackTo(itemstack1, 0, 3, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (p_39101_ >= 5 && p_39101_ < 32) {
-                    if (!this.moveItemStackTo(itemstack1, 32, 41, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (p_39101_ >= 32 && p_39101_ < 41) {
-                    if (!this.moveItemStackTo(itemstack1, 5, 32, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (!this.moveItemStackTo(itemstack1, 5, 41, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if (!this.moveItemStackTo(itemstack1, 5, 41, true)) {
-                    return ItemStack.EMPTY;
-                }
+    @Override
+    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
+        Slot slot = this.slots.get(index);
 
-                slot.onQuickCraft(itemstack1, itemstack);
-            }
+        if (!slot.hasItem()) {
+            return ItemStack.EMPTY;
+        }
 
-            if (itemstack1.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
+        ItemStack stack = slot.getItem();
+        ItemStack original = stack.copy();
 
-            if (itemstack1.getCount() == itemstack.getCount()) {
+        if (isContainerSlot(index)) {
+            if (!this.moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTake(p_39100_, itemstack1);
+            slot.onQuickCraft(stack, original);
+        } else if (!moveFromInventory(stack, index)) {
+            return ItemStack.EMPTY;
         }
 
-        return itemstack;
+        if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+
+        if (stack.getCount() == original.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
+        slot.onTake(player, stack);
+
+        return original;
+    }
+
+    private boolean moveFromInventory(ItemStack stack, int index) {
+        if (FuelSlot.mayPlaceItem(stack)) {
+            return this.moveItemStackTo(
+                    stack,
+                    FUEL_SLOT,
+                    FUEL_SLOT + 1,
+                    false
+            );
+        }
+
+        if (this.ingredientSlot.mayPlace(stack)) {
+            return this.moveItemStackTo(
+                    stack,
+                    INGREDIENT_SLOT,
+                    INGREDIENT_SLOT + 1,
+                    false
+            );
+        }
+
+        if (PotionSlot.mayPlaceItem(stack)) {
+            return this.moveItemStackTo(
+                    stack,
+                    POTION_START,
+                    POTION_END,
+                    false
+            );
+        }
+
+        if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
+            return this.moveItemStackTo(
+                    stack,
+                    HOTBAR_START,
+                    HOTBAR_END,
+                    false
+            );
+        }
+
+        if (index >= HOTBAR_START && index < HOTBAR_END) {
+            return this.moveItemStackTo(
+                    stack,
+                    PLAYER_INV_START,
+                    PLAYER_INV_END,
+                    false
+            );
+        }
+
+        return false;
+    }
+
+    private static boolean isContainerSlot(int index) {
+        return index >= POTION_START && index < PLAYER_INV_START;
     }
 
     public int getFuel() {
@@ -139,7 +182,7 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public boolean mayPlace(@NotNull ItemStack p_39121_) {
-            return !p_39121_.isEmpty();
+            return PotionBrewing.isIngredient(p_39121_);
         }
 
         public int getMaxStackSize() {
@@ -161,9 +204,9 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public void onTake(@NotNull Player p_150499_, @NotNull ItemStack p_150500_) {
-            java.util.Optional<net.minecraft.core.Holder<Potion>> potion = p_150500_.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
-            if (p_150499_ instanceof ServerPlayer serverPlayer && potion.isPresent()) {
-                CriteriaTriggers.BREWED_POTION.trigger(serverPlayer, potion.get());
+            Potion potion = PotionUtils.getPotion(p_150500_);
+            if (p_150499_ instanceof ServerPlayer) {
+                CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)p_150499_, potion);
             }
 
             super.onTake(p_150499_, p_150500_);
@@ -174,5 +217,4 @@ public class MPBrewingStandMenu extends AbstractContainerMenu {
         }
     }
 }
-
 

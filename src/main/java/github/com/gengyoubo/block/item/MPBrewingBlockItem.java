@@ -6,8 +6,7 @@ import static github.com.gengyoubo.core.MPBlockCore.BrewingBlock;
 
 public class MPBrewingBlockItem extends MPTypedBlockItem {
     public MPBrewingBlockItem() {
-        super(BrewingBlock.get(), new Properties().fireResistant(), "block.brewing.", MPBrewingStandBlock.class);
+        super(BrewingBlock, new Properties().fireResistant(), "block.brewing.", MPBrewingStandBlock.class);
     }
 }
-
 

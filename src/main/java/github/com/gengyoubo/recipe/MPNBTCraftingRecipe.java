@@ -50,7 +50,7 @@ public class MPNBTCraftingRecipe implements CraftingRecipe {
 
     @Override
     public @NotNull RecipeSerializer<?> getSerializer() {
-        return MPRecipeSerializerCore.NBTCraftingRecipe.get();
+        return MPRecipeSerializerCore.NBTCraftingRecipe;
     }
 
     @Override

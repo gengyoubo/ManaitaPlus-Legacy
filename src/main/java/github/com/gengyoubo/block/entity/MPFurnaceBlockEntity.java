@@ -36,7 +36,7 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity implements 
     private final RecipeManager.CachedCheck<Container, ? extends AbstractCookingRecipe> quickCheck;
 
     public MPFurnaceBlockEntity(BlockPos p_155545_, BlockState p_155546_) {
-        super(MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), p_155545_, p_155546_, RecipeType.SMELTING);
+        super(MPBlockEntityCore.FURNACE_BLOCK_ENTITY, p_155545_, p_155546_, RecipeType.SMELTING);
         this.quickCheck = RecipeManager.createCheck(RecipeType.SMELTING);
     }
 

@@ -14,6 +14,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
+import static github.com.gengyoubo.compat.trinkets.MPTrinketRingItem.getRingString;
+
 public class MPTypedRingItem extends Item implements IMPKey {
     private final String translationPrefix;
     private final RingKind ringKind;
@@ -62,17 +64,7 @@ public class MPTypedRingItem extends Item implements IMPKey {
     }
 
     private static String getRingTypeKey(int type) {
-        return switch (type) {
-            case 1 -> "wooden.";
-            case 2 -> "stone.";
-            case 3 -> "iron.";
-            case 4 -> "gold.";
-            case 5 -> "emerald.";
-            case 6 -> "diamond.";
-            case 7 -> "redstone.";
-            case 8 -> "netherite.";
-            default -> "";
-        };
+        return getRingString(type);
     }
 
     public enum RingKind {

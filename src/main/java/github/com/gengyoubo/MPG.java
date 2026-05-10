@@ -1,5 +1,6 @@
 package github.com.gengyoubo;
 
+import com.google.gson.JsonObject;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -9,15 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +22,8 @@ import github.com.gengyoubo.util.MPNBTData;
 public class MPG implements ModInitializer {
     public static final String MODID = "manaita_plus_general";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-    public static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
-    public static final DeferredRegister<Attribute> ATTRIBUTE_TYPE = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, MODID);
-    public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZER_DEFERRED_REGISTER =  DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MODID);
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    private static final int MAX_MANAITA_TYPE = 8;
+    private static final int MAX_HOOK_TYPE = 7;
     public static CreativeModeTab MANAITA_PLUS_TAB;
 
     @Override
@@ -50,54 +39,76 @@ public class MPG implements ModInitializer {
         registerResourceConditions();
         MPNetworking.initServer();
 
-        BLOCKS.registerAll();
-        ITEMS.registerAll();
-        ATTRIBUTE_TYPE.registerAll();
-        ENTITY_TYPES.registerAll();
-        MENU_TYPES.registerAll();
-        BLOCK_ENTITY_TYPES.registerAll();
-        RECIPE_SERIALIZER_DEFERRED_REGISTER.registerAll();
+        registerCreativeTab();
+    }
 
-        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation(MODID, "manaita_plus_tab"), FabricItemGroup.builder()
-            .icon(() -> MPBlockCore.CraftingBlockItem.get().getDefaultInstance())
-            .title(Component.translatable("itemGroup.MPTab"))
-            .displayItems((context, entries) -> {
-                acceptMPGType(MPBlockCore.CraftingBlockItem.get(),entries,8);
-                acceptMPGType(MPBlockCore.FurnaceBlockItem.get(), entries, 8);
-                acceptMPGType(MPBlockCore.BrewingBlockItem.get(), entries, 8);
-                acceptMPGType(MPBlockCore.HookBlockItem.get(), entries, 7);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MODID, path);
+    }
 
-                acceptMPGType(MPItemCore.ManaitaCraftingPortable.get(), entries, 8);
-                acceptMPGType(MPItemCore.ManaitaFurnacePortable.get(), entries, 8);
-                acceptMPGType(MPItemCore.ManaitaBrewingPortable.get(), entries, 8);
+    public static <V, T extends V> T register(Registry<V> registry, String path, T value) {
+        return Registry.register(registry, id(path), value);
+    }
 
-                entries.accept(MPItemCore.ManaitaSword.get());
-                entries.accept(MPItemCore.ManaitaSwordGod.get());
-                entries.accept(MPItemCore.ManaitaBow.get());
-                entries.accept(MPItemCore.ManaitaAxe.get());
-                entries.accept(MPItemCore.ManaitaHoe.get());
-                entries.accept(MPItemCore.ManaitaPaxel.get());
-                entries.accept(MPItemCore.ManaitaPickaxe.get());
-                entries.accept(MPItemCore.ManaitaShears.get());
-                entries.accept(MPItemCore.ManaitaShovel.get());
-                entries.accept(MPItemCore.ManaitaHelmet.get());
-                entries.accept(MPItemCore.ManaitaChestplate.get());
-                entries.accept(MPItemCore.ManaitaLeggings.get());
-                entries.accept(MPItemCore.ManaitaBoots.get());
-                entries.accept(MPItemCore.ManaitaSource.get());
-                if (MPTrinketsCompat.isLoaded()) {
-                    acceptMPGType(MPItemCore.ManaitaCraftingRing.get(), entries, 8);
-                    acceptMPGType(MPItemCore.ManaitaFurnaceRing.get(), entries, 8);
-                    acceptMPGType(MPItemCore.ManaitaBrewingRing.get(), entries, 8);
-                }
-            }).build());
+    private static void registerCreativeTab() {
+        MANAITA_PLUS_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id("manaita_plus_tab"), FabricItemGroup.builder()
+                .icon(MPBlockCore.CraftingBlockItem::getDefaultInstance)
+                .title(Component.translatable("itemGroup.ManaitaPlusTab"))
+                .displayItems(MPG::fillCreativeTab)
+                .build());
+    }
+
+    private static void fillCreativeTab(CreativeModeTab.ItemDisplayParameters context, CreativeModeTab.Output entries) {
+        acceptTypedItems(entries, MAX_MANAITA_TYPE,
+                MPBlockCore.CraftingBlockItem,
+                MPBlockCore.FurnaceBlockItem,
+                MPBlockCore.BrewingBlockItem
+        );
+        acceptMPGType(MPBlockCore.HookBlockItem, entries, MAX_HOOK_TYPE);
+
+        acceptTypedItems(entries, MAX_MANAITA_TYPE,
+                MPItemCore.ManaitaCraftingPortable,
+                MPItemCore.ManaitaFurnacePortable,
+                MPItemCore.ManaitaBrewingPortable
+        );
+
+        acceptItems(entries,
+                MPItemCore.ManaitaSword,
+                MPItemCore.ManaitaSwordGod,
+                MPItemCore.ManaitaBow,
+                MPItemCore.ManaitaAxe,
+                MPItemCore.ManaitaHoe,
+                MPItemCore.ManaitaPaxel,
+                MPItemCore.ManaitaPickaxe,
+                MPItemCore.ManaitaShears,
+                MPItemCore.ManaitaShovel,
+                MPItemCore.ManaitaHelmet,
+                MPItemCore.ManaitaChestplate,
+                MPItemCore.ManaitaLeggings,
+                MPItemCore.ManaitaBoots,
+                MPItemCore.ManaitaSource
+        );
+
+        if (MPTrinketsCompat.isLoaded()) {
+            acceptTypedItems(entries, MAX_MANAITA_TYPE,
+                    MPItemCore.ManaitaCraftingRing,
+                    MPItemCore.ManaitaFurnaceRing,
+                    MPItemCore.ManaitaBrewingRing
+            );
+        }
     }
 
     private static void registerResourceConditions() {
-        ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), json ->
-                GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value);
-        ResourceConditions.register(new ResourceLocation(MODID, "trinkets_loaded"), json ->
-                MPTrinketsCompat.isLoaded());
+        ResourceConditions.register(new ResourceLocation(MODID, "easy_mode"), MPG::matchesEasyMode);
+        ResourceConditions.register(new ResourceLocation(MODID, "trinkets_loaded"), MPG::isTrinketsLoadedCondition);
+    }
+
+    private static boolean matchesEasyMode(JsonObject json) {
+        return GsonHelper.getAsBoolean(json, "value", true) == MPGConfig.easy_mode_value;
+    }
+
+    private static boolean isTrinketsLoadedCondition(JsonObject json) {
+        return MPTrinketsCompat.isLoaded();
     }
 
     private static void forceLoadRegistryHolders() {
@@ -113,6 +124,18 @@ public class MPG implements ModInitializer {
             Class.forName(type.getName(), true, type.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Failed to initialize registry holder: " + type.getName(), e);
+        }
+    }
+
+    private static void acceptTypedItems(CreativeModeTab.Output entries, int maxType, Item... items) {
+        for (Item item : items) {
+            acceptMPGType(item, entries, maxType);
+        }
+    }
+
+    private static void acceptItems(CreativeModeTab.Output entries, Item... items) {
+        for (Item item : items) {
+            entries.accept(item);
         }
     }
 

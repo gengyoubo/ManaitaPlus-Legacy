@@ -1,6 +1,7 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "manaita_plus_general:block/brewing/brewing_manaita_netherite"
-  }
+﻿{
+    "parent":  "minecraft:item/generated",
+    "textures":  {
+                     "layer0":  "manaita_plus_general:block/brewing_manaita",
+                     "layer1":  "manaita_plus_general:block/brewing/brewing_manaita_netherite"
+                 }
 }

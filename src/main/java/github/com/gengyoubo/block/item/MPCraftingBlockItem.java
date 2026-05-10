@@ -7,6 +7,6 @@ import static github.com.gengyoubo.core.MPBlockCore.CraftingBlock;
 
 public class MPCraftingBlockItem extends MPTypedBlockItem {
     public MPCraftingBlockItem() {
-        super(CraftingBlock.get(), new Item.Properties().fireResistant(), "block.crafting.", MPCraftingBlock.class);
+        super(CraftingBlock, new Item.Properties().fireResistant(), "block.crafting.", MPCraftingBlock.class);
     }
 }

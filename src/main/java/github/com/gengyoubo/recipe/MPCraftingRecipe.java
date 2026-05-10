@@ -1,7 +1,6 @@
 package github.com.gengyoubo.recipe;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonObject;
 import github.com.gengyoubo.MPGConfig;
 import github.com.gengyoubo.block.item.MPBrewingBlockItem;
 import github.com.gengyoubo.block.item.MPCraftingBlockItem;
@@ -12,29 +11,34 @@ import github.com.gengyoubo.core.MPItemCore;
 import github.com.gengyoubo.core.MPRecipeSerializerCore;
 import github.com.gengyoubo.item.MPSourceItem;
 import github.com.gengyoubo.util.MPNBTData;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 public class MPCraftingRecipe implements CraftingRecipe {
-    private static final ItemStack SOURCE_RESULT = new ItemStack(MPItemCore.ManaitaSource.get());
-    private static final StringRepresentable.EnumCodec<CraftingBookCategory> CATEGORY_CODEC =
-            StringRepresentable.fromEnum(CraftingBookCategory::values);
+    private static final ItemStack SOURCE_RESULT = new ItemStack(MPItemCore.ManaitaSource);
 
+    private final ResourceLocation id;
     private final CraftingBookCategory category;
 
-    public MPCraftingRecipe(CraftingBookCategory category) {
+    public MPCraftingRecipe(ResourceLocation id, CraftingBookCategory category) {
+        this.id = id;
         this.category = category;
+    }
+
+    @Override
+    public @NotNull ResourceLocation getId() {
+        return id;
     }
 
     @Override
@@ -43,11 +47,11 @@ public class MPCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInput container, @NotNull Level level) {
+    public boolean matches(CraftingContainer container, @NotNull Level level) {
         int sourceStacks = 0;
         int nonEmptyCount = 0;
         ItemStack otherStack = ItemStack.EMPTY;
-        for (ItemStack stack : container.items()) {
+        for (ItemStack stack : container.getItems()) {
             if (stack.isEmpty()) {
                 continue;
             }
@@ -80,7 +84,7 @@ public class MPCraftingRecipe implements CraftingRecipe {
         boolean hasPortableBlock = false;
         boolean hasMaterial = false;
         boolean hasHook = false;
-        for (ItemStack stack : container.items()) {
+        for (ItemStack stack : container.getItems()) {
             Item item = stack.getItem();
             if (item instanceof MPHookBlockItem) {
                 hasHook = true;
@@ -97,7 +101,7 @@ public class MPCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack assemble(CraftingInput container, @NotNull HolderLookup.Provider provider) {
+    public @NotNull ItemStack assemble(CraftingContainer container, @NotNull RegistryAccess registryAccess) {
         ItemStack material = ItemStack.EMPTY;
         ItemStack blockInput = ItemStack.EMPTY;
         ItemStack hookInput = ItemStack.EMPTY;
@@ -105,7 +109,7 @@ public class MPCraftingRecipe implements CraftingRecipe {
         int sourceStacks = 0;
         ItemStack sourceTarget = ItemStack.EMPTY;
 
-        for (ItemStack stack : container.items()) {
+        for (ItemStack stack : container.getItems()) {
             Item item = stack.getItem();
             if (item instanceof MPSourceItem) {
                 hasSource = true;
@@ -154,43 +158,43 @@ public class MPCraftingRecipe implements CraftingRecipe {
             if (result.isEmpty()) {
                 return ItemStack.EMPTY;
             }
-            github.com.gengyoubo.util.MPItemStackData.putInt(result, MPNBTData.ItemType, type);
+            result.getOrCreateTag().putInt(MPNBTData.ItemType, type);
             return result;
         }
         return ItemStack.EMPTY;
     }
 
     private static ItemStack assemblePortable(ItemStack blockInput, ItemStack hookInput) {
-        if (github.com.gengyoubo.util.MPItemStackData.getInt(blockInput, MPNBTData.ItemType) != 0) {
+        if (blockInput.getOrCreateTag().getInt(MPNBTData.ItemType) != 0) {
             return ItemStack.EMPTY;
         }
 
         ItemStack portable;
         Item item = blockInput.getItem();
         if (item instanceof MPCraftingBlockItem) {
-            portable = new ItemStack(MPItemCore.ManaitaCraftingPortable.get());
+            portable = new ItemStack(MPItemCore.ManaitaCraftingPortable);
         } else if (item instanceof MPFurnaceBlockItem) {
-            portable = new ItemStack(MPItemCore.ManaitaFurnacePortable.get());
+            portable = new ItemStack(MPItemCore.ManaitaFurnacePortable);
         } else if (item instanceof MPBrewingBlockItem) {
-            portable = new ItemStack(MPItemCore.ManaitaBrewingPortable.get());
+            portable = new ItemStack(MPItemCore.ManaitaBrewingPortable);
         } else {
             return ItemStack.EMPTY;
         }
 
-        int hookType = github.com.gengyoubo.util.MPItemStackData.getInt(hookInput, MPNBTData.ItemType);
-        github.com.gengyoubo.util.MPItemStackData.putInt(portable, MPNBTData.ItemType, hookType + 1);
+        int hookType = hookInput.getOrCreateTag().getInt(MPNBTData.ItemType);
+        portable.getOrCreateTag().putInt(MPNBTData.ItemType, hookType + 1);
         return portable;
     }
 
     private static ItemStack createBlockResult(Item blockItem) {
         if (blockItem instanceof MPCraftingBlockItem) {
-            return new ItemStack(MPBlockCore.CraftingBlockItem.get());
+            return new ItemStack(MPBlockCore.CraftingBlockItem);
         }
         if (blockItem instanceof MPFurnaceBlockItem) {
-            return new ItemStack(MPBlockCore.FurnaceBlockItem.get());
+            return new ItemStack(MPBlockCore.FurnaceBlockItem);
         }
         if (blockItem instanceof MPBrewingBlockItem) {
-            return new ItemStack(MPBlockCore.BrewingBlockItem.get());
+            return new ItemStack(MPBlockCore.BrewingBlockItem);
         }
         return ItemStack.EMPTY;
     }
@@ -213,34 +217,30 @@ public class MPCraftingRecipe implements CraftingRecipe {
     }
 
     @Override
-    public @NotNull ItemStack getResultItem(@NotNull HolderLookup.Provider provider) {
+    public @NotNull ItemStack getResultItem(@NotNull RegistryAccess registryAccess) {
         return SOURCE_RESULT;
     }
 
     @Override
     public @NotNull RecipeSerializer<?> getSerializer() {
-        return MPRecipeSerializerCore.CraftingRecipe.get();
+        return MPRecipeSerializerCore.CraftingRecipe;
     }
 
     public static class Serializer implements RecipeSerializer<MPCraftingRecipe> {
-        private static final MapCodec<MPCraftingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
-                instance.group(
-                        CATEGORY_CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(MPCraftingRecipe::category)
-                ).apply(instance, MPCraftingRecipe::new)
-        );
-        private static final StreamCodec<RegistryFriendlyByteBuf, MPCraftingRecipe> STREAM_CODEC = StreamCodec.of(
-                (buf, recipe) -> CraftingBookCategory.STREAM_CODEC.encode(buf, recipe.category),
-                buf -> new MPCraftingRecipe(CraftingBookCategory.STREAM_CODEC.decode(buf))
-        );
-
         @Override
-        public @NotNull MapCodec<MPCraftingRecipe> codec() {
-            return CODEC;
+        public @NotNull MPCraftingRecipe fromJson(@NotNull ResourceLocation id, @NotNull JsonObject json) {
+            CraftingBookCategory category = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(json, "category", null), CraftingBookCategory.MISC);
+            return new MPCraftingRecipe(id, category);
         }
 
         @Override
-        public @NotNull StreamCodec<RegistryFriendlyByteBuf, MPCraftingRecipe> streamCodec() {
-            return STREAM_CODEC;
+        public @NotNull MPCraftingRecipe fromNetwork(@NotNull ResourceLocation id, FriendlyByteBuf buf) {
+            return new MPCraftingRecipe(id, buf.readEnum(CraftingBookCategory.class));
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf buf, MPCraftingRecipe recipe) {
+            buf.writeEnum(recipe.category);
         }
     }
 }

@@ -3,15 +3,14 @@ package github.com.gengyoubo.item.tool.base;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -21,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import github.com.gengyoubo.util.MPText;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntConsumer;
 
 public final class MPToolActionHelper {
@@ -62,16 +63,14 @@ public final class MPToolActionHelper {
             return;
         }
 
-        var enchantmentRegistry = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        var fortune = enchantmentRegistry.getOrThrow(Enchantments.FORTUNE);
-        var silkTouch = enchantmentRegistry.getOrThrow(Enchantments.SILK_TOUCH);
-
-        itemInHand.enchant(fortune, 10);
+        Map<Enchantment, Integer> enchantmentMap = new HashMap<>();
+        enchantmentMap.put(Enchantments.BLOCK_FORTUNE, 10);
         String enchantName = Component.translatable("enchantments.fortune").getString();
-        if (EnchantmentHelper.getItemEnchantmentLevel(silkTouch, itemInHand) <= 0) {
-            itemInHand.enchant(silkTouch, 1);
+        if (!EnchantmentHelper.hasSilkTouch(itemInHand)) {
+            enchantmentMap.put(Enchantments.SILK_TOUCH, 1);
             enchantName = Component.translatable("enchantments.silktouch").getString();
         }
+        EnchantmentHelper.setEnchantments(enchantmentMap, itemInHand);
         player.displayClientMessage(Component.literal(MPText.manaita_enchantment.formatting(itemInHand.getDisplayName().getString() + Component.translatable("info.enchantment").getString() + ": " + enchantName)), true);
     }
 
@@ -128,8 +127,7 @@ public final class MPToolActionHelper {
 
     private static void damageHeldItem(UseOnContext context, Player player, ItemStack itemStack) {
         if (player != null) {
-            itemStack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
+            itemStack.hurtAndBreak(1, player, brokenPlayer -> brokenPlayer.broadcastBreakEvent(context.getHand()));
         }
     }
 }
-

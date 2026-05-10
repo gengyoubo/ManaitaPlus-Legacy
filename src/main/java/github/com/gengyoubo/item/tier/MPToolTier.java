@@ -2,9 +2,6 @@ package github.com.gengyoubo.item.tier;
 
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.core.MPBlockCore;
 
@@ -25,18 +22,18 @@ public class MPToolTier implements Tier {
     }
 
     @Override
+    public int getLevel() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
     public int getEnchantmentValue() {
         return 0;
     }
 
     @Override
     public @NotNull Ingredient getRepairIngredient() {
-        return Ingredient.of(MPBlockCore.CraftingBlockItem.get(), MPBlockCore.FurnaceBlockItem.get(), MPBlockCore.BrewingBlockItem.get());
+        return Ingredient.of(MPBlockCore.CraftingBlockItem, MPBlockCore.FurnaceBlockItem, MPBlockCore.BrewingBlockItem);
     }
 
-    @Override
-    public @NotNull TagKey<Block> getIncorrectBlocksForDrops() {
-        return BlockTags.INCORRECT_FOR_NETHERITE_TOOL;
-    }
 }
-

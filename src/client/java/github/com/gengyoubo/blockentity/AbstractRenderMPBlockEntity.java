@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,8 +25,8 @@ public abstract class AbstractRenderMPBlockEntity<T extends BlockEntity> impleme
 
     protected AbstractRenderMPBlockEntity(ItemStack displayStack) {
         this.displayStack = displayStack;
-        this.hookBlockTemplate = MPBlockCore.HookBlock.get().defaultBlockState();
-        github.com.gengyoubo.util.MPItemStackData.setTag(this.displayStack, new net.minecraft.nbt.CompoundTag());
+        this.hookBlockTemplate = MPBlockCore.HookBlock.defaultBlockState();
+        this.displayStack.setTag(new CompoundTag());
     }
 
     @Override
@@ -63,52 +64,45 @@ public abstract class AbstractRenderMPBlockEntity<T extends BlockEntity> impleme
     }
 
     private static void applyWallTransform(PoseStack poseStack, Direction wall, Direction direction) {
+        float x = 0.5F;
+        float y = 0.5F;
+        float z = 0.5F;
+
         switch (wall) {
-            case NORTH:
-                poseStack.translate(0.5F, 0.5F, 0.0F);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
-                break;
-            case SOUTH:
-                poseStack.translate(0.5F, 0.5F, 1.0F);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
-                break;
-            case WEST:
-                poseStack.translate(0.0F, 0.5F, 0.5F);
+            case NORTH -> z = 0.0F;
+            case SOUTH -> z = 1.0F;
+            case WEST -> x = 0.0F;
+            case EAST -> x = 1.0F;
+            case UP -> y = 1.0F;
+            case DOWN -> y = 0.0F;
+        }
+
+        poseStack.translate(x, y, z);
+
+        switch (wall) {
+            case NORTH -> poseStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
+            case SOUTH -> poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
+            case WEST, EAST -> {
                 poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
-                break;
-            case EAST:
-                poseStack.translate(1.0F, 0.5F, 0.5F);
-                poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-                poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
-                break;
-            case UP:
-                poseStack.translate(0.5F, 1.0F, 0.5F);
-                applyVerticalFacing(poseStack, direction);
-                break;
-            case DOWN:
-                poseStack.translate(0.5F, 0.0F, 0.5F);
-                applyVerticalFacing(poseStack, direction);
-                break;
+            }
+            case UP, DOWN -> applyVerticalFacing(poseStack, direction);
         }
     }
 
     private static void applyVerticalFacing(PoseStack poseStack, Direction direction) {
         switch (direction) {
-            case NORTH:
+            case NORTH -> poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+
+            case SOUTH -> poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+
+            case WEST, EAST -> {
                 poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-                break;
-            case SOUTH:
-                poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-                break;
-            case WEST:
-                poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(90.0F));
-                break;
-            case EAST:
-                poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
-                break;
+
+                poseStack.mulPose(
+                        Axis.ZP.rotationDegrees(direction == Direction.WEST ? 90.0F : -90.0F)
+                );
+            }
         }
     }
 }

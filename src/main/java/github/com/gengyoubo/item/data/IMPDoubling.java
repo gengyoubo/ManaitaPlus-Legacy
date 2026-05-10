@@ -5,15 +5,15 @@ import github.com.gengyoubo.util.MPNBTData;
 
 public interface IMPDoubling {
     default boolean isDoubling(ItemStack itemStack) {
-        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(itemStack)) return false;
-        if (github.com.gengyoubo.util.MPItemStackData.getTag(itemStack) != null) {
-            return github.com.gengyoubo.util.MPItemStackData.getTag(itemStack).getBoolean(MPNBTData.Doubling);
+        if (!itemStack.hasTag()) return false;
+        if (itemStack.getTag() != null) {
+            return itemStack.getTag().getBoolean(MPNBTData.Doubling);
         }
         return false;
     }
 
     default void setDoubling(ItemStack itemStack, boolean doubling) {
-        github.com.gengyoubo.util.MPItemStackData.putBoolean(itemStack, MPNBTData.Doubling, doubling);
+        itemStack.getOrCreateTag().putBoolean(MPNBTData.Doubling, doubling);
     }
 
     default boolean toggleDoubling(ItemStack itemStack) {
@@ -22,5 +22,4 @@ public interface IMPDoubling {
         return doubling;
     }
 }
-
 

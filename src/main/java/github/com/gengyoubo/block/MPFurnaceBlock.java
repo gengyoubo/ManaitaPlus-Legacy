@@ -1,10 +1,8 @@
 package github.com.gengyoubo.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +15,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -32,15 +29,9 @@ import static github.com.gengyoubo.block.MPBrewingStandBlock.getItemStacks;
 
 @SuppressWarnings("deprecation")
 public class MPFurnaceBlock extends AbstractFurnaceBlock {
-    private static final MapCodec<MPFurnaceBlock> CODEC = MapCodec.unit(MPFurnaceBlock::new);
     public MPFurnaceBlock() {
         super(BlockBehaviour.Properties.of().noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(MPBlockData.HOOK, 8).setValue(FACING, Direction.NORTH).setValue(MPBlockData.WALL,Direction.DOWN).setValue(LIT, Boolean.FALSE).setValue(MPBlockData.TYPES,0));
-    }
-
-    @Override
-    protected @NotNull MapCodec<? extends AbstractFurnaceBlock> codec() {
-        return CODEC;
     }
 
     protected void openContainer(Level p_53631_, @NotNull BlockPos p_53632_, @NotNull Player p_53633_) {
@@ -49,15 +40,6 @@ public class MPFurnaceBlock extends AbstractFurnaceBlock {
             p_53633_.openMenu((MenuProvider) blockentity);
             p_53633_.awardStat(Stats.INTERACT_WITH_FURNACE);
         }
-    }
-
-    @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-        this.openContainer(level, pos, player);
-        return InteractionResult.CONSUME;
     }
 
     public @NotNull RenderShape getRenderShape(@NotNull BlockState p_48727_) {
@@ -96,9 +78,8 @@ public class MPFurnaceBlock extends AbstractFurnaceBlock {
 
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level p_153273_, @NotNull BlockState p_153274_, @NotNull BlockEntityType<T> p_153275_) {
-        return p_153273_.isClientSide ? null : createTickerHelper(p_153275_, MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), MPFurnaceBlockEntity::serverTick);
+        return p_153273_.isClientSide ? null : createTickerHelper(p_153275_, MPBlockEntityCore.FURNACE_BLOCK_ENTITY, MPFurnaceBlockEntity::serverTick);
     }
 }
-
 
 

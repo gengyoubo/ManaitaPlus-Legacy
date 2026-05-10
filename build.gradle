@@ -6,11 +6,6 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-
-repositories {
-	maven { url "https://cursemaven.com/" }
-}
-
 loom {
 	splitEnvironmentSourceSets()
 
@@ -21,6 +16,16 @@ loom {
 		}
 	}
 
+	runs {
+		datagen {
+			inherit client
+			name "Data Generation"
+			vmArg "-Dfabric-api.datagen"
+			vmArg "-Dfabric-api.datagen.modid=${project.mod_id}"
+			vmArg "-Dfabric-api.datagen.output-dir=${file("build/generated/datagen")}"
+			runDir "build/datagen"
+		}
+	}
 }
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
@@ -34,18 +39,36 @@ sourceSets {
 			srcDirs += ['src/client/java']
 		}
 	}
+	main {
+		resources {
+			srcDirs = ["build/generated/datagen", "src/main/resources"]
+		}
+	}
 }
-
+repositories {
+	maven { url "https://cursemaven.com/" }
+	maven {
+		name = "TerraformersMC"
+		url = "https://maven.terraformersmc.com/"
+	}
+	maven {
+		name = "Ladysnake Libs"
+		url = 'https://maven.ladysnake.org/releases'
+	}
+}
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}+${project.minecraft_version}"
-	modImplementation "curse.maven:jei-238222:7420583"
+	modImplementation "curse.maven:jei-238222:7920913"
+	modImplementation "dev.emi:trinkets:${project.trinkets_version}"
 }
 
 processResources {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	inputs.property "mod_version", project.mod_version
+	inputs.property "displayURL", project.displayURL
 
 	filesMatching("fabric.mod.json") {
 		expand(
@@ -54,13 +77,14 @@ processResources {
 				mod_name: project.mod_name,
 				mod_description: project.mod_description,
 				mod_authors: project.mod_authors,
-				mod_license: project.mod_license
+				mod_license: project.mod_license,
+				displayURL: project.displayURL
 		)
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 17
 }
 
 tasks.matching { it.name == 'sourcesJar' }.configureEach {
@@ -69,8 +93,8 @@ tasks.matching { it.name == 'sourcesJar' }.configureEach {
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.named('remapJar').configure {

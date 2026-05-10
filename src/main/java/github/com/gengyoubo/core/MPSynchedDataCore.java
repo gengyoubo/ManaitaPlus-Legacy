@@ -1,12 +1,34 @@
 package github.com.gengyoubo.core;
 
-public final class MPSynchedDataCore {
-    private MPSynchedDataCore() {
+import github.com.gengyoubo.MPG;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+
+import java.lang.reflect.Field;
+
+public class MPSynchedDataCore {
+    public static int i = -1;
+
+    @SuppressWarnings("unchecked")
+    public static void init() {
+        try {
+            Field declaredField = SynchedEntityData.class.getDeclaredField("ENTITY_ID_POOL");
+            declaredField.setAccessible(true);
+            Object2IntMap<Class<? extends Entity>> classObject2IntMap = (Object2IntMap<Class<? extends Entity>>) declaredField.get(SynchedEntityData.class);
+            if (classObject2IntMap.isEmpty()) {
+                i = 1;
+                classObject2IntMap.put(Entity.class, 1);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            MPG.LOGGER.error(e.getMessage());
+        }
     }
 
-    public static void init() {
-        // Kept for compatibility with existing init flow.
+    public static EntityDataAccessor<Integer> get() {
+        return EntityDataSerializers.INT.createAccessor(i);
     }
 }
-
 

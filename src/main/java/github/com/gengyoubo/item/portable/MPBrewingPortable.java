@@ -1,7 +1,6 @@
 package github.com.gengyoubo.item.portable;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ContainerHelper;
@@ -50,10 +49,10 @@ public class MPBrewingPortable extends MPGPortableItem {
         };
 
         public MPBrewingStandBlockEntity(Player player, ItemStack stack) {
-            super(MPBlockEntityCore.BREWING_BLOCK_ENTITY.get(), player.blockPosition(), MPBlockCore.BrewingBlock.get().defaultBlockState());
+            super(MPBlockEntityCore.BREWING_BLOCK_ENTITY, player.blockPosition(), MPBlockCore.BrewingBlock.defaultBlockState());
             this.player = player;
             this.stack = stack;
-            loadAdditional(github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(stack), player.registryAccess());
+            load(stack.getOrCreateTag());
         }
 
         protected @NotNull net.minecraft.network.chat.Component getDefaultName() {
@@ -84,25 +83,22 @@ public class MPBrewingPortable extends MPGPortableItem {
         }
 
         private static boolean isBrewable(NonNullList<ItemStack> items) {
-            ItemStack ingredient = items.get(3);
-            return !ingredient.isEmpty();
+            return MPGBrewingLogicHelper.canBrew(items, 3);
         }
 
         private void doBrew(Level level, NonNullList<ItemStack> items) {
             MPGBrewingLogicHelper.finishBrew(level, player.getX(), player.getY(), player.getZ(), items, 3);
         }
 
-        @Override
-        protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
-            super.loadAdditional(tag, provider);
+        public void load(@NotNull CompoundTag tag) {
+            super.load(tag);
             this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(tag, this.items, provider);
+            ContainerHelper.loadAllItems(tag, this.items);
         }
 
-        @Override
-        protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
-            super.saveAdditional(tag, provider);
-            ContainerHelper.saveAllItems(tag, this.items, provider);
+        protected void saveAdditional(@NotNull CompoundTag tag) {
+            super.saveAdditional(tag);
+            ContainerHelper.saveAllItems(tag, this.items);
         }
 
         public @NotNull ItemStack getItem(int index) {
@@ -129,7 +125,7 @@ public class MPBrewingPortable extends MPGPortableItem {
                     this.lastPotionCount = bits;
                 }
             }
-            saveAdditional(github.com.gengyoubo.util.MPItemStackData.getOrCreateTag(this.stack), this.player.registryAccess());
+            saveAdditional(this.stack.getOrCreateTag());
         }
 
         public boolean stillValid(@NotNull Player player) {
@@ -144,19 +140,8 @@ public class MPBrewingPortable extends MPGPortableItem {
             this.items.clear();
         }
 
-        @Override
-        protected @NotNull NonNullList<ItemStack> getItems() {
-            return this.items;
-        }
-
-        @Override
-        protected void setItems(@NotNull NonNullList<ItemStack> items) {
-            this.items = items;
-        }
-
         protected @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
             return new MPBrewingStandMenu(containerId, inventory, this, this.dataAccess);
         }
     }
 }
-

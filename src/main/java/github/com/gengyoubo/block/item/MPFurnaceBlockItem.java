@@ -7,8 +7,7 @@ import static github.com.gengyoubo.core.MPBlockCore.FurnaceBlock;
 
 public class MPFurnaceBlockItem extends MPTypedBlockItem {
     public MPFurnaceBlockItem() {
-        super(FurnaceBlock.get(), new Item.Properties().fireResistant(), "block.furnace.", MPFurnaceBlock.class);
+        super(FurnaceBlock, new Item.Properties().fireResistant(), "block.furnace.", MPFurnaceBlock.class);
     }
 }
-
 

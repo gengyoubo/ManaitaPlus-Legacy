@@ -17,7 +17,7 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 public class MPGEntityArrow extends Arrow {
-    private static final ResourceLocation ENTITY_ID = github.com.gengyoubo.util.MPResource.id(MPG.MODID, "manaita_arrow");
+    private static final ResourceLocation ENTITY_ID = new ResourceLocation(MPG.MODID, "manaita_arrow");
 
     public MPGEntityArrow(EntityType<? extends Arrow> entityType, Level level) {
         super(entityType, level);
@@ -30,7 +30,7 @@ public class MPGEntityArrow extends Arrow {
             arrow = (Arrow) entityType.create(level);
         }
         if (arrow == null) {
-            arrow = new Arrow(level, owner, ItemStack.EMPTY, ItemStack.EMPTY);
+            arrow = new Arrow(level, owner);
         }
         arrow.setOwner(owner);
         arrow.setPos(owner.getX(), owner.getEyeY() - 0.1D, owner.getZ());
@@ -74,4 +74,3 @@ public class MPGEntityArrow extends Arrow {
     public void playerTouch(@NotNull Player player) {
     }
 }
-

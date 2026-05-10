@@ -7,7 +7,6 @@ import github.com.gengyoubo.core.MPBlockEntityCore;
 
 public class MPCraftingBlockEntity extends BlockEntity {
     public MPCraftingBlockEntity(BlockPos p_155545_, BlockState p_155546_) {
-        super(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY.get(), p_155545_, p_155546_);
+        super(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY, p_155545_, p_155546_);
     }
 }
-

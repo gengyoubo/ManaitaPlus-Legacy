@@ -1,5 +1,7 @@
 package github.com.gengyoubo.item;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import github.com.gengyoubo.item.data.IMPDoubling;
 import github.com.gengyoubo.item.data.IMPKey;
 import github.com.gengyoubo.item.tier.MPToolTier;
@@ -14,10 +16,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -29,14 +35,21 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
+    private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+
     public MPGodSwordItem() {
-        super(new MPToolTier(), new Item.Properties().fireResistant());
+        super(new MPToolTier(), 0, 0, new Item.Properties().fireResistant());
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", Double.POSITIVE_INFINITY, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", Double.POSITIVE_INFINITY, AttributeModifier.Operation.ADDITION));
+        this.defaultModifiers = builder.build();
     }
 
     @Override
@@ -69,8 +82,13 @@ public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
+        return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.doubling").getString() + ":" + (isDoubling(stack) ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
         tooltip.add(Component.literal(MPText.manaita_mode.formatting(Component.translatable("mode.remove.name").getString() + ":" + (isRemove(stack) ? Component.translatable("info.on").getString() : Component.translatable("info.off").getString()))));
         tooltip.add(Component.empty());
@@ -82,6 +100,7 @@ public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
         return Component.literal(MPText.manaita_infinity.formatting(Component.translatable("item.manaita_sword_god.name").getString()));
     }
 
+    @Override
     public int getUseDuration(@NotNull ItemStack stack) {
         return 72000;
     }
@@ -96,6 +115,7 @@ public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
         return true;
     }
 
+    @Override
     public boolean isEnchantable(@NotNull ItemStack stack) {
         return true;
     }
@@ -124,14 +144,14 @@ public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
     }
 
     public static boolean isRemove(ItemStack itemStack) {
-        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(itemStack)) {
+        if (!itemStack.hasTag()) {
             return false;
         }
-        return github.com.gengyoubo.util.MPItemStackData.getTag(itemStack) != null && github.com.gengyoubo.util.MPItemStackData.getTag(itemStack).getBoolean(MPNBTData.Remove);
+        return itemStack.getTag() != null && itemStack.getTag().getBoolean(MPNBTData.Remove);
     }
 
     public static void setRemove(ItemStack itemStack, boolean remove) {
-        github.com.gengyoubo.util.MPItemStackData.putBoolean(itemStack, MPNBTData.Remove, remove);
+        itemStack.getOrCreateTag().putBoolean(MPNBTData.Remove, remove);
     }
 
     private static void godKill(Player player, boolean remove, boolean includeEverything) {
@@ -211,4 +231,3 @@ public class MPGodSwordItem extends SwordItem implements IMPKey, IMPDoubling {
         }
     }
 }
-

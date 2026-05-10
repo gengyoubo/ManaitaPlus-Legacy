@@ -19,4 +19,3 @@ public class MPAxeItem extends MPTaggedToolItem {
         return changed ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
     }
 }
-

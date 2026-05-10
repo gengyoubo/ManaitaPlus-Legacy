@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
 public class MPBrewingStandScreen extends AbstractContainerScreen<MPBrewingStandMenu> {
-    private static final ResourceLocation BREWING_STAND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/brewing_stand.png");
+    private static final ResourceLocation BREWING_STAND_LOCATION = new ResourceLocation("textures/gui/container/brewing_stand.png");
     private static final int[] BUBBLE_LENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
     private final String doublingText;
 
@@ -28,7 +28,7 @@ public class MPBrewingStandScreen extends AbstractContainerScreen<MPBrewingStand
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
@@ -44,24 +44,47 @@ public class MPBrewingStandScreen extends AbstractContainerScreen<MPBrewingStand
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         int left = (this.width - this.imageWidth) / 2;
         int top = (this.height - this.imageHeight) / 2;
+
         guiGraphics.blit(BREWING_STAND_LOCATION, left, top, 0, 0, this.imageWidth, this.imageHeight);
+
+        renderFuel(guiGraphics, left, top);
+        renderBrewingProgress(guiGraphics, left, top);
+    }
+
+    private void renderFuel(GuiGraphics guiGraphics, int left, int top) {
         int fuel = this.menu.getFuel();
-        int fuelWidth = Mth.clamp((18 * fuel + 20 - 1) / 20, 0, 18);
+        int fuelWidth = Mth.clamp((18 * fuel + 19) / 20, 0, 18);
+
         if (fuelWidth > 0) {
             guiGraphics.blit(BREWING_STAND_LOCATION, left + 60, top + 44, 176, 29, fuelWidth, 4);
         }
+    }
 
+    private void renderBrewingProgress(GuiGraphics guiGraphics, int left, int top) {
         int brewingTicks = this.menu.getBrewingTicks();
-        if (brewingTicks > 0) {
-            int progress = (int) (28.0F * (1.0F - (float) brewingTicks / 400.0F));
-            if (progress > 0) {
-                guiGraphics.blit(BREWING_STAND_LOCATION, left + 97, top + 16, 176, 0, 9, progress);
-            }
 
-            progress = BUBBLE_LENGTHS[brewingTicks / 2 % 7];
-            if (progress > 0) {
-                guiGraphics.blit(BREWING_STAND_LOCATION, left + 63, top + 14 + 29 - progress, 185, 29 - progress, 12, progress);
-            }
+        if (brewingTicks <= 0) {
+            return;
+        }
+
+        int arrowHeight = (int) (28.0F * (1.0F - brewingTicks / 400.0F));
+
+        if (arrowHeight > 0) {
+            guiGraphics.blit(BREWING_STAND_LOCATION, left + 97, top + 16, 176, 0, 9, arrowHeight);
+        }
+
+        int bubbleHeight = BUBBLE_LENGTHS[brewingTicks / 2 % 7];
+
+        if (bubbleHeight > 0) {
+            guiGraphics.blit(
+                    BREWING_STAND_LOCATION,
+                    left + 63,
+                    top + 43 - bubbleHeight,
+                    185,
+                    29 - bubbleHeight,
+                    12,
+                    bubbleHeight
+            );
         }
     }
 }

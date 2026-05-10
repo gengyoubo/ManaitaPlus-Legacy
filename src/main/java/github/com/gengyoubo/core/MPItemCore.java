@@ -1,8 +1,8 @@
 package github.com.gengyoubo.core;
 
 import github.com.gengyoubo.compat.MPTrinketsCompat;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.RegistryObject;
 import github.com.gengyoubo.item.MPBowItem;
 import github.com.gengyoubo.item.MPGodSwordItem;
 import github.com.gengyoubo.item.MPHookItem;
@@ -19,33 +19,32 @@ import github.com.gengyoubo.item.tool.MPPickaxeItem;
 import github.com.gengyoubo.item.tool.MPShearsItem;
 import github.com.gengyoubo.item.tool.MPShovelItem;
 
-import static github.com.gengyoubo.MPG.ITEMS;
+import static github.com.gengyoubo.MPG.register;
 
 public class MPItemCore {
-    public static final RegistryObject<Item> ManaitaSword = ITEMS.register("manaita_sword", MPSwordItem::new);
-    public static final RegistryObject<Item> ManaitaSwordGod = ITEMS.register("manaita_sword_god", MPGodSwordItem::new);
+    public static final Item ManaitaSword = register(BuiltInRegistries.ITEM, "manaita_sword", new MPSwordItem());
+    public static final Item ManaitaSwordGod = register(BuiltInRegistries.ITEM, "manaita_sword_god", new MPGodSwordItem());
 
-    public static final RegistryObject<Item> ManaitaBow = ITEMS.register("manaita_bow", MPBowItem::new);
+    public static final Item ManaitaBow = register(BuiltInRegistries.ITEM, "manaita_bow", new MPBowItem());
 
-    public static final RegistryObject<Item> ManaitaAxe = ITEMS.register("manaita_axe", MPAxeItem::new);
-    public static final RegistryObject<Item> ManaitaHoe = ITEMS.register("manaita_hoe", MPHoeItem::new);
-    public static final RegistryObject<Item> ManaitaPaxel = ITEMS.register("manaita_paxel", MPPaxelItem::new);
-    public static final RegistryObject<Item> ManaitaPickaxe = ITEMS.register("manaita_pickaxe", MPPickaxeItem::new);
-    public static final RegistryObject<Item> ManaitaShears = ITEMS.register("manaita_shears", MPShearsItem::new);
-    public static final RegistryObject<Item> ManaitaShovel = ITEMS.register("manaita_shovel", MPShovelItem::new);
-    public static final RegistryObject<Item> ManaitaHelmet = ITEMS.register("manaita_helmet", MPArmor.Helmet::new);
-    public static final RegistryObject<Item> ManaitaChestplate = ITEMS.register("manaita_chestplate", MPArmor.Chestplate::new);
-    public static final RegistryObject<Item> ManaitaLeggings = ITEMS.register("manaita_leggings", MPArmor.Leggings::new);
-    public static final RegistryObject<Item> ManaitaBoots = ITEMS.register("manaita_boots", MPArmor.Boots::new);
+    public static final Item ManaitaAxe = register(BuiltInRegistries.ITEM, "manaita_axe", new MPAxeItem());
+    public static final Item ManaitaHoe = register(BuiltInRegistries.ITEM, "manaita_hoe", new MPHoeItem());
+    public static final Item ManaitaPaxel = register(BuiltInRegistries.ITEM, "manaita_paxel", new MPPaxelItem());
+    public static final Item ManaitaPickaxe = register(BuiltInRegistries.ITEM, "manaita_pickaxe", new MPPickaxeItem());
+    public static final Item ManaitaShears = register(BuiltInRegistries.ITEM, "manaita_shears", new MPShearsItem());
+    public static final Item ManaitaShovel = register(BuiltInRegistries.ITEM, "manaita_shovel", new MPShovelItem());
+    public static final Item ManaitaHelmet = register(BuiltInRegistries.ITEM, "manaita_helmet", new MPArmor.Helmet());
+    public static final Item ManaitaChestplate = register(BuiltInRegistries.ITEM, "manaita_chestplate", new MPArmor.Chestplate());
+    public static final Item ManaitaLeggings = register(BuiltInRegistries.ITEM, "manaita_leggings", new MPArmor.Leggings());
+    public static final Item ManaitaBoots = register(BuiltInRegistries.ITEM, "manaita_boots", new MPArmor.Boots());
 
-    public static final RegistryObject<Item> ManaitaSource = ITEMS.register("manaita_source", MPSourceItem::new);
-    public static final RegistryObject<Item> ManaitaHook = ITEMS.register("manaita_hook", MPHookItem::new);
-    public static final RegistryObject<Item> ManaitaCraftingRing = ITEMS.register("manaita_crafting_ring", () -> MPTrinketsCompat.createRingItem("item.ringCrafting.", "CRAFTING"));
-    public static final RegistryObject<Item> ManaitaFurnaceRing = ITEMS.register("manaita_furnace_ring", () -> MPTrinketsCompat.createRingItem("item.ringFurnace.", "FURNACE"));
-    public static final RegistryObject<Item> ManaitaBrewingRing = ITEMS.register("manaita_brewing_ring", () -> MPTrinketsCompat.createRingItem("item.ringBrewing.", "BREWING"));
+    public static final Item ManaitaSource = register(BuiltInRegistries.ITEM, "manaita_source", new MPSourceItem());
+    public static final Item ManaitaHook = register(BuiltInRegistries.ITEM, "manaita_hook", new MPHookItem());
+    public static final Item ManaitaCraftingRing = register(BuiltInRegistries.ITEM, "manaita_crafting_ring", MPTrinketsCompat.createRingItem("item.ringCrafting.", "CRAFTING"));
+    public static final Item ManaitaFurnaceRing = register(BuiltInRegistries.ITEM, "manaita_furnace_ring", MPTrinketsCompat.createRingItem("item.ringFurnace.", "FURNACE"));
+    public static final Item ManaitaBrewingRing = register(BuiltInRegistries.ITEM, "manaita_brewing_ring", MPTrinketsCompat.createRingItem("item.ringBrewing.", "BREWING"));
 
-    public static final RegistryObject<Item> ManaitaCraftingPortable = ITEMS.register("manaita_crafting_portable", MPCraftingPortable::new);
-    public static final RegistryObject<Item> ManaitaFurnacePortable = ITEMS.register("manaita_furnace_portable", MPFurnacePortable::new);
-    public static final RegistryObject<Item> ManaitaBrewingPortable = ITEMS.register("manaita_brewing_portable", MPBrewingPortable::new);
+    public static final Item ManaitaCraftingPortable = register(BuiltInRegistries.ITEM, "manaita_crafting_portable", new MPCraftingPortable());
+    public static final Item ManaitaFurnacePortable = register(BuiltInRegistries.ITEM, "manaita_furnace_portable", new MPFurnacePortable());
+    public static final Item ManaitaBrewingPortable = register(BuiltInRegistries.ITEM, "manaita_brewing_portable", new MPBrewingPortable());
 }
-

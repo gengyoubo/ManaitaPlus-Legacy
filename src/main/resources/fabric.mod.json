@@ -23,17 +23,21 @@
     "client": [
       "github.com.gengyoubo.MPGClient"
     ],
+    "fabric-datagen": [
+      "github.com.gengyoubo.datagen.MPDataGenerator"
+    ],
     "jei_mod_plugin": [
       "github.com.gengyoubo.jei.MPJeiPlugin"
     ]
   },
   "mixins": [
-    "manaita_plus_general.mixins.json"
+    "manaita_plus_general.mixins.json",
+    "manaita_plus_general_client.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.15.11",
-    "minecraft": "~1.21.1",
-    "java": ">=21",
+    "fabricloader": "*",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
     "fabric-api": "*"
   },
   "suggests": {

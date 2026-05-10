@@ -1,13 +1,17 @@
 package github.com.gengyoubo.compat;
 
 import github.com.gengyoubo.item.MPTypedRingItem;
+import github.com.gengyoubo.MPG;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
@@ -23,12 +27,19 @@ public final class MPTrinketsCompat {
     }
 
     public static Item createRingItem(String translationPrefix, String ringKindName) {
+        MPTypedRingItem.RingKind ringKind = MPTypedRingItem.RingKind.valueOf(ringKindName);
         if (!isLoaded()) {
             return new Item(new Item.Properties().stacksTo(1).fireResistant());
         }
 
-        MPTypedRingItem.RingKind ringKind = MPTypedRingItem.RingKind.valueOf(ringKindName);
-        return new MPTypedRingItem(translationPrefix, ringKind);
+        try {
+            Class<?> ringClass = Class.forName("github.com.gengyoubo.compat.trinkets.MPTrinketRingItem");
+            Constructor<?> constructor = ringClass.getConstructor(String.class, MPTypedRingItem.RingKind.class);
+            return (Item) constructor.newInstance(translationPrefix, ringKind);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            MPG.LOGGER.warn("Failed to create Trinkets ring item, falling back to inert item", e);
+            return new Item(new Item.Properties().stacksTo(1).fireResistant());
+        }
     }
 
     public static boolean equipItem(Player player, ItemStack stack) {
@@ -40,8 +51,9 @@ public final class MPTrinketsCompat {
             Class<?> trinketItemClass = Class.forName("dev.emi.trinkets.api.TrinketItem");
             Method equipMethod = trinketItemClass.getMethod("equipItem", LivingEntity.class, ItemStack.class);
             return (boolean) equipMethod.invoke(null, player, stack);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to equip Trinkets item", e);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            MPG.LOGGER.warn("Failed to equip Trinkets item", e);
+            return false;
         }
     }
 
@@ -73,8 +85,9 @@ public final class MPTrinketsCompat {
                 return Optional.of(offhandRing);
             }
             return Optional.empty();
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to query Trinkets ring inventory", e);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            MPG.LOGGER.warn("Failed to query Trinkets ring inventory", e);
+            return Optional.empty();
         }
     }
 
@@ -91,11 +104,23 @@ public final class MPTrinketsCompat {
 
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack stack = container.getItem(i);
-            if (!stack.isEmpty() && stack.getItem() instanceof MPTypedRingItem) {
+            if (!stack.isEmpty() && isManaitaRing(stack)) {
                 return stack;
             }
         }
 
         return ItemStack.EMPTY;
+    }
+
+    private static boolean isManaitaRing(ItemStack stack) {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (!MPG.MODID.equals(id.getNamespace())) {
+            return false;
+        }
+
+        return switch (id.getPath()) {
+            case "manaita_crafting_ring", "manaita_furnace_ring", "manaita_brewing_ring" -> true;
+            default -> false;
+        };
     }
 }

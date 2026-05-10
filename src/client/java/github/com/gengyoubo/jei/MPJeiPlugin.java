@@ -9,11 +9,11 @@ import github.com.gengyoubo.block.item.MPFurnaceBlockItem;
 import github.com.gengyoubo.block.item.MPHookBlockItem;
 import github.com.gengyoubo.core.MPBlockCore;
 import github.com.gengyoubo.core.MPItemCore;
-import github.com.gengyoubo.recipe.MPNBTCraftingRecipe;
 import github.com.gengyoubo.util.MPNBTData;
 import github.com.gengyoubo.gui.MPBrewingStandScreen;
 import github.com.gengyoubo.gui.MPCraftingScreen;
 import github.com.gengyoubo.gui.MPFurnaceScreen;
+import github.com.gengyoubo.recipe.MPNBTCraftingRecipe;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -26,19 +26,31 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @JeiPlugin
 public class MPJeiPlugin implements IModPlugin {
-    private static final ResourceLocation UID = github.com.gengyoubo.util.MPResource.id("manaita_plus_general", "jei_plugin");
+    private static final ResourceLocation UID = new ResourceLocation("manaita_plus_general", "jei_plugin");
+    private static final String RECIPE_PATH_PREFIX = "recipes/";
+    private static final String RECIPE_FILE_SUFFIX = ".json";
+    private static final String MANAITA_CRAFTING_TYPE = MPG.MODID + ":manaita_crafting_type";
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
@@ -47,17 +59,31 @@ public class MPJeiPlugin implements IModPlugin {
 
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {
-        registration.registerSubtypeInterpreter(MPBlockCore.CraftingBlockItem.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPBlockCore.FurnaceBlockItem.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPBlockCore.BrewingBlockItem.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPBlockCore.HookBlockItem.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingPortable.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnacePortable.get(), MPJeiPlugin::getTypedSubtype);
-        registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingPortable.get(), MPJeiPlugin::getTypedSubtype);
+        ItemLike[] items = {
+                MPBlockCore.CraftingBlockItem,
+                MPBlockCore.FurnaceBlockItem,
+                MPBlockCore.BrewingBlockItem,
+                MPBlockCore.HookBlockItem,
+
+                MPItemCore.ManaitaCraftingPortable,
+                MPItemCore.ManaitaFurnacePortable,
+                MPItemCore.ManaitaBrewingPortable
+        };
+
+        for (ItemLike item : items) {
+            registration.registerSubtypeInterpreter((Item) item, MPJeiPlugin::getTypedSubtype);
+        }
+
         if (MPTrinketsCompat.isLoaded()) {
-            registration.registerSubtypeInterpreter(MPItemCore.ManaitaCraftingRing.get(), MPJeiPlugin::getTypedSubtype);
-            registration.registerSubtypeInterpreter(MPItemCore.ManaitaFurnaceRing.get(), MPJeiPlugin::getTypedSubtype);
-            registration.registerSubtypeInterpreter(MPItemCore.ManaitaBrewingRing.get(), MPJeiPlugin::getTypedSubtype);
+            ItemLike[] trinketItems = {
+                    MPItemCore.ManaitaCraftingRing,
+                    MPItemCore.ManaitaFurnaceRing,
+                    MPItemCore.ManaitaBrewingRing
+            };
+
+            for (ItemLike item : trinketItems) {
+                registration.registerSubtypeInterpreter((Item) item, MPJeiPlugin::getTypedSubtype);
+            }
         }
     }
 
@@ -71,11 +97,12 @@ public class MPJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         MPG.LOGGER.info("Registering JEI recipes for source copying");
         registration.addRecipes(MPSourceCopyRecipeCategory.TYPE, createSourceCopyRecipes());
-        registration.addRecipes(RecipeTypes.CRAFTING, createTypedCraftingRecipes());
+        List<CraftingRecipe> manaitaCraftingRecipes = createManaitaCraftingRecipes();
+        MPG.LOGGER.info("Registering {} Manaita typed crafting recipes with JEI", manaitaCraftingRecipes.size());
+        registration.addRecipes(RecipeTypes.CRAFTING, manaitaCraftingRecipes);
         registration.addItemStackInfo(
-                new ItemStack(MPItemCore.ManaitaSource.get()),
-                Component.translatable("jei.manaita_plus_general.source.info.1"),
-                Component.translatable("jei.manaita_plus_general.source.info.2", MPGConfig.source_doubling_value)
+                new ItemStack(MPItemCore.ManaitaSource),
+                Component.translatable("jei.manaita_plus_general.source.info.1", MPGConfig.source_doubling_value)
         );
     }
 
@@ -88,31 +115,39 @@ public class MPJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaSource.get()), MPSourceCopyRecipeCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(MPItemCore.ManaitaSource), MPSourceCopyRecipeCategory.TYPE);
     }
 
     private static List<MPSourceCopyJeiRecipe> createSourceCopyRecipes() {
-        return Stream.concat(
+        List<ItemStack> inputs = Stream.concat(
                         BuiltInRegistries.ITEM.stream()
                                 .filter(MPJeiPlugin::isCopyableItem)
                                 .sorted(Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString()))
                                 .map(Item::getDefaultInstance),
                         createTypedCopyableStacks()
                 )
-                .filter(stack -> !stack.isEmpty())
-                .map(MPJeiPlugin::createRecipe)
+                .filter(Predicate.not(ItemStack::isEmpty))
                 .toList();
+
+        if (inputs.isEmpty()) {
+            return List.of();
+        }
+
+        List<ItemStack> outputs = inputs.stream()
+                .map(MPJeiPlugin::createCopyOutput)
+                .toList();
+
+        return List.of(new MPSourceCopyJeiRecipe(inputs, outputs, MPGConfig.source_doubling_value));
     }
 
-    private static MPSourceCopyJeiRecipe createRecipe(ItemStack input) {
-        int sourceResultCount = input.getCount() * MPGConfig.source_doubling_value;
+    private static ItemStack createCopyOutput(ItemStack input) {
         ItemStack output = input.copy();
-        output.setCount(Math.max(sourceResultCount, 1));
-        return new MPSourceCopyJeiRecipe(input, output, sourceResultCount);
+        output.setCount(Math.max(input.getCount() * MPGConfig.source_doubling_value, 1));
+        return output;
     }
 
     private static boolean isCopyableItem(Item item) {
-        if (item == MPItemCore.ManaitaSource.get()) {
+        if (item == MPItemCore.ManaitaSource) {
             return false;
         }
         if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem || item instanceof MPHookBlockItem) {
@@ -122,30 +157,33 @@ public class MPJeiPlugin implements IModPlugin {
     }
 
     private static Stream<ItemStack> createTypedCopyableStacks() {
-        Stream<ItemStack> baseStacks = Stream.of(
-                        createTypedStacks(MPBlockCore.CraftingBlockItem.get(), 8),
-                        createTypedStacks(MPBlockCore.FurnaceBlockItem.get(), 8),
-                        createTypedStacks(MPBlockCore.BrewingBlockItem.get(), 8),
-                        createTypedStacks(MPBlockCore.HookBlockItem.get(), 7),
-                        createTypedStacks(MPItemCore.ManaitaCraftingPortable.get(), 8),
-                        createTypedStacks(MPItemCore.ManaitaFurnacePortable.get(), 8),
-                        createTypedStacks(MPItemCore.ManaitaBrewingPortable.get(), 8)
-                )
-                .flatMap(s -> s);
+        Stream<ItemStack> baseStacks = createTypedStacks(
+                MPBlockCore.CraftingBlockItem,
+                MPBlockCore.FurnaceBlockItem,
+                MPBlockCore.BrewingBlockItem,
+                MPBlockCore.HookBlockItem,
+                MPItemCore.ManaitaCraftingPortable,
+                MPItemCore.ManaitaFurnacePortable,
+                MPItemCore.ManaitaBrewingPortable
+        );
 
         Stream<ItemStack> ringStacks = MPTrinketsCompat.isLoaded()
-                ? Stream.of(
-                        createTypedStacks(MPItemCore.ManaitaCraftingRing.get(), 8),
-                        createTypedStacks(MPItemCore.ManaitaFurnaceRing.get(), 8),
-                        createTypedStacks(MPItemCore.ManaitaBrewingRing.get(), 8)
-                ).flatMap(s -> s)
+                ? createTypedStacks(
+                MPItemCore.ManaitaCraftingRing,
+                MPItemCore.ManaitaFurnaceRing,
+                MPItemCore.ManaitaBrewingRing
+        )
                 : Stream.empty();
 
         return Stream.concat(baseStacks, ringStacks);
     }
 
-    private static Stream<ItemStack> createTypedStacks(Item item, int maxType) {
-        return java.util.stream.IntStream.rangeClosed(0, maxType)
+    private static Stream<ItemStack> createTypedStacks(Item... items) {
+        return Arrays.stream(items).flatMap(MPJeiPlugin::createTypedStacks);
+    }
+
+    private static Stream<ItemStack> createTypedStacks(Item item) {
+        return IntStream.rangeClosed(0, 8)
                 .mapToObj(type -> {
                     ItemStack stack = new ItemStack(item);
                     stack.getOrCreateTag().putInt(MPNBTData.ItemType, type);
@@ -153,16 +191,52 @@ public class MPJeiPlugin implements IModPlugin {
                 });
     }
 
-    private static List<CraftingRecipe> createTypedCraftingRecipes() {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null) {
-            MPG.LOGGER.warn("Skipping JEI typed crafting recipe registration because no client level is loaded yet");
-            return List.of();
-        }
-        return minecraft.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING).stream()
-                .filter(MPNBTCraftingRecipe.class::isInstance)
+    private static List<CraftingRecipe> createManaitaCraftingRecipes() {
+        return loadManaitaTypedCraftingRecipes().stream()
+                .filter(MPJeiPlugin::isVisibleInCraftingJei)
                 .sorted(Comparator.comparing(recipe -> recipe.getId().toString()))
                 .toList();
+    }
+
+    private static List<CraftingRecipe> loadManaitaTypedCraftingRecipes() {
+        Map<ResourceLocation, Resource> resources = Minecraft.getInstance().getResourceManager()
+                .listResources("recipes", resource -> resource.getPath().endsWith(RECIPE_FILE_SUFFIX));
+
+        return resources.entrySet().stream()
+                .filter(entry -> MPG.MODID.equals(entry.getKey().getNamespace()))
+                .map(MPJeiPlugin::loadManaitaTypedCraftingRecipe)
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    private static Optional<CraftingRecipe> loadManaitaTypedCraftingRecipe(Map.Entry<ResourceLocation, Resource> entry) {
+        ResourceLocation resourceId = entry.getKey();
+        try (Reader reader = entry.getValue().openAsReader()) {
+            var json = GsonHelper.parse(reader);
+            if (!MANAITA_CRAFTING_TYPE.equals(GsonHelper.getAsString(json, "type", ""))) {
+                return Optional.empty();
+            }
+            return Optional.of(new MPNBTCraftingRecipe.Serializer().fromJson(toRecipeId(resourceId), json));
+        } catch (IOException | RuntimeException exception) {
+            MPG.LOGGER.warn("Failed to load Manaita typed crafting recipe {} for JEI", resourceId, exception);
+            return Optional.empty();
+        }
+    }
+
+    private static ResourceLocation toRecipeId(ResourceLocation resourceId) {
+        String path = resourceId.getPath();
+        if (path.startsWith(RECIPE_PATH_PREFIX)) {
+            path = path.substring(RECIPE_PATH_PREFIX.length());
+        }
+        if (path.endsWith(RECIPE_FILE_SUFFIX)) {
+            path = path.substring(0, path.length() - RECIPE_FILE_SUFFIX.length());
+        }
+        return new ResourceLocation(resourceId.getNamespace(), path);
+    }
+
+    private static boolean isVisibleInCraftingJei(CraftingRecipe recipe) {
+        return !(recipe instanceof MPNBTCraftingRecipe typedRecipe)
+                || typedRecipe.getDisplayResult().getItem() != MPItemCore.ManaitaSource;
     }
 
     private static String getTypedSubtype(ItemStack stack, mezz.jei.api.ingredients.subtypes.UidContext context) {

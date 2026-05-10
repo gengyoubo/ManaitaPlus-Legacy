@@ -18,6 +18,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -28,7 +29,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class MPGClient implements ClientModInitializer {
-    private static final ResourceLocation TYPE_PREDICATE = github.com.gengyoubo.util.MPResource.id(MPG.MODID, MPNBTData.Type);
+    private static final ResourceLocation TYPE_PREDICATE = new ResourceLocation(MPG.MODID, MPNBTData.Type);
+    private static final boolean DEBUG_TYPE_PREDICATE = Boolean.getBoolean("manaita_plus_general.debugTypePredicate");
     private static final String[] TYPE_ITEMS = {
             "block_crafting_manaita",
             "block_furnace_manaita",
@@ -45,23 +47,28 @@ public class MPGClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        MPNetworking.initCommon();
         registerTypePredicates();
         MPGKeyBindings.init();
-        MenuScreens.register(MPMenuCore.CraftingManaita.get(), MPCraftingScreen::new);
-        MenuScreens.register(MPMenuCore.FurnaceManaita.get(), MPFurnaceScreen::new);
-        MenuScreens.register(MPMenuCore.BrewingStandManaita.get(), MPBrewingStandScreen::new);
-        BlockEntityRenderers.register(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY.get(), RenderMPCraftingBlockEntity::new);
-        BlockEntityRenderers.register(MPBlockEntityCore.FURNACE_BLOCK_ENTITY.get(), RenderMPFurnaceBlockEntity::new);
-        BlockEntityRenderers.register(MPBlockEntityCore.BREWING_BLOCK_ENTITY.get(), RenderMPBrewingBlockEntity::new);
+        MenuScreens.register(MPMenuCore.CraftingManaita, MPCraftingScreen::new);
+        MenuScreens.register(MPMenuCore.FurnaceManaita, MPFurnaceScreen::new);
+        MenuScreens.register(MPMenuCore.BrewingStandManaita, MPBrewingStandScreen::new);
+        BlockEntityRenderers.register(MPBlockEntityCore.CRAFTING_BLOCK_ENTITY, RenderMPCraftingBlockEntity::new);
+        BlockEntityRenderers.register(MPBlockEntityCore.FURNACE_BLOCK_ENTITY, RenderMPFurnaceBlockEntity::new);
+        BlockEntityRenderers.register(MPBlockEntityCore.BREWING_BLOCK_ENTITY, RenderMPBrewingBlockEntity::new);
         registerEntityRenderers();
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK.type(), (payload, context) -> {
-            context.client().execute(() -> MPClientPacketHandlers.handleDestroyBlock(payload));
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.DESTROY_BLOCK, (client, handler, buf, responseSender) -> {
+            MPDestroyBlockPacket packet = new MPDestroyBlockPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleDestroyBlock(packet));
         });
-        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA.type(), (payload, context) -> {
-            context.client().execute(() -> MPClientPacketHandlers.handleChangeEntityData(payload));
+        ClientPlayNetworking.registerGlobalReceiver(MPNetworking.CHANGE_ENTITY_DATA, (client, handler, buf, responseSender) -> {
+            MPChangeEntityDataPacket packet = new MPChangeEntityDataPacket(buf);
+            client.execute(() -> MPClientPacketHandlers.handleChangeEntityData(packet));
         });
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> registerTypePredicates());
+        ClientLifecycleEvents.CLIENT_STARTED.register(MPGClient::registerTypePredicates);
+    }
+
+    private static void registerTypePredicates(Minecraft client) {
+        registerTypePredicates();
     }
 
     private static void registerTypePredicates() {
@@ -70,7 +77,7 @@ public class MPGClient implements ClientModInitializer {
         }
 
         for (String itemPath : TYPE_ITEMS) {
-            ResourceLocation id = github.com.gengyoubo.util.MPResource.id(MPG.MODID, itemPath);
+            ResourceLocation id = new ResourceLocation(MPG.MODID, itemPath);
             Item item = BuiltInRegistries.ITEM.get(id);
             if (item == net.minecraft.world.item.Items.AIR) {
                 MPG.LOGGER.warn("Skipped predicate registration for missing item {}", id);
@@ -85,7 +92,7 @@ public class MPGClient implements ClientModInitializer {
 
     @SuppressWarnings("unchecked")
     private static void registerEntityRenderers() {
-        ResourceLocation arrowId = github.com.gengyoubo.util.MPResource.id(MPG.MODID, "manaita_arrow");
+        ResourceLocation arrowId = new ResourceLocation(MPG.MODID, "manaita_arrow");
         if (!BuiltInRegistries.ENTITY_TYPE.containsKey(arrowId)) {
             MPG.LOGGER.warn("Skipped renderer registration for missing entity {}", arrowId);
             return;
@@ -95,15 +102,21 @@ public class MPGClient implements ClientModInitializer {
     }
 
     private static float readTypeValue(ItemStack stack, net.minecraft.client.multiplayer.ClientLevel level, net.minecraft.world.entity.LivingEntity entity, int seed) {
-        if (!github.com.gengyoubo.util.MPItemStackData.hasTag(stack) || github.com.gengyoubo.util.MPItemStackData.getTag(stack) == null) {
+        if (stack.isEmpty() || !stack.hasTag() || stack.getTag() == null) {
             return 0.0F;
         }
-        return normalizeTypeValue(github.com.gengyoubo.util.MPItemStackData.getTag(stack).getInt(MPNBTData.ItemType));
+
+        int type = stack.getTag().getInt(MPNBTData.ItemType);
+        float value = normalizeTypeValue(type);
+        if (DEBUG_TYPE_PREDICATE && value > 0.0F) {
+            MPG.LOGGER.info("Type predicate for {} read {} from {}", stack.getItem(), value, stack.getTag());
+        }
+        return value;
     }
 
     private static float normalizeTypeValue(int type) {
         return switch (type) {
-            case 1, 2, 3, 4, 5, 6, 7, 8 -> type / 8.0F;
+            case 1, 2, 3, 4, 5, 6, 7, 8 -> type / 10.0F;
             default -> 0.0F;
         };
     }

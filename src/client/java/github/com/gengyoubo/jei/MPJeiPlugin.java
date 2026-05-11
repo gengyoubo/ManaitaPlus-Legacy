@@ -243,6 +243,8 @@ public class MPJeiPlugin implements IModPlugin {
         if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains(MPNBTData.ItemType)) {
             return MPNBTData.ItemType + ":" + stack.getTag().getInt(MPNBTData.ItemType);
         }
-        return "default";
+        return MPNBTData.ItemType + ":0";
     }
 }
+
+

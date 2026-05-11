@@ -1,10 +1,10 @@
-{
+﻿{
   "itemGroup.ManaitaPlusTab":"更好的砧板",
 
   "jei.manaita_plus_general.source_copying": "砧板之尘复制",
   "jei.manaita_plus_general.source_copying.source_result": "倍率结果 x%s",
   "jei.manaita_plus_general.source_copying.crafting_result": "砧板最终结果 x%s",
-  "jei.manaita_plus_general.source.info.1": "与任意物品一起放入合成栏,将复制物品数量乘以%s倍",
+  "jei.manaita_plus_general.source.info.1": "与目标物品一起放入合成栏。消耗砧板之尘，获得 %s 倍目标物品，并保留物品数据。",
   "jei.manaita_plus_general.station.crafting": "砧板工作台",
   "jei.manaita_plus_general.station.furnace": "砧板熔炉",
   "container.crafting_manaita": "砧板工作台",
@@ -157,3 +157,5 @@
   "enchantments.fortune": "时运",
   "enchantments.silktouch": "精准挖掘"
 }
+
+

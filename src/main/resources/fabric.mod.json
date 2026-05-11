@@ -32,7 +32,10 @@
   },
   "mixins": [
     "manaita_plus_general.mixins.json",
-    "manaita_plus_general_client.mixins.json"
+    {
+      "config": "manaita_plus_general_client.mixins.json",
+      "environment": "client"
+    }
   ],
   "depends": {
     "fabricloader": "*",

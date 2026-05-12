@@ -19,26 +19,51 @@ public final class ClientPacketHandlers {
     private ClientPacketHandlers() {}
 
     public static void handleDestroyBlock(DestroyBlockPacket packet) {
-        Minecraft mc = Minecraft.getInstance();
-        ClientLevel level = mc.level;
-        if (level == null || mc.player == null) return;
-        if (!(packet.getItem() instanceof IMPGDestroy des)) return;
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        net.minecraft.client.player.LocalPlayer player = minecraft.player;
 
-        BlockPos blockPos = packet.getBlockPos();
+        if (level == null || player == null) {
+            return;
+        }
+
+        if (!(packet.getItem() instanceof IMPGDestroy destroyItem)) {
+            return;
+        }
+
+        BlockPos center = packet.getBlockPos();
         int range = packet.getRange();
-        int xM = blockPos.getX() + range;
-        int yM = blockPos.getY() + range;
-        int zM = blockPos.getZ() + range;
-        BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
-        for (int x = blockPos.getX() - range; x <= xM; x++) {
-            for (int y = blockPos.getY() - range; y <= yM; y++) {
-                for (int z = blockPos.getZ() - range; z <= zM; z++) {
-                    BlockState blockState = level.getBlockState(mutableBlockPos.set(x, y, z));
-                    if (des.accept(blockState)) continue;
 
-                    MPUtils.setBlock(level, mutableBlockPos, level.getFluidState(mutableBlockPos).createLegacyBlock(), 10);
-                    SoundType soundtype = blockState.getSoundType(level, mutableBlockPos, mc.player);
-                    mc.getSoundManager().play(new SimpleSoundInstance(soundtype.getHitSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 8.0F, soundtype.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), mutableBlockPos));
+        int minX = center.getX() - range;
+        int minY = center.getY() - range;
+        int minZ = center.getZ() - range;
+        int maxX = center.getX() + range;
+        int maxY = center.getY() + range;
+        int maxZ = center.getZ() + range;
+
+        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    mutablePos.set(x, y, z);
+
+                    BlockState state = level.getBlockState(mutablePos);
+                    if (destroyItem.accept(state)) {
+                        continue;
+                    }
+
+                    MPUtils.setBlock(level, mutablePos, level.getFluidState(mutablePos).createLegacyBlock(), 10);
+
+                    SoundType soundType = state.getSoundType();
+                    minecraft.getSoundManager().play(new SimpleSoundInstance(
+                            soundType.getHitSound(),
+                            SoundSource.BLOCKS,
+                            (soundType.getVolume() + 1.0F) / 8.0F,
+                            soundType.getPitch() * 0.5F,
+                            SoundInstance.createUnseededRandom(),
+                            mutablePos.immutable()
+                    ));
                 }
             }
         }

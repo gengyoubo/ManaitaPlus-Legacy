@@ -62,6 +62,9 @@ public class MPGConfig
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
+        if (event.getConfig().getSpec() != SPEC) {
+            return;
+        }
         creative_range_destroy_value = creative_range_destroy.get();
         easy_mode_value = easy_mode.get();
         item_drops_doubling_value = item_drops_doubling.get();

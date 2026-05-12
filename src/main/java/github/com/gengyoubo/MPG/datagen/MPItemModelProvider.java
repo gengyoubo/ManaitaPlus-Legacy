@@ -2,9 +2,9 @@ package github.com.gengyoubo.MPG.datagen;
 
 import github.com.gengyoubo.MPG.MPG;
 import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.ItemModelBuilder;
+import net.minecraftforge.client.model.generators.ItemModelProvider;
+import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class MPItemModelProvider extends ItemModelProvider {
     private static final String[] TYPE_TEXTURE_SUFFIXES = {

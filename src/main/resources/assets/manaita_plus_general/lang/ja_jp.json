@@ -119,6 +119,9 @@
   "key.manaita":"まな板",
   "key.manaita.armor":"まな板の防具",
 
+  "message.manaita_plus_general.update.available": "ManaitaPlusGeneral の更新があります。現在のバージョン：%s、最新バージョン：%s",
+  "message.manaita_plus_general.update.current": "ManaitaPlusGeneral は最新です。現在のバージョン：%s、最新バージョン：%s",
+
   "enchantments.fortune": "时运",
   "enchantments.silktouch": "精准挖掘"
 }

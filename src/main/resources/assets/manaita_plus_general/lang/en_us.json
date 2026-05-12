@@ -147,6 +147,9 @@
   "key.manaita":"Cutting Board",
   "key.manaita.armor":"Cutting Board Armor",
 
+  "message.manaita_plus_general.update.available": "ManaitaPlusGeneral update available. Current: %s, Latest: %s",
+  "message.manaita_plus_general.update.current": "ManaitaPlusGeneral is up to date. Current: %s, Latest: %s",
+
   "enchantments.fortune": "Fortune",
   "enchantments.silktouch": "Silktouch"
 }

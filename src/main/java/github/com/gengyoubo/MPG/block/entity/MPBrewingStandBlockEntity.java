@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.block.MPBrewingStandBlock;
@@ -81,26 +82,33 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         return true;
     }
 
-    public static void serverTick(Level p_155286_, BlockPos p_155287_, BlockState p_155288_, MPBrewingStandBlockEntity p_155289_) {
-        if (isBrewable(p_155289_.items)) {
-            doBrew(p_155286_, p_155287_, p_155289_.items);
-            setChanged(p_155286_, p_155287_, p_155288_);
+    public static void serverTick(Level level, BlockPos pos, BlockState state, MPBrewingStandBlockEntity blockEntity) {
+        NonNullList<ItemStack> items = blockEntity.items;
+
+        if (isBrewable(items)) {
+            doBrew(level, pos, items);
+            setChanged(level, pos, state);
         }
 
-        boolean[] aboolean = p_155289_.getPotionBits();
-        if (!Arrays.equals(aboolean, p_155289_.lastPotionCount)) {
-            p_155289_.lastPotionCount = aboolean;
-            BlockState blockstate = p_155288_;
-            if (!(p_155288_.getBlock() instanceof MPBrewingStandBlock)) {
-                return;
-            }
-
-            for (int i = 0; i < MPBrewingStandBlock.HAS_BOTTLE.length; ++i) {
-                blockstate = blockstate.setValue(MPBrewingStandBlock.HAS_BOTTLE[i], aboolean[i]);
-            }
-
-            p_155286_.setBlock(p_155287_, blockstate, 2);
+        boolean[] potionBits = blockEntity.getPotionBits();
+        if (Arrays.equals(potionBits, blockEntity.lastPotionCount)) {
+            return;
         }
+
+        blockEntity.lastPotionCount = potionBits;
+
+        if (!(state.getBlock() instanceof MPBrewingStandBlock)) {
+            return;
+        }
+
+        BlockState newState = state;
+        BooleanProperty[] bottleProperties = MPBrewingStandBlock.HAS_BOTTLE;
+
+        for (int i = 0; i < bottleProperties.length; i++) {
+            newState = newState.setValue(bottleProperties[i], potionBits[i]);
+        }
+
+        level.setBlock(pos, newState, 2);
     }
 
     private boolean[] getPotionBits() {

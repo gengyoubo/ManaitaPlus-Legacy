@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -34,6 +35,7 @@ import github.com.gengyoubo.MPG.trades.MPGBowVillagerTrade;
 import github.com.gengyoubo.MPG.trades.MPGSwordGodVillagerTrade;
 import github.com.gengyoubo.MPG.util.MPGEntityData;
 import github.com.gengyoubo.MPG.util.MPUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
@@ -42,26 +44,41 @@ import java.util.List;
 public class EventHandler {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        Item item = event.getItemStack().getItem();
-        if (item instanceof IMPGKey) {
-            List<Component> toolTip = event.getToolTip();
-            Iterator<Component> iterator = toolTip.iterator();
-            while (iterator.hasNext()) {
-                Component component = iterator.next();
-                if (component instanceof MutableComponent mutableComponent) {
-                    ComponentContents contents = mutableComponent.getContents();
-                    if (contents instanceof TranslatableContents translatableContents) {
-                        if (translatableContents.getKey().startsWith("item.modifiers.")) {
-                            while (iterator.hasNext()) {
-                                iterator.next();
-                                iterator.remove();
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
+        ItemStack stack = event.getItemStack();
+
+        if (!(stack.getItem() instanceof IMPGKey)) {
+            return;
         }
+
+        List<Component> tooltip = event.getToolTip();
+        Iterator<Component> iterator = tooltip.iterator();
+
+        while (iterator.hasNext()) {
+            Component component = iterator.next();
+
+            if (!isAttributeModifierLine(component)) {
+                continue;
+            }
+
+            while (iterator.hasNext()) {
+                iterator.next();
+                iterator.remove();
+            }
+
+            return;
+        }
+    }
+
+    private static boolean isAttributeModifierLine(Component component) {
+        if (!(component instanceof MutableComponent mutableComponent)) {
+            return false;
+        }
+
+        if (!(mutableComponent.getContents() instanceof TranslatableContents contents)) {
+            return false;
+        }
+
+        return contents.getKey().startsWith("item.modifiers.");
     }
 
     @SubscribeEvent
@@ -79,34 +96,39 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void onLivingDrops(LivingDropsEvent event) {
-        Player player;
-        if (event.getSource().getEntity() instanceof Player) {
-            player = (Player) event.getSource().getEntity();
-        } else {
-            LivingEntity killCredit = event.getEntity().getKillCredit();
-            if (killCredit instanceof Player) {
-                player = (Player) killCredit;
-            } else {
-                return;
-            }
+        Player player = getDropKiller(event);
+        if (player == null) {
+            return;
         }
-        ItemStack mainHandItem = player.getMainHandItem();
-        if (mainHandItem.getItem() instanceof IMPGDoubling doublingItem) {
-            if (doublingItem.isDoubling(mainHandItem)) {
-                int magnification = MPGConfig.item_drops_doubling_value;
-                for (ItemEntity drop : event.getDrops()) {
-                    ItemStack dropStack = drop.getItem().copy();
-                    dropStack.setCount(dropStack.getCount() * magnification);
-                    ItemHandlerHelper.giveItemToPlayer(player, dropStack);
-                }
-            } else {
-                for (ItemEntity drop : event.getDrops()) {
-                    ItemHandlerHelper.giveItemToPlayer(player, drop.getItem().copy());
-                }
-            }
-            event.getDrops().clear();
-            event.setCanceled(true);
+
+        ItemStack mainHandStack = player.getMainHandItem();
+        if (!(mainHandStack.getItem() instanceof IMPGDoubling doublingItem)) {
+            return;
         }
+
+        int multiplier = doublingItem.isDoubling(mainHandStack)
+                ? MPGConfig.item_drops_doubling_value
+                : 1;
+
+        for (ItemEntity drop : event.getDrops()) {
+            ItemStack stack = drop.getItem().copy();
+            stack.setCount(stack.getCount() * multiplier);
+            ItemHandlerHelper.giveItemToPlayer(player, stack);
+        }
+
+        event.getDrops().clear();
+        event.setCanceled(true);
+    }
+
+    @Nullable
+    private static Player getDropKiller(LivingDropsEvent event) {
+        Entity sourceEntity = event.getSource().getEntity();
+        if (sourceEntity instanceof Player player) {
+            return player;
+        }
+
+        LivingEntity killCredit = event.getEntity().getKillCredit();
+        return killCredit instanceof Player player ? player : null;
     }
 
     @SubscribeEvent

@@ -32,55 +32,62 @@ public class MPHookBlockItem extends BlockItem {
         return Component.translatable("tile.fixed_hook." + p_41458_.getOrCreateTag().getInt(MPGNBTData.ItemType) + ".name");
     }
 
-    public @NotNull InteractionResult place(BlockPlaceContext p_40577_) {
-        if (!this.getBlock().isEnabled(p_40577_.getLevel().enabledFeatures())) {
+    @Override
+    public @NotNull InteractionResult place(@NotNull BlockPlaceContext context) {
+        BlockPlaceContext placementContext = this.updatePlacementContext(context);
+        if (
+                !this.getBlock().isEnabled(context.getLevel().enabledFeatures())
+                        || !context.canPlace()
+                        ||placementContext == null
+        ) {
             return InteractionResult.FAIL;
-        } else if (!p_40577_.canPlace()) {
+        }
+        BlockState placementState = this.getPlacementState(placementContext);
+        Direction clickedFace = placementContext.getClickedFace();
+        if (placementState == null||clickedFace == Direction.UP || clickedFace == Direction.DOWN) {
             return InteractionResult.FAIL;
-        } else {
-            BlockPlaceContext blockplacecontext = this.updatePlacementContext(p_40577_);
-            if (blockplacecontext == null) {
-                return InteractionResult.FAIL;
-            } else {
-                BlockState blockstate = this.getPlacementState(blockplacecontext);
-                if (blockstate == null) {
-                    return InteractionResult.FAIL;
-                } else {
-                    BlockPos blockpos = blockplacecontext.getClickedPos();
-                    Level level = blockplacecontext.getLevel();
-                    Player player = blockplacecontext.getPlayer();
-                    ItemStack itemstack = blockplacecontext.getItemInHand();
-                    if (blockplacecontext.getClickedFace() == Direction.UP || blockplacecontext.getClickedFace() == Direction.DOWN) {
-                        return InteractionResult.FAIL;
-                    }
-                    if (!level.setBlock(blockpos, blockstate, 11)){
-                        return InteractionResult.FAIL;
-                    } else {
-                        BlockState blockstate1 = level.getBlockState(blockpos);
+        }
+        BlockPos pos = placementContext.getClickedPos();
+        Level level = placementContext.getLevel();
+        Player player = placementContext.getPlayer();
+        ItemStack stack = placementContext.getItemInHand();
 
-                        if (blockstate1.is(blockstate.getBlock())) {
-                            blockstate1 = this.updateBlockStateFromTag(blockpos, level, itemstack, blockstate1);
-                            this.updateCustomBlockEntityTag(blockpos, level, player, itemstack, blockstate1);
-                            blockstate1.getBlock().setPlacedBy(level, blockpos, blockstate1, player, itemstack);
-                            if (player instanceof ServerPlayer) {
-                                CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer) player, blockpos, itemstack);
-                            }
-                        }
+        if (!level.setBlock(pos, placementState, 11)) {
+            return InteractionResult.FAIL;
+        }
 
-                        SoundType soundtype = blockstate1.getSoundType(level, blockpos, p_40577_.getPlayer());
-                        if (p_40577_.getPlayer() != null) {
-                            level.playSound(player, blockpos, this.getPlaceSound(blockstate1, level, blockpos, p_40577_.getPlayer()), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-                        }
-                        level.gameEvent(GameEvent.BLOCK_PLACE, blockpos, GameEvent.Context.of(player, blockstate1));
-                        if (player == null || !player.getAbilities().instabuild) {
-                            itemstack.shrink(1);
-                        }
+        BlockState placedState = level.getBlockState(pos);
 
-                        return InteractionResult.sidedSuccess(level.isClientSide);
-                    }
-                }
+        if (placedState.is(placementState.getBlock())) {
+            placedState = this.updateBlockStateFromTag(pos, level, stack, placedState);
+            this.updateCustomBlockEntityTag(pos, level, player, stack, placedState);
+            placedState.getBlock().setPlacedBy(level, pos, placedState, player, stack);
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, pos, stack);
             }
         }
+
+        SoundType soundType = placedState.getSoundType(level, pos, player);
+
+        if (player != null) {
+            level.playSound(
+                    player,
+                    pos,
+                    this.getPlaceSound(placedState, level, pos, player),
+                    SoundSource.BLOCKS,
+                    (soundType.getVolume() + 1.0F) / 2.0F,
+                    soundType.getPitch() * 0.8F
+            );
+        }
+
+        level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placedState));
+
+        if (player == null || !player.getAbilities().instabuild) {
+            stack.shrink(1);
+        }
+
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     private BlockState updateBlockStateFromTag(BlockPos pos, Level level, ItemStack p_40605_, BlockState p_40606_) {

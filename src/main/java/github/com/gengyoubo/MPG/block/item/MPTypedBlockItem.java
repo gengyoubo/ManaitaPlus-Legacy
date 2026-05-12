@@ -43,67 +43,86 @@ public abstract class MPTypedBlockItem extends BlockItem {
 
     @Override
     public @NotNull InteractionResult place(BlockPlaceContext context) {
-        if (!this.getBlock().isEnabled(context.getLevel().enabledFeatures())) {
+        Level level = context.getLevel();
+
+        if (!this.getBlock().isEnabled(level.enabledFeatures()) || !context.canPlace()) {
             return InteractionResult.FAIL;
-        } else if (!context.canPlace()) {
+        }
+
+        BlockPlaceContext placementContext = this.updatePlacementContext(context);
+        if (placementContext == null) {
             return InteractionResult.FAIL;
+        }
+
+        BlockState placementState = this.getPlacementState(placementContext);
+        if (placementState == null) {
+            return InteractionResult.FAIL;
+        }
+
+        BlockPos pos = placementContext.getClickedPos();
+        Direction clickedFace = placementContext.getClickedFace();
+        Player player = placementContext.getPlayer();
+        ItemStack stack = placementContext.getItemInHand();
+
+        BlockPos relativePos = pos.relative(clickedFace.getOpposite());
+        BlockState relativeState = level.getBlockState(relativePos);
+
+        if (relativeState.getBlock() instanceof MPHookBlock) {
+            placementState = placementState
+                    .setValue(MPGBlockData.HOOK, relativeState.getValue(MPGBlockData.TYPES))
+                    .setValue(MPGBlockData.WALL, relativeState.getValue(MPGBlockData.FACING))
+                    .setValue(MPGBlockData.FACING, relativeState.getValue(MPGBlockData.FACING));
+            pos = relativePos;
         } else {
-            BlockPlaceContext blockPlaceContext = this.updatePlacementContext(context);
-            if (blockPlaceContext == null) {
+            CollisionContext collisionContext = player == null
+                    ? CollisionContext.empty()
+                    : CollisionContext.of(player);
+
+            boolean isVerticalFace = clickedFace == Direction.UP || clickedFace == Direction.DOWN;
+            boolean unobstructed = level.isUnobstructed(relativeState, pos, collisionContext);
+
+            if (!isVerticalFace || !unobstructed) {
                 return InteractionResult.FAIL;
-            } else {
-                BlockState blockState = this.getPlacementState(blockPlaceContext);
-                if (blockState == null) {
-                    return InteractionResult.FAIL;
-                } else {
-                    BlockPos blockPos = blockPlaceContext.getClickedPos();
-                    Level level = blockPlaceContext.getLevel();
-                    Player player = blockPlaceContext.getPlayer();
-                    ItemStack itemStack = blockPlaceContext.getItemInHand();
-                    BlockPos relative = blockPos.relative(blockPlaceContext.getClickedFace().getOpposite());
-                    BlockState relativeState = level.getBlockState(relative);
-                    if (relativeState.getBlock() instanceof MPHookBlock) {
-                        blockState = blockState
-                                .setValue(MPGBlockData.HOOK, relativeState.getValue(MPGBlockData.TYPES))
-                                .setValue(MPGBlockData.WALL, relativeState.getValue(MPGBlockData.FACING))
-                                .setValue(MPGBlockData.FACING, relativeState.getValue(MPGBlockData.FACING));
-                        blockPos = relative;
-                    } else if (blockPlaceContext.getClickedFace() != Direction.UP
-                            && blockPlaceContext.getClickedFace() != Direction.DOWN
-                            || !context.getLevel().isUnobstructed(relativeState, context.getClickedPos(),
-                            player == null ? CollisionContext.empty() : CollisionContext.of(player))) {
-                        return InteractionResult.FAIL;
-                    }
-                    if (!level.setBlock(blockPos, blockState, 11)) {
-                        return InteractionResult.FAIL;
-                    } else {
-                        BlockState placedState = level.getBlockState(blockPos);
-
-                        if (placedState.is(blockState.getBlock())) {
-                            placedState = this.updateBlockStateFromTag(blockPos, level, itemStack, placedState);
-                            this.updateCustomBlockEntityTag(blockPos, level, player, itemStack, placedState);
-                            placedState.getBlock().setPlacedBy(level, blockPos, placedState, player, itemStack);
-                            if (player instanceof ServerPlayer serverPlayer) {
-                                CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, blockPos, itemStack);
-                            }
-                        }
-
-                        SoundType soundType = placedState.getSoundType(level, blockPos, player);
-                        SoundEvent placeSound = player != null
-                                ? this.getPlaceSound(placedState, level, blockPos, player)
-                                : soundType.getPlaceSound();
-                        level.playSound(player, blockPos, placeSound, SoundSource.BLOCKS,
-                                (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
-                        level.gameEvent(GameEvent.BLOCK_PLACE, blockPos, GameEvent.Context.of(player, placedState));
-                        if (player == null || !player.getAbilities().instabuild) {
-                            itemStack.shrink(1);
-                        }
-
-                        return InteractionResult.sidedSuccess(level.isClientSide);
-                    }
-                }
             }
         }
+
+        if (!level.setBlock(pos, placementState, 11)) {
+            return InteractionResult.FAIL;
+        }
+
+        BlockState placedState = level.getBlockState(pos);
+
+        if (placedState.is(placementState.getBlock())) {
+            placedState = this.updateBlockStateFromTag(pos, level, stack, placedState);
+            this.updateCustomBlockEntityTag(pos, level, player, stack, placedState);
+            placedState.getBlock().setPlacedBy(level, pos, placedState, player, stack);
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, pos, stack);
+            }
+        }
+
+        SoundType soundType = placedState.getSoundType(level, pos, player);
+        SoundEvent placeSound = player != null
+                ? this.getPlaceSound(placedState, level, pos, player)
+                : soundType.getPlaceSound();
+
+        level.playSound(
+                player,
+                pos,
+                placeSound,
+                SoundSource.BLOCKS,
+                (soundType.getVolume() + 1.0F) / 2.0F,
+                soundType.getPitch() * 0.8F
+        );
+
+        level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placedState));
+
+        if (player == null || !player.getAbilities().instabuild) {
+            stack.shrink(1);
+        }
+
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

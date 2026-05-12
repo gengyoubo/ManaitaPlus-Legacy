@@ -96,24 +96,26 @@ public class MPFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         return MPGLogicHelper.canBurn(p_266924_, p_155006_, p_155007_, this);
     }
 
-    private boolean burn(RegistryAccess p_266740_, @Nullable Recipe<?> p_266780_, NonNullList<ItemStack> p_267073_) {
-        if (p_266780_ != null && this.canBurn(p_266740_, p_266780_, p_267073_)) {
-            ItemStack itemstack = p_267073_.get(0);
-            ItemStack itemstack1 = MPGLogicHelper.assembleResult(p_266780_, this, p_266740_);
-            ItemStack itemstack2 = p_267073_.get(2);
-            if (itemstack2.isEmpty()) {
-                ItemStack copy = itemstack1.copy();
-                copy.setCount(copy.getCount() * MPGConfig.furnace_doubling_value);
-                p_267073_.set(2, copy);
-            } else if (itemstack2.is(itemstack1.getItem())) {
-                itemstack2.grow(itemstack1.getCount() * MPGConfig.furnace_doubling_value);
-            }
+    private boolean burn(RegistryAccess registryAccess,
+                         @Nullable Recipe<?> recipe,
+                         NonNullList<ItemStack> items) {
+        if (recipe == null || !this.canBurn(registryAccess, recipe, items)) return false;
+        ItemStack input = items.get(0);
+        ItemStack result = MPGLogicHelper.assembleResult(recipe, this, registryAccess);
+        int outputCount = result.getCount() * MPGConfig.furnace_doubling_value;
 
-            itemstack.shrink(1);
-            return true;
+        ItemStack output = items.get(2);
+
+        if (output.isEmpty()) {
+            ItemStack resultCopy = result.copy();
+            resultCopy.setCount(outputCount);
+            items.set(2, resultCopy);
         } else {
-            return false;
+            output.grow(outputCount);
         }
+
+        input.shrink(1);
+        return true;
     }
 
     protected int getBurnDuration(@NotNull ItemStack p_58343_) {

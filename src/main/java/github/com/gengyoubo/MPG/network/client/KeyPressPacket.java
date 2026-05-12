@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class KeyPressPacket {
@@ -26,32 +27,52 @@ public class KeyPressPacket {
         buf.writeByte(keyCode);
     }
 
-    public void handler(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            if (ctx.get().getDirection().getReceptionSide().isClient()) return;
-            ServerPlayer sender = ctx.get().getSender();
-            if (sender == null) return;
+    public void handler(Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context ctx = ctxSupplier.get();
+
+        ctx.enqueueWork(() -> {
+            if (ctx.getDirection().getReceptionSide().isClient()) {
+                return;
+            }
+
+            ServerPlayer sender = ctx.getSender();
+            if (sender == null) {
+                return;
+            }
+
             switch (keyCode) {
-                case 0:
-                    if (MPGCuriosHelper.findFirstMatching(sender, stack -> stack.getItem() instanceof IMPGKey).isPresent()) {
-                        MPGCuriosHelper.findFirstMatching(sender, stack -> stack.getItem() instanceof IMPGKey)
-                                .ifPresent(stack -> ((IMPGKey) stack.getItem()).onManaitaKeyPress(stack, sender));
-                        break;
-                    }
-                    ItemStack mainHandItem = sender.getMainHandItem();
-                    if (!mainHandItem.isEmpty() && mainHandItem.getItem() instanceof IMPGKey keyItem) {
-                        keyItem.onManaitaKeyPress(mainHandItem);
-                    }
-                    break;
-                case 1:
-                    for (ItemStack itemStack : sender.getInventory().armor) {
-                        if (!itemStack.isEmpty() && itemStack.getItem() instanceof IMPGKey keyItem) {
-                            keyItem.onManaitaKeyPress(itemStack);
-                        }
-                    }
-                    break;
+                case 0 -> handleMainKey(sender);
+                case 1 -> handleArmorKey(sender);
             }
         });
-        ctx.get().setPacketHandled(true);
+
+        ctx.setPacketHandled(true);
+    }
+
+    private void handleMainKey(ServerPlayer player) {
+        Optional<ItemStack> curiosKey = MPGCuriosHelper.findFirstMatching(
+                player,
+                stack -> stack.getItem() instanceof IMPGKey
+        );
+
+        if (curiosKey.isPresent()) {
+            ItemStack stack = curiosKey.get();
+            ((IMPGKey) stack.getItem()).onManaitaKeyPress(stack, player);
+            return;
+        }
+
+        ItemStack mainHandStack = player.getMainHandItem();
+
+        if (mainHandStack.getItem() instanceof IMPGKey keyItem) {
+            keyItem.onManaitaKeyPress(mainHandStack);
+        }
+    }
+
+    private void handleArmorKey(ServerPlayer player) {
+        for (ItemStack stack : player.getInventory().armor) {
+            if (stack.getItem() instanceof IMPGKey keyItem) {
+                keyItem.onManaitaKeyPress(stack);
+            }
+        }
     }
 }

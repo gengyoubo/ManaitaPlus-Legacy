@@ -22,75 +22,85 @@ public class MPLightningBoltRenderer extends EntityRenderer<MPGLightningBolt> {
         super(p_174286_);
     }
 
-    public void render(MPGLightningBolt p_115266_, float p_115267_, float p_115268_, @NotNull PoseStack p_115269_, @NotNull MultiBufferSource p_115270_, int p_115271_) {
-        float[] afloat = new float[8];
-        float[] afloat1 = new float[8];
-        float f = 0.0F;
-        float f1 = 0.0F;
-        RandomSource randomsource = RandomSource.create(p_115266_.seed);
+    @Override
+    public void render(MPGLightningBolt bolt,
+                       float entityYaw,
+                       float partialTicks,
+                       @NotNull PoseStack poseStack,
+                       @NotNull MultiBufferSource bufferSource,
+                       int packedLight) {
+        float[] xOffsets = new float[8];
+        float[] zOffsets = new float[8];
 
-        for(int i = 7; i >= 0; --i) {
-            afloat[i] = f;
-            afloat1[i] = f1;
-            f += (float)(randomsource.nextInt(11) - 5);
-            f1 += (float)(randomsource.nextInt(11) - 5);
+        float xOffset = 0.0F;
+        float zOffset = 0.0F;
+
+        RandomSource baseRandom = RandomSource.create(bolt.seed);
+
+        for (int i = 7; i >= 0; i--) {
+            xOffsets[i] = xOffset;
+            zOffsets[i] = zOffset;
+
+            xOffset += baseRandom.nextInt(11) - 5;
+            zOffset += baseRandom.nextInt(11) - 5;
         }
 
-        VertexConsumer vertexconsumer = p_115270_.getBuffer(RenderType.lightning());
-        Matrix4f matrix4f = p_115269_.last().pose();
-        Random random = new Random(p_115266_.seed);
-        for(int j = 0; j < 4; ++j) {
-            RandomSource randomsource1 = RandomSource.create(p_115266_.seed);
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.lightning());
+        Matrix4f matrix = poseStack.last().pose();
 
-            for(int k = 0; k < 3; ++k) {
-                int l = 7;
-                int i1 = 0;
-                if (k > 0) {
-                    l = 7 - k;
-                }
+        Random colorRandom = new Random(bolt.seed);
 
-                if (k > 0) {
-                    i1 = l - 2;
-                }
+        for (int layer = 0; layer < 4; layer++) {
+            RandomSource branchRandom = RandomSource.create(bolt.seed);
 
-                float f2 = afloat[l] - f;
-                float f3 = afloat1[l] - f1;
+            for (int branch = 0; branch < 3; branch++) {
+                int start = branch == 0 ? 7 : 7 - branch;
+                int end = branch == 0 ? 0 : start - 2;
 
-                for(int j1 = l; j1 >= i1; --j1) {
-                    float f4 = f2;
-                    float f5 = f3;
-                    if (k == 0) {
-                        f2 += (float)(randomsource1.nextInt(11) - 5);
-                        f3 += (float)(randomsource1.nextInt(11) - 5);
-                    } else {
-                        f2 += (float)(randomsource1.nextInt(31) - 15);
-                        f3 += (float)(randomsource1.nextInt(31) - 15);
+                float prevX = xOffsets[start] - xOffset;
+                float prevZ = zOffsets[start] - zOffset;
+
+                for (int segment = start; segment >= end; segment--) {
+                    float currentX = prevX;
+                    float currentZ = prevZ;
+
+                    int randomRange = branch == 0 ? 11 : 31;
+                    int randomOffset = branch == 0 ? 5 : 15;
+
+                    prevX += branchRandom.nextInt(randomRange) - randomOffset;
+                    prevZ += branchRandom.nextInt(randomRange) - randomOffset;
+
+                    float startWidth = 0.1F + layer * 0.2F;
+                    float endWidth = startWidth;
+
+                    if (branch == 0) {
+                        startWidth *= segment * 0.1F + 1.0F;
+                        endWidth *= (segment - 1.0F) * 0.1F + 1.0F;
                     }
 
+                    float red = colorRandom.nextFloat();
+                    float green = colorRandom.nextFloat();
+                    float blue = colorRandom.nextFloat();
+                    float alpha = 0.375F;
 
-                    float f10 = 0.1F + (float)j * 0.2F;
-                    if (k == 0) {
-                        f10 *= (float)j1 * 0.1F + 1.0F;
-                    }
+                    quad(matrix, consumer, prevX, prevZ, segment, currentX, currentZ,
+                            red, green, blue, alpha, startWidth, endWidth,
+                            false, false, true, false);
 
-                    float f11 = 0.1F + (float)j * 0.2F;
-                    if (k == 0) {
-                        f11 *= ((float)j1 - 1.0F) * 0.1F + 1.0F;
-                    }
+                    quad(matrix, consumer, prevX, prevZ, segment, currentX, currentZ,
+                            red, green, blue, alpha, startWidth, endWidth,
+                            true, false, true, true);
 
-                    float r = random.nextFloat();
-                    float g = random.nextFloat();
-                    float b = random.nextFloat();
-                    float a = 0.375F;
+                    quad(matrix, consumer, prevX, prevZ, segment, currentX, currentZ,
+                            red, green, blue, alpha, startWidth, endWidth,
+                            true, true, false, true);
 
-                    quad(matrix4f, vertexconsumer, f2, f3, j1, f4, f5, r, g, b, a, f10, f11, false, false, true, false);
-                    quad(matrix4f, vertexconsumer, f2, f3, j1, f4, f5, r, g, b, a, f10, f11, true, false, true, true);
-                    quad(matrix4f, vertexconsumer, f2, f3, j1, f4, f5, r, g, b, a, f10, f11, true, true, false, true);
-                    quad(matrix4f, vertexconsumer, f2, f3, j1, f4, f5, r, g, b, a, f10, f11, false, true, false, false);
+                    quad(matrix, consumer, prevX, prevZ, segment, currentX, currentZ,
+                            red, green, blue, alpha, startWidth, endWidth,
+                            false, true, false, false);
                 }
             }
         }
-
     }
 
 

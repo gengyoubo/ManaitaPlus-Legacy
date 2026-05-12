@@ -1,29 +1,22 @@
 package github.com.gengyoubo.MPG.recipe;
 
 import com.google.gson.JsonObject;
-import github.com.gengyoubo.MPG.core.MPGBlockCore;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
-import github.com.gengyoubo.MPG.block.item.MPBrewingBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPCraftingBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPFurnaceBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPHookBlockItem;
 import github.com.gengyoubo.MPG.core.MPGItemCore;
 import github.com.gengyoubo.MPG.core.MPGRecipeSerializerCore;
 import github.com.gengyoubo.MPG.item.MPGSourceItem;
-import github.com.gengyoubo.MPG.util.MPGNBTData;
 
 public class MPGCraftingRecipe implements CraftingRecipe {
     private static final ItemStack SOURCE_RESULT = new ItemStack(MPGItemCore.ManaitaSource.get());
@@ -48,137 +41,74 @@ public class MPGCraftingRecipe implements CraftingRecipe {
 
     @Override
     public boolean matches(CraftingContainer container, @NotNull Level level) {
-        boolean hasSource = false;
+        int sourceCount = 0;
         int nonEmptyCount = 0;
+
         for (ItemStack stack : container.getItems()) {
             if (stack.isEmpty()) {
                 continue;
             }
             nonEmptyCount++;
             if (stack.getItem() instanceof MPGSourceItem) {
-                hasSource = true;
+                sourceCount++;
             }
         }
 
-        if (nonEmptyCount != 2 || !hasSource) {
-            return false;
-        }
-
-        boolean hasUpgradeableBlock = false;
-        boolean hasMaterial = false;
-        for (ItemStack stack : container.getItems()) {
-            Item item = stack.getItem();
-            if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem || item instanceof MPHookBlockItem) {
-                hasUpgradeableBlock = true;
-            } else if (item == Items.OAK_PLANKS || item == Items.COBBLESTONE || item == Items.IRON_BLOCK || item == Items.REDSTONE_BLOCK || item == Items.GOLD_BLOCK || item == Items.DIAMOND_BLOCK || item == Items.EMERALD_BLOCK || item == Items.NETHERITE_BLOCK) {
-                hasMaterial = true;
-            }
-        }
-        return hasUpgradeableBlock && hasMaterial;
+        return nonEmptyCount == 2 && sourceCount >= 1;
     }
 
     @Override
     public @NotNull ItemStack assemble(CraftingContainer container, @NotNull RegistryAccess registryAccess) {
-        ItemStack material = ItemStack.EMPTY;
-        ItemStack blockInput = ItemStack.EMPTY;
-        ItemStack hookInput = ItemStack.EMPTY;
-        boolean hasSource = false;
+        ItemStack sourceTarget = ItemStack.EMPTY;
+        boolean consumedSource = false;
 
         for (ItemStack stack : container.getItems()) {
-            Item item = stack.getItem();
-            if (item instanceof MPGSourceItem) {
-                hasSource = true;
-                continue;
-            }
             if (stack.isEmpty()) {
                 continue;
             }
-            if (item instanceof MPHookBlockItem) {
-                hookInput = stack;
+            if (stack.getItem() instanceof MPGSourceItem && !consumedSource) {
+                consumedSource = true;
                 continue;
             }
-            if (item instanceof MPCraftingBlockItem || item instanceof MPFurnaceBlockItem || item instanceof MPBrewingBlockItem) {
-                blockInput = stack;
-                continue;
-            }
-            material = stack;
+            sourceTarget = stack;
         }
 
-        if (hasSource && !material.isEmpty() && blockInput.isEmpty() && hookInput.isEmpty()) {
-            ItemStack copied = material.copy();
+        if (consumedSource && !sourceTarget.isEmpty()) {
+            ItemStack copied = sourceTarget.copy();
             copied.setCount(MPGConfig.source_doubling_value);
             return copied;
         }
-
-        if (!blockInput.isEmpty() && !hookInput.isEmpty()) {
-            return assemblePortable(blockInput, hookInput);
-        }
-
-        if (!material.isEmpty() && !blockInput.isEmpty()) {
-            int type = resolveMaterialType(material.getItem());
-            if (type <= 0) {
-                return ItemStack.EMPTY;
-            }
-            ItemStack result = createBlockResult(blockInput.getItem());
-            if (result.isEmpty()) {
-                return ItemStack.EMPTY;
-            }
-            result.getOrCreateTag().putInt(MPGNBTData.ItemType, type);
-            return result;
-        }
         return ItemStack.EMPTY;
     }
 
-    private static ItemStack assemblePortable(ItemStack blockInput, ItemStack hookInput) {
-        if (blockInput.getOrCreateTag().getInt(MPGNBTData.ItemType) != 0) {
-            return ItemStack.EMPTY;
+    @Override
+    public @NotNull NonNullList<ItemStack> getRemainingItems(@NotNull CraftingContainer container) {
+        NonNullList<ItemStack> remainingItems = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
+        boolean consumedSource = false;
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            if (stack.getItem() instanceof MPGSourceItem && !consumedSource) {
+                consumedSource = true;
+                continue;
+            }
+            ItemStack remaining = stack.copy();
+            remaining.setCount(1);
+            remainingItems.set(i, remaining);
         }
-
-        ItemStack portable;
-        Item item = blockInput.getItem();
-        if (item instanceof MPCraftingBlockItem) {
-            portable = new ItemStack(MPGItemCore.ManaitaCraftingPortable.get());
-        } else if (item instanceof MPFurnaceBlockItem) {
-            portable = new ItemStack(MPGItemCore.ManaitaFurnacePortable.get());
-        } else if (item instanceof MPBrewingBlockItem) {
-            portable = new ItemStack(MPGItemCore.ManaitaBrewingPortable.get());
-        } else {
-            return ItemStack.EMPTY;
-        }
-
-        int hookType = hookInput.getOrCreateTag().getInt(MPGNBTData.ItemType);
-        portable.getOrCreateTag().putInt(MPGNBTData.ItemType, hookType + 1);
-        return portable;
-    }
-
-    private static ItemStack createBlockResult(Item blockItem) {
-        if (blockItem instanceof MPCraftingBlockItem) {
-            return new ItemStack(MPGBlockCore.CraftingBlockItem.get());
-        }
-        if (blockItem instanceof MPFurnaceBlockItem) {
-            return new ItemStack(MPGBlockCore.FurnaceBlockItem.get());
-        }
-        if (blockItem instanceof MPBrewingBlockItem) {
-            return new ItemStack(MPGBlockCore.BrewingBlockItem.get());
-        }
-        return ItemStack.EMPTY;
-    }
-
-    private static int resolveMaterialType(Item material) {
-        if (material == Items.OAK_PLANKS) return 1;
-        if (material == Items.COBBLESTONE) return 2;
-        if (material == Items.IRON_BLOCK) return 3;
-        if (material == Items.GOLD_BLOCK) return 4;
-        if (material == Items.DIAMOND_BLOCK) return 5;
-        if (material == Items.EMERALD_BLOCK) return 6;
-        if (material == Items.REDSTONE_BLOCK) return 7;
-        if (material == Items.NETHERITE_BLOCK) return 8;
-        return -1;
+        return remainingItems;
     }
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 2;
+    }
+
+    @Override
+    public boolean isSpecial() {
+        return true;
     }
 
     @Override

@@ -58,26 +58,6 @@ public class Networking {
         }
     }
 
-// --注释掉检查 START (2026/4/24 23:35):
-//    public static void sendToNearByPlayers(Level level, Player center, Object packet, int range) {
-//        if (level instanceof ServerLevel serverLevel) {
-//            if (center == null) {
-//                sendToSameLevelPlayers(level, packet);
-//                return;
-//            }
-//            double finalRange = (double) range * (double) range;
-//            for (ServerPlayer serverPlayer : serverLevel.players()) {
-//                if (serverPlayer.distanceToSqr(center) <= finalRange) {
-//                    Networking.INSTANCE.send(
-//                            PacketDistributor.PLAYER.with(() -> serverPlayer),
-//                            packet
-//                    );
-//                }
-//            }
-//        }
-//    }
-// --注释掉检查 STOP (2026/4/24 23:35)
-
     @Deprecated
     public static void sendToNearByPlayers(Level level, Object packet, int range) {
         sendToSameLevelPlayers(level, packet);

@@ -21,7 +21,7 @@
     <dependency>
       <groupId>mezz.jei</groupId>
       <artifactId>jei-1.20.1-forge</artifactId>
-      <version>15.8.2.26_mapped_official_1.20.1</version>
+      <version>15.20.0.130_mapped_official_1.20.1</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>

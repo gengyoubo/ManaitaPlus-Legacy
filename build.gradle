@@ -16,15 +16,15 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
-
 neoForge {
     version = project.neo_version
     validateAccessTransformers = true
-
     runs {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'mixin.env.remapRefMap', 'true'
+            systemProperty 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
         }
 
         server {
@@ -47,6 +47,9 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'mixin.config', 'manaita_plus_general.mixins.json'
+            systemProperty 'mixin.env.remapRefMap', 'true'
+            systemProperty 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }
@@ -73,6 +76,9 @@ repositories {
         name = "Curios"
         url = uri("https://maven.theillusivec4.top/")
     }
+    maven {
+        url = "https://cursemaven.com"
+    }
     mavenCentral()
 }
 
@@ -88,11 +94,17 @@ tasks.withType(JavaCompile).configureEach {
 dependencies {
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     // at runtime, use the full JEI jar for NeoForge
     runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}+${minecraft_version}"
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}+${minecraft_version}:api"
+
+        // Optional runtime-only mods for compatibility testing.
+    implementation "curse.maven:malum-484064:7307339"
+    implementation "curse.maven:lodestone-616457:7264731"
+    implementation "curse.maven:farmers-delight-398521:7953736"
 }
 
 tasks.named('processResources', ProcessResources).configure {

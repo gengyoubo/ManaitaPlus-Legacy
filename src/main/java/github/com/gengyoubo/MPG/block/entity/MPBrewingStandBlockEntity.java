@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
-    private static final int BREW_TIME = 1;
+    public static final int BREW_TIME = 1;
     private static final int[] SLOTS_FOR_UP = new int[]{3};
     private static final int[] SLOTS_FOR_DOWN = new int[]{0, 1, 2, 3};
     private static final int[] SLOTS_FOR_SIDES = new int[]{0, 1, 2, 4};
@@ -160,11 +160,7 @@ public class MPBrewingStandBlockEntity extends BaseContainerBlockEntity implemen
         ItemStack itemstack = p_155293_.get(3);
         PotionBrewing potionBrewing = p_155291_.potionBrewing();
         for (int i = 0; i < 3; i++) {
-            ItemStack brewed = potionBrewing.mix(itemstack, p_155293_.get(i));
-            if (!brewed.isEmpty()) {
-                brewed.setCount(Math.max(1, brewed.getCount() * MPGConfig.brewing_doubling_value));
-            }
-            p_155293_.set(i, brewed);
+            p_155293_.set(i, MPGBrewingLogicHelper.mixAndMultiply(potionBrewing, itemstack, p_155293_.get(i), MPGConfig.brewing_doubling_value));
         }
         MPGBrewingLogicHelper.finishBrew(p_155291_, p_155292_.getX(), p_155292_.getY(), p_155292_.getZ(), p_155293_, 3);
         p_155291_.levelEvent(1035, p_155292_, 0);

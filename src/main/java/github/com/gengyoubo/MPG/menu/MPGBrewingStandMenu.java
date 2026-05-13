@@ -169,7 +169,12 @@ public class MPGBrewingStandMenu extends AbstractContainerMenu {
         }
 
         public int getMaxStackSize() {
-            return 1;
+            return 64;
+        }
+
+        @Override
+        public int getMaxStackSize(@NotNull ItemStack stack) {
+            return 64;
         }
 
         public void onTake(@NotNull Player p_150499_, @NotNull ItemStack p_150500_) {

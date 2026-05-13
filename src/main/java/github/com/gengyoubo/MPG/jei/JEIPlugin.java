@@ -1,6 +1,7 @@
 package github.com.gengyoubo.MPG.jei;
 
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
+import github.com.gengyoubo.MPG.MPG;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -21,10 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import github.com.gengyoubo.MPG.MPGConfig;
-import github.com.gengyoubo.MPG.block.item.MPBrewingBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPCraftingBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPFurnaceBlockItem;
-import github.com.gengyoubo.MPG.block.item.MPHookBlockItem;
 import github.com.gengyoubo.MPG.gui.BrewingStandScreen;
 import github.com.gengyoubo.MPG.gui.CraftingManaitaScreen;
 import github.com.gengyoubo.MPG.gui.FurnaceManaitaScreen;
@@ -118,11 +115,15 @@ public class JEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        registration.addRecipes(SourceCopyRecipeCategory.TYPE, createSourceCopyRecipes());
+        List<SourceCopyJeiRecipe> sourceCopyRecipes = createSourceCopyRecipes();
+        int sourceCopyInputCount = sourceCopyRecipes.isEmpty() ? 0 : sourceCopyRecipes.getFirst().inputs().size();
+        MPG.LOGGER.info("Registering {} Manaita source copy JEI recipe(s) with {} cycled input item(s)",
+                sourceCopyRecipes.size(),
+                sourceCopyInputCount);
+        registration.addRecipes(SourceCopyRecipeCategory.TYPE, sourceCopyRecipes);
         registration.addItemStackInfo(
                 new ItemStack(MPGItemCore.ManaitaSource.get()),
-                Component.translatable("jei.manaita_plus_general.source.info.1"),
-                Component.translatable("jei.manaita_plus_general.source.info.2", MPGConfig.source_doubling_value)
+                Component.translatable("jei.manaita_plus_general.source.info.1", MPGConfig.source_doubling_value)
         );
     }
 
@@ -134,30 +135,72 @@ public class JEIPlugin implements IModPlugin {
     }
 
     private static List<SourceCopyJeiRecipe> createSourceCopyRecipes() {
-        ItemStack source = new ItemStack(MPGItemCore.ManaitaSource.get());
-        return BuiltInRegistries.ITEM.stream()
+        List<ItemStack> inputs = new ArrayList<>();
+        inputs.add(new ItemStack(MPGItemCore.ManaitaSource.get()));
+        BuiltInRegistries.ITEM.stream()
                 .filter(JEIPlugin::isCopyableItem)
                 .sorted(Comparator.comparing(item -> BuiltInRegistries.ITEM.getKey(item).toString()))
                 .map(Item::getDefaultInstance)
                 .filter(stack -> !stack.isEmpty())
-                .map(input -> {
-                    ItemStack normalizedInput = input.copy();
-                    normalizedInput.setCount(1);
-                    ItemStack output = normalizedInput.copy();
-                    output.setCount(MPGConfig.source_doubling_value);
-                    return new SourceCopyJeiRecipe(source.copy(), normalizedInput, output);
-                })
+                .forEach(inputs::add);
+
+        inputs.addAll(createTypedStacks(MPGBlockCore.CraftingBlockItem.get(), 8));
+        inputs.addAll(createTypedStacks(MPGBlockCore.FurnaceBlockItem.get(), 8));
+        inputs.addAll(createTypedStacks(MPGBlockCore.BrewingBlockItem.get(), 8));
+        inputs.addAll(createTypedStacks(MPGBlockCore.HookBlockItem.get(), 8));
+        inputs.addAll(createTypedStacks(MPGItemCore.ManaitaCraftingPortable.get(), 8));
+        inputs.addAll(createTypedStacks(MPGItemCore.ManaitaFurnacePortable.get(), 8));
+        inputs.addAll(createTypedStacks(MPGItemCore.ManaitaBrewingPortable.get(), 8));
+        if (MPGItemCore.isCuriosLoaded()) {
+            inputs.addAll(createTypedStacks(MPGItemCore.ManaitaCraftingRing.get(), 8));
+            inputs.addAll(createTypedStacks(MPGItemCore.ManaitaFurnaceRing.get(), 8));
+            inputs.addAll(createTypedStacks(MPGItemCore.ManaitaBrewingRing.get(), 8));
+        }
+
+        List<ItemStack> normalizedInputs = inputs.stream()
+                .map(JEIPlugin::normalizeCopyInput)
                 .toList();
+        List<ItemStack> outputs = normalizedInputs.stream()
+                .map(JEIPlugin::createSourceCopyOutput)
+                .toList();
+        return List.of(new SourceCopyJeiRecipe(createSourceStacks(normalizedInputs.size()), normalizedInputs, outputs, MPGConfig.source_doubling_value));
+    }
+
+    private static List<ItemStack> createSourceStacks(int count) {
+        List<ItemStack> sources = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            sources.add(new ItemStack(MPGItemCore.ManaitaSource.get()));
+        }
+        return sources;
+    }
+
+    private static ItemStack normalizeCopyInput(ItemStack input) {
+        ItemStack normalizedInput = input.copy();
+        normalizedInput.setCount(1);
+        return normalizedInput;
+    }
+
+    private static ItemStack createSourceCopyOutput(ItemStack input) {
+        ItemStack output = input.copy();
+        output.setCount(MPGConfig.source_doubling_value);
+        return output;
     }
 
     private static boolean isCopyableItem(Item item) {
         if (item == Items.AIR || item == MPGItemCore.ManaitaSource.get()) {
             return false;
         }
-        return !(item instanceof MPCraftingBlockItem)
-                && !(item instanceof MPFurnaceBlockItem)
-                && !(item instanceof MPBrewingBlockItem)
-                && !(item instanceof MPHookBlockItem);
+        return item != MPGBlockCore.CraftingBlockItem.get()
+                && item != MPGBlockCore.FurnaceBlockItem.get()
+                && item != MPGBlockCore.BrewingBlockItem.get()
+                && item != MPGBlockCore.HookBlockItem.get()
+                && item != MPGItemCore.ManaitaCraftingPortable.get()
+                && item != MPGItemCore.ManaitaFurnacePortable.get()
+                && item != MPGItemCore.ManaitaBrewingPortable.get()
+                && (!MPGItemCore.isCuriosLoaded()
+                || (item != MPGItemCore.ManaitaCraftingRing.get()
+                && item != MPGItemCore.ManaitaFurnaceRing.get()
+                && item != MPGItemCore.ManaitaBrewingRing.get()));
     }
 
     private static Collection<ItemStack> createTypedStacks(Item item, int maxType) {

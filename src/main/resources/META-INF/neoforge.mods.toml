@@ -11,6 +11,9 @@ authors="${mod_authors}"
 description="${mod_description}"
 logoFile= "assets/manaita_plus_general/textures/logo.png"
 
+[[mixins]]
+config="manaita_plus_general.mixins.json"
+
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"

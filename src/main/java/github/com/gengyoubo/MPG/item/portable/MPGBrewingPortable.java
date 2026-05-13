@@ -15,7 +15,9 @@ import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.jetbrains.annotations.NotNull;
+import github.com.gengyoubo.MPG.MPGConfig;
 import github.com.gengyoubo.MPG.block.entity.MPGBrewingLogicHelper;
+import github.com.gengyoubo.MPG.block.entity.MPBrewingStandBlockEntity;
 import github.com.gengyoubo.MPG.core.MPGBlockEntityCore;
 import github.com.gengyoubo.MPG.core.MPGBlockCore;
 import github.com.gengyoubo.MPG.menu.MPGBrewingStandMenu;
@@ -48,10 +50,18 @@ public class MPGBrewingPortable extends MPGPortableItem {
 
         protected final ContainerData dataAccess = new ContainerData() {
             public int get(int index) {
-                return 0;
+                return switch (index) {
+                    case 0 -> ManaitaPlusBrewingStandBlockEntity.this.brewTime;
+                    case 1 -> ManaitaPlusBrewingStandBlockEntity.this.fuel;
+                    default -> 0;
+                };
             }
 
             public void set(int index, int value) {
+                switch (index) {
+                    case 0 -> ManaitaPlusBrewingStandBlockEntity.this.brewTime = value;
+                    case 1 -> ManaitaPlusBrewingStandBlockEntity.this.fuel = value;
+                }
             }
 
             public int getCount() {
@@ -116,11 +126,7 @@ public class MPGBrewingPortable extends MPGPortableItem {
             ItemStack ingredient = items.get(3);
             PotionBrewing potionBrewing = level.potionBrewing();
             for (int i = 0; i < 3; i++) {
-                ItemStack brewed = potionBrewing.mix(ingredient, items.get(i));
-                if (!brewed.isEmpty()) {
-                    brewed.setCount(Math.max(1, brewed.getCount() * 64));
-                }
-                items.set(i, brewed);
+                items.set(i, MPGBrewingLogicHelper.mixAndMultiply(potionBrewing, ingredient, items.get(i), MPGConfig.brewing_doubling_value));
             }
             MPGBrewingLogicHelper.finishBrew(level, player.getX(), player.getY(), player.getZ(), items, 3);
         }
@@ -167,9 +173,10 @@ public class MPGBrewingPortable extends MPGPortableItem {
                 }
                 if (isBrewable(potionBrewing, this.items) && this.fuel > 0) {
                     this.fuel--;
-                    this.brewTime = 400;
+                    this.brewTime = MPBrewingStandBlockEntity.BREW_TIME;
                     this.ingredient = this.items.get(3).getItem();
                     doBrew(player.level(), this.items);
+                    this.brewTime = 0;
                 }
 
                 boolean[] bits = this.getPotionBits();

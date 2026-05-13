@@ -28,6 +28,17 @@ public final class MPGBrewingLogicHelper {
         items.set(ingredientSlot, ingredient);
     }
 
+    public static ItemStack mixAndMultiply(PotionBrewing potionBrewing, ItemStack ingredient, ItemStack input, int multiplier) {
+        if (input.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack brewed = potionBrewing.mix(ingredient, input);
+        if (!brewed.isEmpty() && !ItemStack.matches(input, brewed)) {
+            brewed.setCount(Math.max(1, multiplier));
+        }
+        return brewed;
+    }
+
     public static boolean canPlaceItem(PotionBrewing potionBrewing, int index, ItemStack stack, ItemStack currentSlotItem) {
         if (index == 3) {
             return potionBrewing.isIngredient(stack);
